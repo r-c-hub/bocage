@@ -1,0 +1,15 @@
+{
+  "name": "bocage",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Un quartier à explorer et des activités éducatives pour les enfants.",
+  "scripts": {
+    "start": "node scripts/serve.cjs",
+    "check": "node --check game.js",
+    "test": "node tests/game.test.cjs",
+    "bundle": "node scripts/bundle.cjs"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "0.1.100"
+  }
+}
