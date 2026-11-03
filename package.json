@@ -1,6 +1,6 @@
 {
   "name": "bocage",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "private": true,
   "description": "Un quartier à explorer et des activités éducatives pour les enfants.",
   "scripts": {

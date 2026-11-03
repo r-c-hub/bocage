@@ -1,6 +1,6 @@
-# Les petites aventures du Bocage — prototype 2.0, exploration libre
+# Les petites aventures du Bocage — prototype 2.1, exploration libre
 
-Ouvrez **Le-Bocage.html** (le fichier autonome livré à côté de ce dossier) dans Firefox, Chrome ou Edge. Aucun téléchargement supplémentaire, serveur ou compte n’est nécessaire. Vous pouvez aussi ouvrir `index.html` dans ce dossier en conservant `style.css` et `game.js` à côté.
+Ouvrez **index.html** à la racine des sources en conservant **game.js** et **style.css** à côté. Le fichier autonome **Le-Bocage.html** livré séparément permet aussi de jouer sans serveur ni installation.
 
 ## Jouer
 
@@ -18,7 +18,7 @@ On peut entrer par la porte sous le préau, avec **E ou Entrée**. Dans le coulo
 - **Coloriages :** sélectionnez une couleur puis une zone du dessin, au clic ou avec Tab et Entrée. Chaque couleur apparaît avec une petite animation. Les dessins sont conservés dans la sauvegarde locale et inclus dans l’export. Une remise à zéro de l’aventure efface aussi les coloriages.
 - **Sport :** trois paniers de basket à réussir au bon moment et un circuit de consignes animées (sauter, s’accroupir, lever les bras). Il s’agit de commandes dans le jeu, sans caméra ni analyse des mouvements physiques de l’enfant.
 - **Musique :** piano de huit notes, mélodies à écouter ou à suivre visuellement puis reproduire, et rythmes de sons courts et longs. La lecture sonore est déclenchée par le bouton d’écoute ; les indications visuelles permettent aussi de jouer sans son.
-- **Marelle :** dehors dans la cour, approchez-vous des cases peintes puis appuyez sur E ou Entrée. Évitez le caillou et sautez en cliquant les cases dans le bon ordre. Les plus jeunes font l’aller ; les plus grands font aussi le retour. Le personnage personnalisé est animé à chaque saut.
+- **Marelle :** approchez-vous des cases peintes dans la cour, puis appuyez sur E ou Entrée. La marelle propose un lancer de précision avec une zone adaptée à l’âge, des sauts à cloche-pied et à deux pieds sur les cases doubles, puis un retour avec ramassage du caillou. Cliquez sur le plateau ou les boutons numérotés ; les touches 1 à 8 sélectionnent aussi une rangée. Espace ou Entrée lance le caillou et permet de le ramasser. Les indices sont activables, et affichés au départ pour les 7–8 ans. Chaque nouvelle partie change la case du caillou.
 - **Football :** les deux joueurs animés reprennent le personnage créé et Sami, avec leurs vêtements, peau, cheveux et yeux, plutôt que des silhouettes génériques.
 
 Ces activités restent accessibles depuis leurs lieux, sans catalogue global ni déplacement automatique. Les scènes intérieures sont des aménagements inventés pour le jeu.
@@ -63,7 +63,7 @@ La sauvegarde inclut désormais les coloriages et les nouvelles activités ; les
 
 ## Vérification de livraison
 
-Trente-cinq contrôles vérifient la logique : absence de catalogue et de navigation automatique, déplacement au clavier, arrêt au relâchement, refus des interactions distantes, découverte progressive, accessibilité des portes et personnages, collisions, niveaux d’âge, réponses des exercices, retour manuel après la recherche du chat et sauvegarde. Les contrôles incluent la porte du préau, les trois nouvelles pièces, la lecture des histoires, les coloriages (peinture, annulation, effacement et sauvegarde), les chapitres de révision, les paniers, les mouvements, les mélodies, les rythmes, la marelle, et aussi Entrée et E, la route à gauche de l’école, les deux immeubles du bas, les équipements de jeux, la rampe du garage, la continuité de la cour et le passage sous le préau, les variantes de questions, leurs réponses cohérentes, la stabilité d’un exercice pendant les essais et les éléments des scènes. Les scènes du quartier ont été dessinées avec une véritable implémentation Canvas et les illustrations de dialogue rendues en SVG ; des aperçus du quartier et des scènes sont livrés à côté du jeu.
+Cinquante-deux contrôles vérifient la logique : absence de catalogue et de navigation automatique, déplacement au clavier, arrêt au relâchement, refus des interactions distantes, découverte progressive, accessibilité des portes et personnages, collisions, niveaux d’âge, réponses des exercices, retour manuel après la recherche du chat et sauvegarde. Les contrôles incluent la porte du préau, les trois nouvelles pièces, la lecture des histoires, les coloriages (peinture, annulation, effacement et sauvegarde), les chapitres de révision, les paniers, les mouvements, les mélodies, les rythmes, la marelle, et aussi Entrée et E, la route à gauche de l’école, les deux immeubles du bas, les équipements de jeux, la rampe du garage, la continuité de la cour et le passage sous le préau, les variantes de questions, leurs réponses cohérentes, la stabilité d’un exercice pendant les essais et les éléments des scènes. Les scènes du quartier ont été dessinées avec une véritable implémentation Canvas et les illustrations de dialogue rendues en SVG ; des aperçus du quartier et des scènes sont livrés à côté du jeu.
 
 Le contrôle d’un navigateur local étant indisponible dans cette session, la disposition de l’interface sur chaque écran, les gestes tactiles, le téléchargement de sauvegarde et la lecture des animations et des sons dans le navigateur restent à confirmer sur votre appareil. Les contrôles de logique utilisent un DOM simulé, sans prétendre remplacer un essai complet dans un navigateur.
 
@@ -78,3 +78,21 @@ Le contrôle d’un navigateur local étant indisponible dans cette session, la 
 `index.html` contient la structure, `style.css` l’interface et `game.js` le monde et les activités. Les dessins sont générés en Canvas, sans bibliothèque ni dépendance distante.
 
 Les étapes suivantes les plus utiles sont la cartographie réelle du quartier, davantage de situations et de variantes de questions, une adaptation par classe et par matière, des voix et un accompagnement audio, puis un essai avec des enfants et des enseignants. Une vraie version 3D demanderait un moteur et un travail de modélisation supplémentaire.
+
+## Nouveautés 2.1
+
+- Voie privée et stationnement entre la route du Grand-Lancy et l’école, d’après routes.png.
+- Boutons piétons des deux côtés : E ou Entrée à proximité, attente de l’arrêt des voitures, puis dix secondes de vert. Hors du passage, la chaussée est bloquée avec un avertissement. Une traversée déjà engagée peut se terminer ; les voitures restent arrêtées jusqu’à sa fin. Le temps de jeu est suspendu dans les dialogues.
+- Parc de l’autre côté : balançoire, cabane avec toboggan, tourniquet, de droite à gauche. Chaque jeu propose une petite animation avec le personnage.
+- Chez soi : approchez-vous de « Décorer ta chambre ». Ajoutez des meubles et jouets, choisissez leur couleur et placez-les sur les cases libres ; les couloirs restent dégagés. La décoration se sauvegarde automatiquement.
+- Moustache vit chez soi : approchez-vous du chat pour servir des croquettes ou remplir sa gamelle d’eau. Les gamelles et la décoration sont incluses dans l’export/import.
+- Zoom borné entre la vue globale et la vue proche centrée sur le personnage.
+- Ping-pong et toboggan de la cour intervertis ; questions d’heure au format 24 h avec indication du moment de la journée.
+
+
+### Animations du parc
+
+Les trois jeux ont des scènes animées dessinées : balançoire avec chaînes fixées à la barre, siège et personnage articulé ; cabane avec montée de l’échelle, installation, glissade courbe et arrivée ; tourniquet en perspective avec le personnage et Sami, barres et plateau tournants. Les vêtements, cheveux, peau et yeux reprennent le personnage choisi. Chaque animation propose Pause, Reprendre et Recommencer.
+
+
+La balançoire et le tourniquet se pilotent en continu : cliquez pour donner une impulsion, ou maintenez le bouton ↑ pour prendre de l’élan / accélérer. Le bouton ↓ freine. Les touches ↑ et ↓ fonctionnent aussi. Sans action, le mouvement ralentit naturellement ; la jauge indique l’élan / la hauteur ou la vitesse. Pause conserve la position ; Recommencer remet le jeu au départ.
