@@ -57,15 +57,22 @@ jobs:
               "$1/" "$2/"
           }
           slug() { echo "$1" | sed 's#[^A-Za-z0-9._-]#-#g'; }
+          # Browsers keep game.js and style.css for up to 10 minutes: a version
+          # number in their URL makes each publication load the new files.
+          bust() { # $1 published folder, $2 commit
+            sed -i -e "s#href=\"style.css\"#href=\"style.css?v=$2\"#" -e "s#src=\"game.js\"#src=\"game.js?v=$2\"#" "$1/index.html"
+          }
 
           # The root always mirrors main, so the public game is unchanged.
           copy_game main site
+          bust site "$(git -C main rev-parse --short HEAD)"
           touch site/.nojekyll
 
           if [ "$EVENT" = "delete" ]; then
             rm -rf "site/branches/$(slug "$DELETED")"
           elif [ "$PUSHED" != "main" ]; then
             copy_game src "site/branches/$(slug "$PUSHED")"
+            bust "site/branches/$(slug "$PUSHED")" "$(git -C src rev-parse --short HEAD)"
           fi
 
           # Small index page listing the available previews.

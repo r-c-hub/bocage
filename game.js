@@ -96,7 +96,9 @@ for(let i=0;i<200;i++){
  const x=85+rnd()*1340,y=125+rnd()*935;
  if(x<375&&y<360)continue;
  if(x>545&&x<785&&y>790&&y<1010)continue;
- if(y<690&&Math.abs(x-(790-.817*y))<65)continue;
+ if(Math.abs(x-(811-.817*y))<62)continue;
+ if(y>880&&y<1020)continue;
+ if(x<300&&y>690&&y<960)continue;
  if(x>garageAccess.x-35&&x<garageAccess.x+garageAccess.w+35&&y>garageAccess.y-20)continue;
  if(fixtures.some(f=>(x>f.x-32&&x<f.x+f.w+32&&y>f.y-55&&y<f.y+f.h+35)||(f.ramp&&x>f.ramp.x-30&&x<f.ramp.x+f.ramp.w+30&&y>f.ramp.y-55&&y<f.ramp.y+f.ramp.h+30)))continue;
  if(buildings.some(b=>x>b.x-32&&x<b.x+b.w+40&&y>b.y-15&&y<b.y+b.h+40))continue;
@@ -558,13 +560,15 @@ function outdoorGround(){const c=ctx;
  rr(c,508,526,55,129,4,'#ded9c6');rr(c,849,415,55,260,4,'#ded9c6');rr(c,860,555,55,120,4,'#ded9c6');
  rr(c,1085,255,250,25,3,'#ded9c6');rr(c,1095,400,250,25,3,'#ded9c6');rr(c,1100,545,260,25,3,'#ded9c6');
  // The lower Pampres buildings are across this street, as in the reference photo.
- rr(c,165,915,1220,38,5,'#c8c5b5');rr(c,165,918,1220,30,4,'#dfd9c5');text(c,'Chemin des Pampres',515,939,13,'#969781');
+ // Chemin des Pampres is a real street: it starts at the Grand-Lancy road, as on the satellite view.
+ text(c,'Chemin des Pampres',985,938,13,'#eef0e6','600');
  // The entrance branches from the left of the garage, not from its lower facade.
- poly(c,[[423,923],[463,872],[480,872],[488,917]],'#d2ceba');
- poly(c,[[438,929],[471,884],[481,890],[474,934]],'#b5b8af');
+ poly(c,[[423,923],[463,872],[480,872],[488,917]],'#cfcab6');
+ poly(c,[[438,929],[471,884],[481,890],[474,934]],'#aeb3ae');
  // The access road continues south between the two lower buildings.
- rr(c,garageAccess.x-9,garageAccess.y,garageAccess.w+18,garageAccess.h,4,'#d2ceba');
- rr(c,garageAccess.x,garageAccess.y,garageAccess.w,garageAccess.h,3,'#b5b8af');
+ rr(c,garageAccess.x-9,garageAccess.y,garageAccess.w+18,garageAccess.h,4,'#cfcab6');
+ rr(c,garageAccess.x,garageAccess.y,garageAccess.w,garageAccess.h,3,'#aeb3ae');
+ for(const [i,y]of [1000,1048,1096,1144].entries()){c.strokeStyle='#e8e4d2';c.lineWidth=1.5;c.strokeRect(garageAccess.x+5,y-4,28,45);if(i!==2)parkedCar(garageAccess.x+9,y,['#c0af7d','#7898a8','#b18a76','#8da28b'][i]);}
  c.strokeStyle='#ede8d5';c.lineWidth=1.5;c.beginPath();c.moveTo(garageAccess.x+4,garageAccess.y+36);c.lineTo(garageAccess.x+4,garageAccess.y+garageAccess.h-5);c.moveTo(garageAccess.x+garageAccess.w-4,garageAccess.y+36);c.lineTo(garageAccess.x+garageAccess.w-4,garageAccess.y+garageAccess.h-5);c.stroke();
  c.save();c.translate(1034,585);c.rotate(-Math.PI/2);text(c,'Chemin du Bocage',0,0,12,'#999a81');c.restore();
  for(const b of buildings){if(b.school)continue;
@@ -577,7 +581,7 @@ function outdoorGround(){const c=ctx;
  }
  for(const [x,y]of [[980,225],[985,360],[1000,490],[1048,730]])parkedCar(x,y,'#a1b1af');
  // Small shelter and crossing beside the school, aligned with the diagonal road.
- rr(c,553,233,34,9,2,'#8d9d8a');rr(c,557,238,3,27,1,'#80938a');rr(c,580,238,3,27,1,'#80938a');
+ {const p=roadPoint(-135,60);rr(c,p.x-17,p.y-30,34,9,2,'#8d9d8a');rr(c,p.x-13,p.y-25,3,27,1,'#80938a');rr(c,p.x+10,p.y-25,3,27,1,'#80938a');}
 
  bench(758,665);bench(1315,882);flowers(760,420);flowers(1048,620);flowers(288,812);
  // Carved pillar and bike racks echo the provided school facade photograph.
@@ -902,17 +906,23 @@ function movePlayer(dx,dy){
  for(const [ax,ay]of [[dx,0],[0,dy]]){const x=player.x+ax,y=player.y+ay;if(walkable(x,y)){player.x=x;player.y=y;}else if(scene==='outside'&&!roadAllowed(x,y)&&(ax||ay)){roadWarning=1.2;if(time-(movePlayer.warned||-10)>4){toast('⚠ Traverse uniquement au passage piéton, quand le feu est vert.');movePlayer.warned=time;}}}
 }
 function drawRoadGround(){const c=ctx;
+ // The lane beside the school runs straight along the road, behind a green strip (satellite view).
+ // Both ends curve back onto the Grand-Lancy road (near the bus stop, and at the Pampres junction); the road is drawn over them.
+ // The Pampres street bends up to the same junction, which stays inside the map.
+ const pampres=()=>{const j=roadPoint(505,0);c.beginPath();c.moveTo(1385,933);c.lineTo(250,933);c.quadraticCurveTo(140,933,j.x,j.y);};
+ c.lineCap='butt';for(const [width,color]of [[48,'#cfcab6'],[38,'#aeb3ae']]){c.strokeStyle=color;c.lineWidth=width;pampres();c.stroke();}
+ const lanePath=()=>{const a=roadPoint(-255,0),c1=roadPoint(-210,88),b=roadPoint(-165,88),e=roadPoint(395,88),c2=roadPoint(445,88),f=roadPoint(495,0);c.beginPath();c.moveTo(a.x,a.y);c.quadraticCurveTo(c1.x,c1.y,b.x,b.y);c.lineTo(e.x,e.y);c.quadraticCurveTo(c2.x,c2.y,f.x,f.y);};
+ c.lineCap='butt';c.lineJoin='round';for(const [width,color]of [[34,'#ddd8c7'],[25,'#c3c6bb']]){c.strokeStyle=color;c.lineWidth=width;lanePath();c.stroke();}
+ c.lineCap='round';c.strokeStyle='#b7cf9a';c.lineWidth=13;c.beginPath();const g0=roadPoint(-125,57),g1=roadPoint(370,57);c.moveTo(g0.x,g0.y);c.lineTo(g1.x,g1.y);c.stroke();
+ for(let s=-115;s<365;s+=46){if(Math.abs(s)<60)continue;const p=roadPoint(s,57);ellipse(c,p.x,p.y-3,9,6,'#93b27c');ellipse(c,p.x+3,p.y-6,6,4,'#a9c48e');}
+ for(let i=0;i<4;i++){const p=roadPoint(250+i*44,99);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty,road.tx)-Math.PI/2);c.strokeStyle='#f8f3df';c.lineWidth=1.5;c.strokeRect(-13,-22,26,44);parkedCar(-10,-18,['#b18a76','#7898a8','#c0af7d','#8da28b'][i]);c.restore();}
  c.save();c.translate(road.x,road.y);c.transform(road.nx,road.ny,road.tx,road.ty,0,0);
  rr(c,-42,-800,84,1700,0,'#d5d1bd');rr(c,-27,-800,54,1700,0,'#a4aba8');
  c.setLineDash([18,15]);c.strokeStyle='#eee9d7';c.lineWidth=2;c.beginPath();c.moveTo(0,-800);c.lineTo(0,900);c.stroke();c.setLineDash([]);
  for(let s=-18;s<=18;s+=9)rr(c,-27,s,54,5,0,'#f3d875');
  c.strokeStyle='#faf3dc';c.lineWidth=3;for(const s of [-35,35]){c.beginPath();c.moveTo(-27,s);c.lineTo(27,s);c.stroke();}
  c.restore();
- // Separate private access lane between the main road and the school.
- c.lineJoin='round';c.lineCap='round';const lane=[[655,170],[570,285],[525,330],[492,380],[398,440],[378,545],[295,635],[300,668]];
- for(const [width,color]of [[34,'#ddd8c7'],[25,'#bfc2b7']]){c.strokeStyle=color;c.lineWidth=width;c.beginPath();lane.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();}
- for(let i=0;i<4;i++){const x=411-i*5,y=465+i*39;c.strokeStyle='#f8f3df';c.lineWidth=1.5;c.strokeRect(x-3,y-3,26,37);parkedCar(x,y,['#b18a76','#7898a8','#c0af7d','#8da28b'][i]);}
- text(c,'Voie privée · parking',475,612,11,'#687765');
+ const lbl=roadPoint(150,88);c.save();c.translate(lbl.x,lbl.y+4);c.rotate(-.885);text(c,'Voie privée',0,0,11,'#687765');c.restore();
  c.save();c.translate(270,520);c.rotate(-.885);text(c,'Route du Grand-Lancy',0,0,12,'#64726b');c.restore();
  rr(c,78,170,280,145,35,'#bed39f');text(c,'Le parc',215,185,15,'#567851','600');
 }
