@@ -47,14 +47,14 @@ const missions=[
 // Layout follows ecole_highlight.png, including its viewing direction.
 // Footprint IDs correspond to visible groups, not to invented street addresses.
 const buildings=[
- {ref:'school-front',x:440,y:440,w:190,h:90,height:65,color:'#ac815c',school:true,name:'École de Belle-Cour',type:'school'},
- {ref:'school-spine',x:575,y:340,w:80,h:145,height:68,color:'#ac815c',school:true,name:'',type:'decor'},
- {ref:'school-rear',x:610,y:285,w:105,h:85,height:57,color:'#ac815c',school:true,name:'',type:'decor'},
- {ref:'right-north-a',x:800,y:92,w:80,h:60,height:57,color:'#ecd4b5',name:'',type:'decor'},
- {ref:'right-north-b',x:895,y:92,w:85,h:60,height:57,color:'#edd6b9',name:'',type:'decor'},
- {ref:'right-row-1',x:800,y:212,w:170,h:65,height:65,color:'#ead5b7',name:'',type:'decor'},
- {ref:'right-row-2',x:800,y:340,w:180,h:75,height:65,color:'#f1dcc1',name:'Chez toi',type:'home'},
- {ref:'right-row-3',x:810,y:475,w:185,h:80,height:65,color:'#efdabe',name:'Chez Inès',type:'inesHome'},
+ {ref:'school-front',x:450,y:468,w:200,h:72,height:62,color:'#ac815c',school:true,name:'École de Belle-Cour',type:'school'},
+ {ref:'school-spine',x:565,y:372,w:95,h:96,height:66,color:'#ac815c',school:true,name:'',type:'decor'},
+ {ref:'school-rear',x:600,y:258,w:62,h:114,height:58,color:'#ac815c',school:true,name:'',type:'decor'},
+ {ref:'right-north-a',x:810,y:92,w:80,h:55,height:57,color:'#ecd4b5',name:'',type:'decor'},
+ {ref:'right-north-b',x:900,y:92,w:90,h:55,height:57,color:'#edd6b9',name:'',type:'decor'},
+ {ref:'right-row-1',x:790,y:215,w:200,h:55,height:62,color:'#ead5b7',name:'',type:'decor'},
+ {ref:'right-row-2',x:820,y:368,w:170,h:55,height:62,color:'#f1dcc1',name:'Chez toi',type:'home'},
+ {ref:'right-row-3',x:820,y:520,w:170,h:55,height:62,color:'#efdabe',name:'Chez Inès',type:'inesHome'},
  {ref:'east-1-a',x:1050,y:150,w:95,h:70,height:62,color:'#ead0b1',name:'',type:'decor'},
  {ref:'east-1-b',x:1170,y:165,w:100,h:70,height:62,color:'#efd8ba',name:'',type:'decor'},
  {ref:'east-2-a',x:1060,y:295,w:95,h:75,height:62,color:'#e6caaa',name:'',type:'decor'},
@@ -63,9 +63,9 @@ const buildings=[
  {ref:'east-3-b',x:1200,y:455,w:100,h:75,height:62,color:'#ead2b2',name:'',type:'decor'},
  {ref:'east-4-a',x:1080,y:585,w:105,h:75,height:62,color:'#e7caaa',name:'',type:'decor'},
  {ref:'east-4-b',x:1220,y:600,w:105,h:75,height:62,color:'#ead4b6',name:'',type:'decor'},
- {ref:'foreground-west',x:300,y:700,w:140,h:85,height:68,color:'#ead6b8',name:'',type:'decor'},
- {ref:'foreground-centre',x:440,y:700,w:240,h:85,height:68,color:'#e7caac',name:'Chez Tom',type:'tomHome'},
- {ref:'foreground-east',x:680,y:700,w:330,h:85,height:68,color:'#ebd3b4',name:'',type:'decor'},
+ {ref:'foreground-west',x:300,y:700,w:134,h:85,height:68,color:'#ead6b8',name:'',type:'decor'},
+ {ref:'foreground-centre',x:446,y:700,w:228,h:85,height:68,color:'#e7caac',name:'Chez Tom',type:'tomHome'},
+ {ref:'foreground-east',x:686,y:700,w:324,h:85,height:68,color:'#ebd3b4',name:'',type:'decor'},
  {ref:'terrace-a',x:1110,y:745,w:115,h:90,height:62,color:'#ebd6bc',flat:true,name:'',type:'decor'},
  {ref:'terrace-b',x:1245,y:760,w:125,h:90,height:62,color:'#e8d2b6',flat:true,name:'',type:'decor'},
  {ref:'pampres-flat',x:115,y:1062,w:290,h:98,height:55,color:'#d8bf92',wood:true,flat:true,concrete:true,name:'',type:'decor'},
@@ -84,7 +84,7 @@ const outside=[
 ];
 const schoolCourtyard={x:632,y:300,w:163,h:340};
 const fixtures=[
- {id:'pingpong',x:553,y:578,w:78,h:42},
+ {id:'pingpong',x:563,y:578,w:78,h:42},
  {id:'slide',x:438,y:560,w:65,h:78},
  {id:'garage',x:625,y:850,w:105,h:62,roof:'tiles',entrance:'left',ramp:{x:465,y:854,w:160,h:58}},
  {id:'preau',x:650,y:405,w:100,h:80,height:38}
@@ -92,12 +92,13 @@ const fixtures=[
 const trees=[];
 let seed=37;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
 // Two small paths leave the lane along the road: behind the school (from the bus-stop square) and in front of it.
-const lanes=[{x:736,y:180,w:30,h:470,paved:true},{x:1010,y:150,w:35,h:755,paved:true},{x:262,y:650,w:1108,h:35,paved:true},{x:200,y:870,w:1180,h:35},{x:612,y:172,w:400,h:22,paved:true}];
+const laneXEarly=y=>573.6-.364*y;
+const lanes=[{x:736,y:180,w:30,h:470,paved:true},{x:1010,y:150,w:35,h:755,paved:true},{x:330,y:650,w:1040,h:35,paved:true},{x:200,y:870,w:1180,h:35},{x:612,y:172,w:400,h:22,paved:true}];
 for(let i=0;i<200;i++){
  const x=85+rnd()*1340,y=125+rnd()*935;
  if(x<375&&y<360)continue;
  if(x>545&&x<785&&y>790&&y<1010)continue;
- if(Math.abs(x-(811-.817*y))<62)continue;
+ if(Math.abs(x-laneXEarly(y))<58)continue;
  if(y>880&&y<1020)continue;
  if(x<620&&y>=1020&&y<1050)continue;
  if(x<300&&y>690&&y<960)continue;
@@ -106,7 +107,7 @@ for(let i=0;i<200;i++){
  if(buildings.some(b=>x>b.x-32&&x<b.x+b.w+40&&y>b.y-15&&y<b.y+b.h+40))continue;
  if(lanes.some(l=>x>l.x-22&&x<l.x+l.w+22&&y>l.y-25&&y<l.y+l.h+25))continue;
  if(x>390&&x<780&&y>235&&y<620)continue;
- if(Math.abs(x-(697-.817*y))<70)continue;
+ if(Math.abs(x-(480-.364*y))<66)continue;
  if(outside.some(n=>Math.hypot(n.x-x,n.y-y)<55))continue;
  trees.push({x,y,s:.42+rnd()*.28,type:rnd()>.88?1:0,tone:Math.floor(rnd()*4)});
 }
@@ -425,7 +426,16 @@ function building(b){
  if(b.type!=='decor'){rr(c,doorX-12,y+h-33,24,33,1,school?'#c5a249':'#6d7768');rr(c,doorX-9,y+h-29,18,22,1,'#8da29b');rr(c,doorX-21,y+h,42,6,2,'#c8c6b3');}
  // Roof orientation follows each footprint in the selected oblique reference.
  const roofY=y-hh,rise=school?13:17;
- if(b.flat){
+ if(school){
+ // Hip roofs: each school wing slopes on all four sides, as seen from above.
+ const x0=x-6,x1=x+w+7,y0=roofY,y1=top,s=Math.min(w,h)/2;
+ let L,R;if(w>=h){const m=(y0+y1)/2-rise;L=[x+s,m];R=[x+w-s,m];
+  poly(c,[[x0,y0],[x1,y0],R,L],'#d39a7c');poly(c,[[x0,y0],[x0,y1],L],'#cf9273');poly(c,[[x1,y0],[x1,y1],R],'#b8785b');poly(c,[[x0,y1],[x1,y1],R,L],'#c78667');}
+ else{const m=(x0+x1)/2;L=[m,y0+s-rise];R=[m,y1-s-rise];
+  poly(c,[[x0,y0],[x1,y0],L],'#d39a7c');poly(c,[[x0,y0],[x0,y1],R,L],'#cf9273');poly(c,[[x1,y0],[x1,y1],R,L],'#b8785b');poly(c,[[x0,y1],[x1,y1],R],'#c78667');}
+ c.strokeStyle='#a5694d';c.lineWidth=1.6;c.beginPath();c.moveTo(x0,y0);c.lineTo(...L);c.lineTo(...R);c.lineTo(x1,y0);c.moveTo(x0,y1);c.lineTo(...L);c.moveTo(x1,y1);c.lineTo(...R);c.stroke();
+ c.strokeStyle='#ae735333';c.lineWidth=.8;for(let yy=y0+6;yy<y1;yy+=7){c.beginPath();c.moveTo(x0+2,yy);c.lineTo(x1-2,yy);c.stroke();}
+ }else if(b.flat){
  rr(c,x-4,roofY,w+8,h,2,b.wood?'#bea580':b.concrete?'#b5beb8':'#bb8c70');rr(c,x+6,roofY+8,w-12,h-17,1,b.wood?'#dcc49c':b.concrete?'#e1e3da':'#b7ada0');
  if(b.wood){for(let sy=roofY+10,i=0;sy<top-10;sy+=5,i++){rr(c,x+7,sy,w-14,2,0,i%3===0?'#ead4ae':'#e2cba5');c.strokeStyle='#bca17b88';c.lineWidth=.65;c.beginPath();c.moveTo(x+7,sy+3);c.lineTo(x+w-7,sy+3);c.stroke();}}
  if(b.concrete){for(let sx=x+26;sx<x+w-30;sx+=45){rr(c,sx,roofY+28,31,33,1,'#a4b4b3','#7e9392');rr(c,sx+5,roofY+32,20,25,1,'#d3dfda');}}else rr(c,x+18,roofY+22,w-36,h-42,1,'#455769');c.strokeStyle=b.wood?'#b89d78':'#a7b0ae';c.lineWidth=2;c.strokeRect(x+6,roofY+8,w-12,h-17);
@@ -445,7 +455,6 @@ function building(b){
  c.strokeStyle='#ac7155';c.lineWidth=2;c.beginPath();c.moveTo(x+ridge,roofY-rise);c.lineTo(x+ridge,top-rise);c.stroke();
  }
  if(!school){rr(c,x+w*.7,y-hh+h*.32-19,7,17,1,'#9b8b77');rr(c,x+w*.7-2,y-hh+h*.32-21,11,4,1,'#b3a38b');}
- if(b.ref==='school-spine'){poly(c,[[x+w,444],[x+w+12,438],[x+w+12,473],[x+w,479]],'#d6b254');poly(c,[[x+w+2,446],[x+w+10,442],[x+w+10,470],[x+w+2,474]],'#72988d');}
  if(b.type==='school'){rr(c,x-7,top+30,w+14,12,1,'#e9c648');text(c,'ÉCOLE DE BELLE-COUR',doorX,top+39,7,'#5b5936','700');}
 }
 function character(c,x,y,a,moving=false,portrait=false){
@@ -553,11 +562,11 @@ function outdoorGround(){const c=ctx;
  for(const [i,x]of [818,858,910,950].entries()){c.save();c.translate(x,163);c.rotate(Math.PI/2);parkedCar(-10,-18,['#c9c9c4','#b5574b','#c9c9c4','#7f9a8c'][i]);c.restore();}
  rr(c,1000,176,9,13,2,'#5c84b8');rr(c,1003,179,3,7,1,'#f4f1e6');rr(c,1003,189,2,10,0,'#7d8a85');
  // In front of the school: bike racks and a large boulder at the corner of the play area (photo).
- c.strokeStyle='#8e9c98';c.lineWidth=2;for(let i=0;i<4;i++){c.beginPath();c.arc(318+i*15,632,5,Math.PI,0);c.lineTo(323+i*15,640);c.moveTo(313+i*15,632);c.lineTo(313+i*15,640);c.stroke();}
- ellipse(c,409,644,17,9,'#9c9a8f55');ellipse(c,406,639,15,10,'#ddd7c9');ellipse(c,402,636,7,4,'#f1ede3');
- rr(c,308,606,68,4,1,'#9aa3a0');rr(c,311,610,2,30,0,'#9aa3a0');rr(c,371,610,2,30,0,'#9aa3a0');rr(c,306,603,72,9,2,'#eef0ec');rr(c,306,610,72,2,0,'#c9cfcb');
+ c.strokeStyle='#8e9c98';c.lineWidth=2;for(let i=0;i<4;i++){c.beginPath();c.arc(380+i*14,632,5,Math.PI,0);c.lineTo(385+i*14,640);c.moveTo(375+i*14,632);c.lineTo(375+i*14,640);c.stroke();}
+ ellipse(c,445,652,15,8,'#9c9a8f55');ellipse(c,442,647,13,9,'#ddd7c9');ellipse(c,439,644,6,4,'#f1ede3');
+ rr(c,370,606,62,4,1,'#9aa3a0');rr(c,373,610,2,30,0,'#9aa3a0');rr(c,427,610,2,30,0,'#9aa3a0');rr(c,368,603,66,9,2,'#eef0ec');rr(c,368,610,66,2,0,'#c9cfcb');
  // Two small play areas: the annotated table and slide are directly in front of the school.
- rr(c,417,548,220,96,13,'#c7c6b0');rr(c,424,553,206,86,10,'#ddd5bb');
+ rr(c,417,548,220,96,13,'#b9806c');rr(c,424,553,206,86,10,'#c98772');
  // Continuous side courtyard from the rear play area to the front gate.
  rr(c,schoolCourtyard.x,schoolCourtyard.y,schoolCourtyard.w,schoolCourtyard.h,4,'#c8c4b5');
  rr(c,632,528,163,112,4,'#cbc6b7');
@@ -594,14 +603,13 @@ function outdoorGround(){const c=ctx;
  for(const b of buildings){if(b.school||b.ref.startsWith('right-north'))continue;
  for(let sx=b.x+13;sx<b.x+b.w-10;sx+=gardenSize.spacing){
  const doorX=b.x+b.w/2;if(b.type!=='decor'&&sx<doorX+17&&sx+gardenSize.width>doorX-17)continue;
- rr(c,sx,b.y+b.h+gardenSize.offset,gardenSize.width,gardenSize.depth,3,'#bdcda2');
- rr(c,sx,b.y+b.h+gardenSize.offset+gardenSize.depth-2,gardenSize.width,4,2,'#91a77a');
+ rr(c,sx,b.y+b.h+gardenSize.offset,gardenSize.width,gardenSize.depth,3,'#bdcda2');c.strokeStyle='#86a46e';c.lineWidth=2;c.strokeRect(sx+1,b.y+b.h+gardenSize.offset+1,gardenSize.width-2,gardenSize.depth-2);
+ rr(c,sx,b.y+b.h+gardenSize.offset+gardenSize.depth-2,gardenSize.width,4,2,'#7f9d68');
  }
  if(b.type!=='decor')rr(c,b.x+b.w/2-11,b.y+b.h+5,22,gardenSize.offset+gardenSize.depth+4,2,'#ded9c6');
  }
  for(const [x,y]of [[980,225],[985,360],[1000,490],[1048,730]])parkedCar(x,y,'#a1b1af');
  // Small shelter and crossing beside the school, aligned with the diagonal road.
- {const p=roadPoint(-135,60);rr(c,p.x-17,p.y-30,34,9,2,'#8d9d8a');rr(c,p.x-13,p.y-25,3,27,1,'#80938a');rr(c,p.x+10,p.y-25,3,27,1,'#80938a');}
 
  bench(758,665);bench(1315,882);flowers(760,420);flowers(1048,620);flowers(288,812);
  // Carved pillar and bike racks echo the provided school facade photograph.
@@ -899,10 +907,13 @@ function drawSchoolHall(){const c=ctx;rr(c,370,310,770,65,5,'#d9dfc2');text(c,'B
 
 missions.push(...[{"id":"story","icon":"📖","title":"Les petites histoires","skill":"Lire et comprendre","who":"school"},{"id":"coloring","icon":"🎨","title":"Les cahiers de couleurs","skill":"Créer et colorier","who":"school"},{"id":"revision-fr","icon":"📕","title":"Mon livre de français","skill":"Français · réviser","who":"school"},{"id":"revision-de","icon":"📗","title":"Mon livre d’allemand","skill":"Allemand · réviser","who":"school"},{"id":"revision-math","icon":"📘","title":"Mon livre de maths","skill":"Maths · réviser","who":"school"},{"id":"basket","icon":"🏀","title":"Trois paniers pour l’équipe","skill":"Sport · précision","who":"school"},{"id":"movements","icon":"🤸","title":"Le circuit des mouvements","skill":"Sport · coordination","who":"school"},{"id":"melody","icon":"🎹","title":"La petite mélodie","skill":"Musique · mémoire","who":"school"},{"id":"rhythm","icon":"🥁","title":"Le jeu des rythmes","skill":"Musique · durées","who":"school"},{"id":"hopscotch","icon":"🔢","title":"À toi la marelle","skill":"Cour · nombres et ordre","who":"school"}]);
 // Road coordinates: s runs along Grand-Lancy, d runs across it toward the school.
-const road={x:411,y:350,tx:-.633,ty:.774,nx:.774,ny:.633,half:27,crossHalf:22};
+// The Grand-Lancy road runs about 20 degrees from vertical, as on the satellite view; its centre line is x = 480 - 0.364 y.
+// s=0 is the pedestrian crossing, level with the bike shelter in front of the school.
+const road={x:262,y:600,tx:-.342,ty:.94,nx:.94,ny:.342,half:27,crossHalf:22};
+const laneX=y=>573.6-.364*y; // centre of the private lane, 88 from the road centre
 const traffic={phase:'drive',remaining:0,cars:[],spawn:1,serial:0};
 let roadWarning=0;
-const parkGames=[{id:'swing',x:315,y:245,name:'La balançoire',icon:'🌿'}, {id:'playhouse',x:210,y:245,name:'La cabane et son toboggan',icon:'🛝'}, {id:'roundabout',x:105,y:245,name:'Le tourniquet',icon:'🎠'}];
+const parkGames=[{id:'swing',x:296,y:245,name:'La balançoire',icon:'🌿'}, {id:'playhouse',x:198,y:245,name:'La cabane et son toboggan',icon:'🛝'}, {id:'roundabout',x:100,y:245,name:'Le tourniquet',icon:'🎠'}];
 function roadPoint(s,d=0){return {x:road.x+s*road.tx+d*road.nx,y:road.y+s*road.ty+d*road.ny};}
 function roadCoords(x,y){const dx=x-road.x,dy=y-road.y;return {s:dx*road.tx+dy*road.ty,d:dx*road.nx+dy*road.ny};}
 function onRoad(x,y){return Math.abs(roadCoords(x,y).d)<road.half+10;}
@@ -911,13 +922,13 @@ function crossingEntities(){return [-1,1].map(side=>({id:'crossing'+side,...road
 function requestCrossing(){if(traffic.phase!=='drive')return;traffic.phase='waiting';traffic.remaining=3;toast('Demande enregistrée. Attends le feu piéton vert.');}
 function updateTraffic(dt){
  traffic.spawn-=dt;
- if(traffic.spawn<=0){traffic.spawn=5+(traffic.serial%3)*2;const direction=traffic.serial++%2?1:-1;traffic.cars.push({s:-direction*560,direction,color:['#7298b0','#d39069','#90a678'][traffic.serial%3]});}
+ if(traffic.spawn<=0){traffic.spawn=5+(traffic.serial%3)*2;const direction=traffic.serial++%2?1:-1;traffic.cars.push({s:-direction*900,direction,color:['#7298b0','#d39069','#90a678'][traffic.serial%3]});}
  for(const direction of [-1,1]){let front=null;for(const car of traffic.cars.filter(c=>c.direction===direction).sort((a,b)=>direction*(b.s-a.s))){let next=car.s+direction*90*dt;
   if(traffic.phase!=='drive'&&car.s*direction<=-58)next=direction*Math.min(next*direction,-58);
   if(front)next=direction*Math.min(next*direction,front.s*direction-58);
   car.s=next;front=car;
  }}
- traffic.cars=traffic.cars.filter(c=>Math.abs(c.s)<650);
+ traffic.cars=traffic.cars.filter(c=>Math.abs(c.s)<950);
  if(traffic.phase==='waiting'){traffic.remaining=Math.max(0,traffic.remaining-dt);if(traffic.remaining<.000001&&!traffic.cars.some(c=>Math.abs(c.s)<58)){traffic.phase='walk';traffic.remaining=10;toast('🟢 À toi ! Tu as 10 secondes pour traverser.');}}
  else if(traffic.phase==='walk'){traffic.remaining=Math.max(0,traffic.remaining-dt);if(traffic.remaining===0){traffic.phase='clear';}}
  else if(traffic.phase==='clear'&&!(scene==='outside'&&onRoad(player.x,player.y))){traffic.phase='drive';}
@@ -927,28 +938,43 @@ function movePlayer(dx,dy){
 }
 function drawRoadGround(){const c=ctx;
  // The lane beside the school runs straight along the road, behind a green strip (satellite view).
- // Both ends curve back onto the Grand-Lancy road (near the bus stop, and at the Pampres junction); the road is drawn over them.
- // The Pampres street bends up to the same junction, which stays inside the map.
- const pampres=()=>{const j=roadPoint(505,0);c.beginPath();c.moveTo(1385,933);c.lineTo(250,933);c.quadraticCurveTo(140,933,j.x,j.y);};
- c.lineCap='butt';for(const [width,color]of [[48,'#cfcab6'],[38,'#aeb3ae']]){c.strokeStyle=color;c.lineWidth=width;pampres();c.stroke();}
- const lanePath=()=>{const a=roadPoint(-255,0),c1=roadPoint(-210,88),b=roadPoint(-165,88),e=roadPoint(395,88),c2=roadPoint(445,88),f=roadPoint(495,0);c.beginPath();c.moveTo(a.x,a.y);c.quadraticCurveTo(c1.x,c1.y,b.x,b.y);c.lineTo(e.x,e.y);c.quadraticCurveTo(c2.x,c2.y,f.x,f.y);};
+ // At the top it curves onto the road near the bus stop; at the bottom it meets the Pampres street,
+ // which runs straight to the road. The road and the Pampres are drawn over these ends.
+ const lanePath=()=>{const a=roadPoint(-516,0),c1=roadPoint(-471,88),b=roadPoint(-426,88);c.moveTo(a.x,a.y);c.quadraticCurveTo(c1.x,c1.y,b.x,b.y);c.lineTo(laneX(933),933);};
  // The paths in front of and behind the school, the courtyard path and the lane on the right share its surface.
- const paths=()=>{lanePath();c.moveTo(580,184);c.lineTo(1027,183);for(const [x0,y0,x1,y1]of [[1027,150,1027,880],[751,183,751,667],[262,667,1370,667]]){c.moveTo(x0,y0);c.lineTo(x1,y1);}};
+ const paths=()=>{c.beginPath();lanePath();c.moveTo(laneX(186)-4,184);c.lineTo(1027,183);for(const [x0,y0,x1,y1]of [[1027,150,1027,880],[751,183,751,667],[laneX(667),667,1370,667]]){c.moveTo(x0,y0);c.lineTo(x1,y1);}};
+ // Between the lane and the school, from top to bottom (photos): the bus stop, the wide steps down to the school, the waste containers.
+ rr(c,452,214,112,198,6,'#ddd8c7');
  c.lineCap='round';c.lineJoin='round';for(const [width,color]of [[34,'#ddd8c7'],[25,'#c3c6bb']]){c.strokeStyle=color;c.lineWidth=width;paths();c.stroke();}
- text(c,'20',598,232,12,'#eef0e6','700');
- c.lineCap='round';c.strokeStyle='#b7cf9a';c.lineWidth=13;c.beginPath();const g0=roadPoint(-125,57),g1=roadPoint(370,57);c.moveTo(g0.x,g0.y);c.lineTo(g1.x,g1.y);c.stroke();
- for(let s=-115;s<365;s+=46){if(Math.abs(s)<60)continue;const p=roadPoint(s,57);ellipse(c,p.x,p.y-3,9,6,'#93b27c');ellipse(c,p.x+3,p.y-6,6,4,'#a9c48e');}
- // Cars park in a row on the road side of the lane, from the school down to the long building (satellite).
- for(let i=0;i<6;i++){const p=roadPoint(140+i*44,79);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty,road.tx)-Math.PI/2);c.strokeStyle='#e8e4d2';c.lineWidth=1.2;c.strokeRect(-13,-22,26,44);if(i!==3)parkedCar(-10,-18,['#b18a76','#7898a8','#c0af7d','#8da28b','#c9c9c4','#5d6b78'][i]);c.restore();}
+ rr(c,456,218,104,190,4,'#c3c6bb');
+ // Bus stop: shelter and the Belle-Cour sign.
+ rr(c,512,238,46,4,1,'#9aa3a0');rr(c,515,241,2,16,0,'#80938a');rr(c,553,241,2,16,0,'#80938a');rr(c,510,232,50,8,2,'#8d9d8a');
+ rr(c,563,222,2,30,0,'#7d8a85');rr(c,557,214,14,10,1,'#fbfaf5');rr(c,557,214,14,4,1,'#d24a3a');
+ // Wide steps going down towards the school (east), behind a green fence with an opening.
+ for(let k=0;k<7;k++){const x=505+k*13;rr(c,x,264,13,40,0,['#e8e3d6','#ddd8ca','#e3ded0','#d8d2c3','#ded9cb','#d3cdbd','#d9d3c4'][k]);c.strokeStyle='#bdb7a6';c.lineWidth=1;c.beginPath();c.moveTo(x,264);c.lineTo(x,304);c.stroke();}
+ c.strokeStyle='#3f6f50';c.lineWidth=1.5;c.beginPath();c.moveTo(501,260);c.lineTo(501,276);c.moveTo(501,292);c.lineTo(501,308);c.lineTo(562,308);c.moveTo(501,260);c.lineTo(562,260);c.stroke();
+ c.lineWidth=1.8;for(const [x,y]of [[501,262],[501,272],[501,298],[501,308],[514,308],[528,308],[542,308],[556,308],[514,260],[528,260],[542,260],[556,260]]){c.beginPath();c.moveTo(x,y);c.lineTo(x,y-9);c.stroke();}
+ c.lineWidth=1;c.beginPath();c.moveTo(501,253);c.lineTo(501,267);c.moveTo(501,283);c.lineTo(501,299);c.lineTo(562,299);c.moveTo(501,251);c.lineTo(562,251);c.stroke();
+ // Waste containers close to the school: two columns of four with blue lids, the large yellow one and the red hydrant.
+ rr(c,470,330,28,20,2,'#e2b33c');rr(c,470,325,28,7,2,'#f0c85a');rr(c,477,335,13,7,1,'#a8522f');
+ for(const x of [530,508])for(let k=0;k<4;k++){const y=332+k*18;rr(c,x+2,y+14,16,4,1,'#9c9a8f55');rr(c,x,y,16,15,2,'#3d4644');rr(c,x,y-4,16,6,2,'#5d86b8');rr(c,x+5,y-6,6,3,1,'#8e9a98');}
+ rr(c,482,384,5,12,2,'#c8442f');ellipse(c,484.5,384,3.5,2.5,'#e0614a');
+ text(c,'20',548,198,11,'#eef0e6','700');
+ const pampres=()=>{c.beginPath();c.moveTo(1385,933);c.lineTo(110,933);};
+ c.lineCap='butt';for(const [width,color]of [[48,'#cfcab6'],[38,'#aeb3ae']]){c.strokeStyle=color;c.lineWidth=width;pampres();c.stroke();}
+ c.lineCap='round';c.strokeStyle='#b7cf9a';c.lineWidth=13;c.beginPath();for(const [s0,s1]of [[-400,-40],[40,300]]){const g0=roadPoint(s0,57),g1=roadPoint(s1,57);c.moveTo(g0.x,g0.y);c.lineTo(g1.x,g1.y);}c.stroke();
+ for(let s=-390;s<300;s+=46){if(Math.abs(s)<45)continue;const p=roadPoint(s,57);ellipse(c,p.x,p.y-3,9,6,'#93b27c');ellipse(c,p.x+3,p.y-6,6,4,'#a9c48e');}
+ // Cars park in a row on the road side of the lane, alongside the school (satellite).
+ for(let i=0;i<5;i++){const p=roadPoint(-250+i*44,79);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty,road.tx)-Math.PI/2);c.strokeStyle='#e8e4d2';c.lineWidth=1.2;c.strokeRect(-13,-22,26,44);if(i!==2)parkedCar(-10,-18,['#b18a76','#7898a8','#c0af7d','#8da28b','#c9c9c4'][i]);c.restore();}
  c.save();c.translate(road.x,road.y);c.transform(road.nx,road.ny,road.tx,road.ty,0,0);
- rr(c,-42,-800,84,1700,0,'#d5d1bd');rr(c,-27,-800,54,1700,0,'#a4aba8');
- c.setLineDash([18,15]);c.strokeStyle='#eee9d7';c.lineWidth=2;c.beginPath();c.moveTo(0,-800);c.lineTo(0,900);c.stroke();c.setLineDash([]);
+ rr(c,-42,-1150,84,2100,0,'#d5d1bd');rr(c,-27,-1150,54,2100,0,'#a4aba8');
+ c.setLineDash([18,15]);c.strokeStyle='#eee9d7';c.lineWidth=2;c.beginPath();c.moveTo(0,-1150);c.lineTo(0,950);c.stroke();c.setLineDash([]);
  for(let s=-18;s<=18;s+=9)rr(c,-27,s,54,5,0,'#f3d875');
  c.strokeStyle='#faf3dc';c.lineWidth=3;for(const s of [-35,35]){c.beginPath();c.moveTo(-27,s);c.lineTo(27,s);c.stroke();}
  c.restore();
- const lbl=roadPoint(55,88);c.save();c.translate(lbl.x,lbl.y+4);c.rotate(-.885);text(c,'Voie privée',0,0,11,'#687765');c.restore();
- c.save();c.translate(270,520);c.rotate(-.885);text(c,'Route du Grand-Lancy',0,0,12,'#64726b');c.restore();
- rr(c,78,170,280,145,35,'#bed39f');text(c,'Le parc',215,185,15,'#567851','600');
+ const along=Math.atan2(road.ty,road.tx)-Math.PI;const lbl=roadPoint(-150,88);c.save();c.translate(lbl.x,lbl.y+4);c.rotate(along);text(c,'Voie privée',0,0,11,'#687765');c.restore();
+ {const p=roadPoint(-250,0);c.save();c.translate(p.x+3,p.y);c.rotate(along);text(c,'Route du Grand-Lancy',0,0,12,'#64726b');c.restore();}
+ rr(c,72,170,262,145,35,'#bed39f');text(c,'Le parc',200,185,15,'#567851','600');
 }
 function drawTraffic(){const c=ctx;
  for(const car of traffic.cars){const p=roadPoint(car.s,car.direction*14);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty*car.direction,road.tx*car.direction)-Math.PI/2);parkedCar(-10,-19,car.color);c.restore();}
