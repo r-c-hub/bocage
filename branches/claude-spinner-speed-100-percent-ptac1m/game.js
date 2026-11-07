@@ -955,10 +955,10 @@ function drawRoadGround(){const c=ctx;
  c.strokeStyle='#3f6f50';c.lineWidth=1.5;c.beginPath();c.moveTo(501,260);c.lineTo(501,276);c.moveTo(501,292);c.lineTo(501,308);c.lineTo(562,308);c.moveTo(501,260);c.lineTo(562,260);c.stroke();
  c.lineWidth=1.8;for(const [x,y]of [[501,262],[501,272],[501,298],[501,308],[514,308],[528,308],[542,308],[556,308],[514,260],[528,260],[542,260],[556,260]]){c.beginPath();c.moveTo(x,y);c.lineTo(x,y-9);c.stroke();}
  c.lineWidth=1;c.beginPath();c.moveTo(501,253);c.lineTo(501,267);c.moveTo(501,283);c.lineTo(501,299);c.lineTo(562,299);c.moveTo(501,251);c.lineTo(562,251);c.stroke();
- // Waste containers in a column: the large yellow one, then four with blue lids, and the red hydrant.
- rr(c,470,302,28,20,2,'#e2b33c');rr(c,470,297,28,7,2,'#f0c85a');rr(c,477,307,13,7,1,'#a8522f');
- for(let k=0;k<4;k++){const x=476,y=334+k*19;rr(c,x+2,y+14,16,4,1,'#9c9a8f55');rr(c,x,y,16,15,2,'#3d4644');rr(c,x,y-4,16,6,2,'#5d86b8');rr(c,x+5,y-6,6,3,1,'#8e9a98');}
- rr(c,503,392,5,12,2,'#c8442f');ellipse(c,505.5,392,3.5,2.5,'#e0614a');
+ // Waste containers close to the school: two columns of four with blue lids, the large yellow one and the red hydrant.
+ rr(c,470,330,28,20,2,'#e2b33c');rr(c,470,325,28,7,2,'#f0c85a');rr(c,477,335,13,7,1,'#a8522f');
+ for(const x of [530,508])for(let k=0;k<4;k++){const y=332+k*18;rr(c,x+2,y+14,16,4,1,'#9c9a8f55');rr(c,x,y,16,15,2,'#3d4644');rr(c,x,y-4,16,6,2,'#5d86b8');rr(c,x+5,y-6,6,3,1,'#8e9a98');}
+ rr(c,482,384,5,12,2,'#c8442f');ellipse(c,484.5,384,3.5,2.5,'#e0614a');
  text(c,'20',548,198,11,'#eef0e6','700');
  const pampres=()=>{c.beginPath();c.moveTo(1385,933);c.lineTo(110,933);};
  c.lineCap='butt';for(const [width,color]of [[48,'#cfcab6'],[38,'#aeb3ae']]){c.strokeStyle=color;c.lineWidth=width;pampres();c.stroke();}
