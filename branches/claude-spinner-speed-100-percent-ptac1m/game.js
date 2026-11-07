@@ -609,7 +609,7 @@ function outdoorGround(){const c=ctx;
  }
  for(const [x,y]of [[980,225],[985,360],[1000,490],[1048,730]])parkedCar(x,y,'#a1b1af');
  // Small shelter and crossing beside the school, aligned with the diagonal road.
- {const p=roadPoint(-135,60);rr(c,p.x-17,p.y-30,34,9,2,'#8d9d8a');rr(c,p.x-13,p.y-25,3,27,1,'#80938a');rr(c,p.x+10,p.y-25,3,27,1,'#80938a');}
+ {const p=sidePoint(-135,60);rr(c,p.x-17,p.y-30,34,9,2,'#8d9d8a');rr(c,p.x-13,p.y-25,3,27,1,'#80938a');rr(c,p.x+10,p.y-25,3,27,1,'#80938a');}
 
  bench(758,665);bench(1315,882);flowers(760,420);flowers(1048,620);flowers(288,812);
  // Carved pillar and bike racks echo the provided school facade photograph.
@@ -907,7 +907,10 @@ function drawSchoolHall(){const c=ctx;rr(c,370,310,770,65,5,'#d9dfc2');text(c,'B
 
 missions.push(...[{"id":"story","icon":"📖","title":"Les petites histoires","skill":"Lire et comprendre","who":"school"},{"id":"coloring","icon":"🎨","title":"Les cahiers de couleurs","skill":"Créer et colorier","who":"school"},{"id":"revision-fr","icon":"📕","title":"Mon livre de français","skill":"Français · réviser","who":"school"},{"id":"revision-de","icon":"📗","title":"Mon livre d’allemand","skill":"Allemand · réviser","who":"school"},{"id":"revision-math","icon":"📘","title":"Mon livre de maths","skill":"Maths · réviser","who":"school"},{"id":"basket","icon":"🏀","title":"Trois paniers pour l’équipe","skill":"Sport · précision","who":"school"},{"id":"movements","icon":"🤸","title":"Le circuit des mouvements","skill":"Sport · coordination","who":"school"},{"id":"melody","icon":"🎹","title":"La petite mélodie","skill":"Musique · mémoire","who":"school"},{"id":"rhythm","icon":"🥁","title":"Le jeu des rythmes","skill":"Musique · durées","who":"school"},{"id":"hopscotch","icon":"🔢","title":"À toi la marelle","skill":"Cour · nombres et ordre","who":"school"}]);
 // Road coordinates: s runs along Grand-Lancy, d runs across it toward the school.
-const road={x:411,y:350,tx:-.633,ty:.774,nx:.774,ny:.633,half:27,crossHalf:22};
+// The pedestrian crossing is level with the path in front of the school (satellite); s=0 is the crossing.
+const road={x:411-.633*330,y:350+.774*330,tx:-.633,ty:.774,nx:.774,ny:.633,half:27,crossHalf:22};
+// Scenery along the road keeps its place: positions are measured from the former reference point.
+const sidePoint=(s,d=0)=>roadPoint(s-330,d);
 const traffic={phase:'drive',remaining:0,cars:[],spawn:1,serial:0};
 let roadWarning=0;
 const parkGames=[{id:'swing',x:315,y:245,name:'La balançoire',icon:'🌿'}, {id:'playhouse',x:210,y:245,name:'La cabane et son toboggan',icon:'🛝'}, {id:'roundabout',x:105,y:245,name:'Le tourniquet',icon:'🎠'}];
@@ -919,13 +922,13 @@ function crossingEntities(){return [-1,1].map(side=>({id:'crossing'+side,...road
 function requestCrossing(){if(traffic.phase!=='drive')return;traffic.phase='waiting';traffic.remaining=3;toast('Demande enregistrée. Attends le feu piéton vert.');}
 function updateTraffic(dt){
  traffic.spawn-=dt;
- if(traffic.spawn<=0){traffic.spawn=5+(traffic.serial%3)*2;const direction=traffic.serial++%2?1:-1;traffic.cars.push({s:-direction*560,direction,color:['#7298b0','#d39069','#90a678'][traffic.serial%3]});}
+ if(traffic.spawn<=0){traffic.spawn=5+(traffic.serial%3)*2;const direction=traffic.serial++%2?1:-1;traffic.cars.push({s:-direction*900,direction,color:['#7298b0','#d39069','#90a678'][traffic.serial%3]});}
  for(const direction of [-1,1]){let front=null;for(const car of traffic.cars.filter(c=>c.direction===direction).sort((a,b)=>direction*(b.s-a.s))){let next=car.s+direction*90*dt;
   if(traffic.phase!=='drive'&&car.s*direction<=-58)next=direction*Math.min(next*direction,-58);
   if(front)next=direction*Math.min(next*direction,front.s*direction-58);
   car.s=next;front=car;
  }}
- traffic.cars=traffic.cars.filter(c=>Math.abs(c.s)<650);
+ traffic.cars=traffic.cars.filter(c=>Math.abs(c.s)<950);
  if(traffic.phase==='waiting'){traffic.remaining=Math.max(0,traffic.remaining-dt);if(traffic.remaining<.000001&&!traffic.cars.some(c=>Math.abs(c.s)<58)){traffic.phase='walk';traffic.remaining=10;toast('🟢 À toi ! Tu as 10 secondes pour traverser.');}}
  else if(traffic.phase==='walk'){traffic.remaining=Math.max(0,traffic.remaining-dt);if(traffic.remaining===0){traffic.phase='clear';}}
  else if(traffic.phase==='clear'&&!(scene==='outside'&&onRoad(player.x,player.y))){traffic.phase='drive';}
@@ -937,25 +940,25 @@ function drawRoadGround(){const c=ctx;
  // The lane beside the school runs straight along the road, behind a green strip (satellite view).
  // Both ends curve back onto the Grand-Lancy road (near the bus stop, and at the Pampres junction); the road is drawn over them.
  // The Pampres street bends up to the same junction, which stays inside the map.
- const pampres=()=>{const j=roadPoint(505,0);c.beginPath();c.moveTo(1385,933);c.lineTo(250,933);c.quadraticCurveTo(140,933,j.x,j.y);};
+ const pampres=()=>{const j=sidePoint(505,0);c.beginPath();c.moveTo(1385,933);c.lineTo(250,933);c.quadraticCurveTo(140,933,j.x,j.y);};
  c.lineCap='butt';for(const [width,color]of [[48,'#cfcab6'],[38,'#aeb3ae']]){c.strokeStyle=color;c.lineWidth=width;pampres();c.stroke();}
- const lanePath=()=>{const a=roadPoint(-255,0),c1=roadPoint(-210,88),b=roadPoint(-165,88),e=roadPoint(395,88),c2=roadPoint(445,88),f=roadPoint(495,0);c.beginPath();c.moveTo(a.x,a.y);c.quadraticCurveTo(c1.x,c1.y,b.x,b.y);c.lineTo(e.x,e.y);c.quadraticCurveTo(c2.x,c2.y,f.x,f.y);};
+ const lanePath=()=>{const a=sidePoint(-255,0),c1=sidePoint(-210,88),b=sidePoint(-165,88),e=sidePoint(395,88),c2=sidePoint(445,88),f=sidePoint(495,0);c.beginPath();c.moveTo(a.x,a.y);c.quadraticCurveTo(c1.x,c1.y,b.x,b.y);c.lineTo(e.x,e.y);c.quadraticCurveTo(c2.x,c2.y,f.x,f.y);};
  // The paths in front of and behind the school, the courtyard path and the lane on the right share its surface.
  const paths=()=>{lanePath();c.moveTo(580,184);c.lineTo(1027,183);for(const [x0,y0,x1,y1]of [[1027,150,1027,880],[751,183,751,667],[262,667,1370,667]]){c.moveTo(x0,y0);c.lineTo(x1,y1);}};
  c.lineCap='round';c.lineJoin='round';for(const [width,color]of [[34,'#ddd8c7'],[25,'#c3c6bb']]){c.strokeStyle=color;c.lineWidth=width;paths();c.stroke();}
  text(c,'20',604,199,11,'#eef0e6','700');
- c.lineCap='round';c.strokeStyle='#b7cf9a';c.lineWidth=13;c.beginPath();const g0=roadPoint(-125,57),g1=roadPoint(370,57);c.moveTo(g0.x,g0.y);c.lineTo(g1.x,g1.y);c.stroke();
- for(let s=-115;s<365;s+=46){if(Math.abs(s)<60)continue;const p=roadPoint(s,57);ellipse(c,p.x,p.y-3,9,6,'#93b27c');ellipse(c,p.x+3,p.y-6,6,4,'#a9c48e');}
+ c.lineCap='round';c.strokeStyle='#b7cf9a';c.lineWidth=13;c.beginPath();const g0=sidePoint(-125,57),g1=sidePoint(300,57);c.moveTo(g0.x,g0.y);c.lineTo(g1.x,g1.y);c.stroke();
+ for(let s=-115;s<300;s+=46){const p=sidePoint(s,57);ellipse(c,p.x,p.y-3,9,6,'#93b27c');ellipse(c,p.x+3,p.y-6,6,4,'#a9c48e');}
  // Cars park in a row on the road side of the lane, from the school down to the long building (satellite).
- for(let i=0;i<6;i++){const p=roadPoint(140+i*44,79);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty,road.tx)-Math.PI/2);c.strokeStyle='#e8e4d2';c.lineWidth=1.2;c.strokeRect(-13,-22,26,44);if(i!==3)parkedCar(-10,-18,['#b18a76','#7898a8','#c0af7d','#8da28b','#c9c9c4','#5d6b78'][i]);c.restore();}
+ for(let i=0;i<5;i++){const p=sidePoint(85+i*44,79);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty,road.tx)-Math.PI/2);c.strokeStyle='#e8e4d2';c.lineWidth=1.2;c.strokeRect(-13,-22,26,44);if(i!==2)parkedCar(-10,-18,['#b18a76','#7898a8','#c0af7d','#8da28b','#c9c9c4'][i]);c.restore();}
  c.save();c.translate(road.x,road.y);c.transform(road.nx,road.ny,road.tx,road.ty,0,0);
- rr(c,-42,-800,84,1700,0,'#d5d1bd');rr(c,-27,-800,54,1700,0,'#a4aba8');
- c.setLineDash([18,15]);c.strokeStyle='#eee9d7';c.lineWidth=2;c.beginPath();c.moveTo(0,-800);c.lineTo(0,900);c.stroke();c.setLineDash([]);
+ rr(c,-42,-1150,84,2100,0,'#d5d1bd');rr(c,-27,-1150,54,2100,0,'#a4aba8');
+ c.setLineDash([18,15]);c.strokeStyle='#eee9d7';c.lineWidth=2;c.beginPath();c.moveTo(0,-1150);c.lineTo(0,950);c.stroke();c.setLineDash([]);
  for(let s=-18;s<=18;s+=9)rr(c,-27,s,54,5,0,'#f3d875');
  c.strokeStyle='#faf3dc';c.lineWidth=3;for(const s of [-35,35]){c.beginPath();c.moveTo(-27,s);c.lineTo(27,s);c.stroke();}
  c.restore();
- const lbl=roadPoint(55,88);c.save();c.translate(lbl.x,lbl.y+4);c.rotate(-.885);text(c,'Voie privée',0,0,11,'#687765');c.restore();
- c.save();c.translate(270,520);c.rotate(-.885);text(c,'Route du Grand-Lancy',0,0,12,'#64726b');c.restore();
+ const lbl=sidePoint(55,88);c.save();c.translate(lbl.x,lbl.y+4);c.rotate(-.885);text(c,'Voie privée',0,0,11,'#687765');c.restore();
+ c.save();c.translate(392,390);c.rotate(-.885);text(c,'Route du Grand-Lancy',0,0,12,'#64726b');c.restore();
  rr(c,78,170,280,145,35,'#bed39f');text(c,'Le parc',215,185,15,'#567851','600');
 }
 function drawTraffic(){const c=ctx;
