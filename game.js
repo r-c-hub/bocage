@@ -610,7 +610,6 @@ function outdoorGround(){const c=ctx;
  }
  for(const [x,y]of [[980,225],[985,360],[1000,490],[1048,730]])parkedCar(x,y,'#a1b1af');
  // Small shelter and crossing beside the school, aligned with the diagonal road.
- {const p=roadPoint(-400,60);rr(c,p.x-17,p.y-30,34,9,2,'#8d9d8a');rr(c,p.x-13,p.y-25,3,27,1,'#80938a');rr(c,p.x+10,p.y-25,3,27,1,'#80938a');}
 
  bench(758,665);bench(1315,882);flowers(760,420);flowers(1048,620);flowers(288,812);
  // Carved pillar and bike racks echo the provided school facade photograph.
@@ -944,20 +943,22 @@ function drawRoadGround(){const c=ctx;
  const lanePath=()=>{const a=roadPoint(-516,0),c1=roadPoint(-471,88),b=roadPoint(-426,88);c.moveTo(a.x,a.y);c.quadraticCurveTo(c1.x,c1.y,b.x,b.y);c.lineTo(laneX(933),933);};
  // The paths in front of and behind the school, the courtyard path and the lane on the right share its surface.
  const paths=()=>{c.beginPath();lanePath();c.moveTo(laneX(186)-4,184);c.lineTo(1027,183);for(const [x0,y0,x1,y1]of [[1027,150,1027,880],[751,183,751,667],[laneX(667),667,1370,667]]){c.moveTo(x0,y0);c.lineTo(x1,y1);}};
- // Between the lane and the school (photo): a waste collection point, and above it a fence and wide steps down to the school.
- rr(c,452,300,112,74,6,'#ddd8c7');
+ // Between the lane and the school, from top to bottom (photos): the bus stop, the wide steps down to the school, the waste containers.
+ rr(c,452,214,112,198,6,'#ddd8c7');
  c.lineCap='round';c.lineJoin='round';for(const [width,color]of [[34,'#ddd8c7'],[25,'#c3c6bb']]){c.strokeStyle=color;c.lineWidth=width;paths();c.stroke();}
- rr(c,456,304,104,66,4,'#c3c6bb');
- // Wide steps going down towards the school, behind a green fence.
- for(let k=0;k<6;k++){const x=512+k*14;rr(c,x,228,14,68,0,k%2?'#d9d4c6':'#e6e1d4');c.strokeStyle='#bdb7a6';c.lineWidth=1;c.beginPath();c.moveTo(x,228);c.lineTo(x,296);c.stroke();}
- rr(c,512,294,84,4,0,'#c9c3b2');
- c.strokeStyle='#3f6f50';c.lineWidth=1.6;c.beginPath();c.moveTo(508,224);c.lineTo(508,300);c.moveTo(508,224);c.lineTo(596,224);c.stroke();
- c.lineWidth=2;for(let y=226;y<=300;y+=10){c.beginPath();c.moveTo(508,y);c.lineTo(508,y-10);c.stroke();}for(let x=518;x<=596;x+=12){c.beginPath();c.moveTo(x,224);c.lineTo(x,214);c.stroke();}
- c.lineWidth=1.2;c.beginPath();c.moveTo(508,216);c.lineTo(596,216);c.moveTo(508,216);c.lineTo(508,292);c.stroke();
- // Underground waste containers: dark bodies with blue lids, a large yellow container and a red hydrant.
- rr(c,520,306,34,26,2,'#e2b33c');rr(c,520,300,34,8,2,'#f0c85a');rr(c,527,312,14,8,1,'#a8522f');
- for(let k=0;k<4;k++){const y=338+k*0;const x=468+k*21;rr(c,x+2,y+14,16,4,1,'#9c9a8f55');rr(c,x,y,16,16,2,'#3d4644');rr(c,x,y-4,16,6,2,'#5d86b8');rr(c,x+5,y-6,6,3,1,'#8e9a98');}
- rr(c,470,318,5,12,2,'#c8442f');ellipse(c,472.5,318,3.5,2.5,'#e0614a');
+ rr(c,456,218,104,190,4,'#c3c6bb');
+ // Bus stop: shelter and the Belle-Cour sign.
+ rr(c,512,238,46,4,1,'#9aa3a0');rr(c,515,241,2,16,0,'#80938a');rr(c,553,241,2,16,0,'#80938a');rr(c,510,232,50,8,2,'#8d9d8a');
+ rr(c,563,222,2,30,0,'#7d8a85');rr(c,557,214,14,10,1,'#fbfaf5');rr(c,557,214,14,4,1,'#d24a3a');
+ // Wide steps going down towards the school (east), behind a green fence with an opening.
+ for(let k=0;k<7;k++){const x=505+k*13;rr(c,x,264,13,40,0,['#e8e3d6','#ddd8ca','#e3ded0','#d8d2c3','#ded9cb','#d3cdbd','#d9d3c4'][k]);c.strokeStyle='#bdb7a6';c.lineWidth=1;c.beginPath();c.moveTo(x,264);c.lineTo(x,304);c.stroke();}
+ c.strokeStyle='#3f6f50';c.lineWidth=1.5;c.beginPath();c.moveTo(501,260);c.lineTo(501,276);c.moveTo(501,292);c.lineTo(501,308);c.lineTo(562,308);c.moveTo(501,260);c.lineTo(562,260);c.stroke();
+ c.lineWidth=1.8;for(const [x,y]of [[501,262],[501,272],[501,298],[501,308],[514,308],[528,308],[542,308],[556,308],[514,260],[528,260],[542,260],[556,260]]){c.beginPath();c.moveTo(x,y);c.lineTo(x,y-9);c.stroke();}
+ c.lineWidth=1;c.beginPath();c.moveTo(501,253);c.lineTo(501,267);c.moveTo(501,283);c.lineTo(501,299);c.lineTo(562,299);c.moveTo(501,251);c.lineTo(562,251);c.stroke();
+ // Waste containers in a column: the large yellow one, then four with blue lids, and the red hydrant.
+ rr(c,470,302,28,20,2,'#e2b33c');rr(c,470,297,28,7,2,'#f0c85a');rr(c,477,307,13,7,1,'#a8522f');
+ for(let k=0;k<4;k++){const x=476,y=334+k*19;rr(c,x+2,y+14,16,4,1,'#9c9a8f55');rr(c,x,y,16,15,2,'#3d4644');rr(c,x,y-4,16,6,2,'#5d86b8');rr(c,x+5,y-6,6,3,1,'#8e9a98');}
+ rr(c,503,392,5,12,2,'#c8442f');ellipse(c,505.5,392,3.5,2.5,'#e0614a');
  text(c,'20',548,198,11,'#eef0e6','700');
  const pampres=()=>{c.beginPath();c.moveTo(1385,933);c.lineTo(110,933);};
  c.lineCap='butt';for(const [width,color]of [[48,'#cfcab6'],[38,'#aeb3ae']]){c.strokeStyle=color;c.lineWidth=width;pampres();c.stroke();}
