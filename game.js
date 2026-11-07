@@ -68,7 +68,7 @@ const buildings=[
  {ref:'foreground-east',x:680,y:700,w:330,h:85,height:68,color:'#ebd3b4',name:'',type:'decor'},
  {ref:'terrace-a',x:1110,y:745,w:115,h:90,height:62,color:'#ebd6bc',flat:true,name:'',type:'decor'},
  {ref:'terrace-b',x:1245,y:760,w:125,h:90,height:62,color:'#e8d2b6',flat:true,name:'',type:'decor'},
- {ref:'pampres-flat',x:115,y:1030,w:290,h:120,height:55,color:'#d8bf92',wood:true,flat:true,concrete:true,name:'',type:'decor'},
+ {ref:'pampres-flat',x:115,y:1062,w:290,h:98,height:55,color:'#d8bf92',wood:true,flat:true,concrete:true,name:'',type:'decor'},
  {ref:'pampres-long',x:780,y:1040,w:590,h:110,height:70,color:'#e4d5bf',name:'',type:'decor'}
 ];
 const outside=[
@@ -99,6 +99,7 @@ for(let i=0;i<200;i++){
  if(x>545&&x<785&&y>790&&y<1010)continue;
  if(Math.abs(x-(811-.817*y))<62)continue;
  if(y>880&&y<1020)continue;
+ if(x<620&&y>=1020&&y<1050)continue;
  if(x<300&&y>690&&y<960)continue;
  if(x>garageAccess.x-35&&x<garageAccess.x+garageAccess.w+35&&y>garageAccess.y-20)continue;
  if(fixtures.some(f=>(x>f.x-32&&x<f.x+f.w+32&&y>f.y-55&&y<f.y+f.h+35)||(f.ramp&&x>f.ramp.x-30&&x<f.ramp.x+f.ramp.w+30&&y>f.ramp.y-55&&y<f.ramp.y+f.ramp.h+30)))continue;
@@ -510,29 +511,38 @@ function drawFixture(f){const c=ctx;
   c.strokeStyle='#a87558';c.lineWidth=1.5;c.beginPath();c.moveTo(x-7,roofY);c.lineTo(cx,cy);c.lineTo(x+w+7,roofBottom);c.moveTo(x+w+7,roofY);c.lineTo(cx,cy);c.lineTo(x-7,roofBottom);c.stroke();
   c.restore();text(c,'Préau',x+w/2,y+h+15,11,'#7e8e70');
  }else if(f.id==='garage'){
-  const {x,y,w,h,ramp}=f,left=ramp.x;
-  // The ramp runs from the left into the west-facing portal, under a tile roof.
-  poly(c,[[left-4,y+5],[x+5,y-1],[x+5,y+54],[left-4,y+68]],'#bdbdae');
-  poly(c,[[left+5,y+15],[x,y+10],[x,y+47],[left+5,y+57]],'#929b93');
-  poly(c,[[left-4,y+5],[x+5,y-1],[x,y+10],[left+5,y+15]],'#ceccb9');
-  poly(c,[[left-4,y+68],[x+5,y+54],[x,y+47],[left+5,y+57]],'#c7c7b4');
-  c.strokeStyle='#acb4a8';c.lineWidth=1;for(let xx=left+18;xx<x-8;xx+=14){c.beginPath();c.moveTo(xx,y+15);c.lineTo(xx,y+55-(xx-left)*.04);c.stroke();}
-  // The long front wall is closed. The only opening is on the left side.
-  poly(c,[[x,y-2],[x+23,y+5],[x+23,y+h],[x,y+51]],'#bfc1ad');
-  poly(c,[[x+23,y+5],[x+w,y+5],[x+w,y+h],[x+23,y+h]],'#d0cdb9');
-  poly(c,[[x+3,y+7],[x+18,y+12],[x+18,y+51],[x+3,y+44]],'#344c44');
-  c.strokeStyle='#92a297';c.lineWidth=1.5;c.beginPath();c.moveTo(x+7,y+11);c.lineTo(x+7,y+42);c.stroke();
-  c.strokeStyle='#eee6cf';c.lineWidth=4;c.beginPath();c.moveTo(x-2,y+13);c.lineTo(x-2,y+46);c.stroke();
-  for(let yy=y+16;yy<y+45;yy+=10){c.strokeStyle='#bd7a62';c.beginPath();c.moveTo(x-2,yy);c.lineTo(x-2,yy+5);c.stroke();}
-  const roofTop=y-32,roofBottom=y+8,ridge=y-19;
-  c.save();if(player.x>x-8&&player.x<x+w+8&&player.y>roofTop-15&&player.y<y)c.globalAlpha=.42;
-  poly(c,[[x+4,roofTop],[x+w-4,roofTop],[x+w+2,ridge],[x-2,ridge]],'#d39a7c');
-  poly(c,[[x-2,ridge],[x+w+2,ridge],[x+w+7,roofBottom],[x-7,roofBottom]],'#c78667');
-  c.strokeStyle='#ae73534d';c.lineWidth=.8;for(let yy=roofTop+4;yy<roofBottom;yy+=6){c.beginPath();c.moveTo(x+2,yy);c.lineTo(x+w-2,yy);c.stroke();}
-  for(let xx=x+6;xx<x+w;xx+=8){c.beginPath();c.moveTo(xx,roofTop+1);c.lineTo(xx,roofBottom-1);c.stroke();}
-  c.strokeStyle='#a97054';c.lineWidth=2;c.beginPath();c.moveTo(x-2,ridge);c.lineTo(x+w+2,ridge);c.stroke();c.restore();
-  rr(c,left-7,y+3,3,32,1,'#8c9d88');rr(c,left-15,y-12,20,22,3,'#72969e');text(c,'P',left-5,y+4,15,'#fff8e1','700');
-  text(c,'Entrée garage',left+(x-left)/2,y-3,11,'#7b8d72');
+  const {x,y,w,h,ramp}=f,L=ramp.x,R=ramp.x+ramp.w,T=ramp.y,B=ramp.y+ramp.h,mid=(T+B)/2;
+  // Drawn from the photo: an open timber shelter with a tile roof covers a ramp that goes down,
+  // between two concrete walls topped with black railings, to a grey door. The car park is underground.
+  rr(c,x,y+2,w,h-2,4,'#bdb9a8');rr(c,x+4,y-2,w-8,h-8,6,'#86a86b');
+  for(let i=0;i<6;i++)ellipse(c,x+14+i*16,y+8+(i%2)*14,10,8,['#97b97b','#7d9f63'][i%2]);
+  const slope=c.createLinearGradient(L,0,R,0);slope.addColorStop(0,'#9da19b');slope.addColorStop(1,'#4c524f');
+  rr(c,L,T+9,ramp.w,ramp.h-18,0,slope);
+  c.strokeStyle='#e9e6dc99';c.lineWidth=1.5;c.beginPath();c.moveTo(L+24,mid+9);c.lineTo(R-16,mid-3);c.stroke();
+  rr(c,R-12,T+9,12,ramp.h-18,0,'#d8d3c5');rr(c,R-10,T+12,8,ramp.h-24,1,'#a6abab');
+  c.strokeStyle='#8d9393';c.lineWidth=.8;for(let yy=T+16;yy<B-12;yy+=5){c.beginPath();c.moveTo(R-10,yy);c.lineTo(R-2,yy);c.stroke();}
+  for(const wy of [T,B-9]){rr(c,L,wy,ramp.w,9,1,'#e6e1d3');for(let i=0;i<6;i++)rr(c,L+i*6,wy+5,6,4,0,i%2?'#2f3330':'#e2b33c');}
+  rr(c,L,B,ramp.w,5,0,'#cbc5b4');
+  rr(c,L+9,mid-12,3,14,1,'#f6f4ee');rr(c,L+7,mid,7,4,1,'#e2b33c');
+  // Black railings along both walls, from where the ramp is deep enough.
+  c.strokeStyle='#2e3532';c.lineWidth=1.3;
+  for(const wy of [T+3,B-5]){c.beginPath();c.moveTo(L+34,wy-9);c.lineTo(R,wy-9);c.stroke();for(let xx=L+34;xx<=R;xx+=6){c.beginPath();c.moveTo(xx,wy);c.lineTo(xx,wy-9);c.stroke();}}
+  const eaveN=T-34,eaveS=B-34,ridge=(eaveN+eaveS)/2-12,posts=[L+8,L+ramp.w/2,R-5];
+  c.save();if(player.x>L-10&&player.x<x+w+8&&player.y>eaveN-20&&player.y<T+12)c.globalAlpha=.42;
+  c.strokeStyle='#5b3b29';c.lineCap='butt';
+  for(const wy of [T+4,B-4])for(const px of posts){c.lineWidth=4;c.beginPath();c.moveTo(px,wy);c.lineTo(px,wy-36);c.stroke();}
+  c.lineWidth=2;for(const px of posts){c.beginPath();c.moveTo(px-9,eaveS+4);c.lineTo(px,eaveS+12);c.lineTo(px+9,eaveS+4);c.stroke();}
+  poly(c,[[L-7,ridge],[R+7,ridge],[R+5,eaveN],[L-5,eaveN]],'#d39a7c');
+  poly(c,[[L-9,eaveS+2],[R+9,eaveS+2],[R+7,ridge],[L-7,ridge]],'#c78667');
+  c.strokeStyle='#ae73534d';c.lineWidth=.8;
+  for(let yy=eaveN+5;yy<eaveS;yy+=6){c.beginPath();c.moveTo(L-4,yy);c.lineTo(R+4,yy);c.stroke();}
+  for(let xx=L-2;xx<R+6;xx+=8){c.beginPath();c.moveTo(xx,eaveN+1);c.lineTo(xx,eaveS+1);c.stroke();}
+  c.strokeStyle='#a5694d';c.lineWidth=3;c.beginPath();c.moveTo(L-7,ridge);c.lineTo(R+7,ridge);c.stroke();
+  rr(c,L-9,eaveS+2,ramp.w+18,4,1,'#5b3b29');
+  rr(c,L+ramp.w*.62,eaveS+7,15,8,1,'#fbfaf5');c.strokeStyle='#d24a3a';c.lineWidth=1.2;c.beginPath();c.arc(L+ramp.w*.62+4,eaveS+11,2.6,0,Math.PI*2);c.stroke();
+  c.restore();
+  rr(c,L-15,y+3,3,32,1,'#8c9d88');rr(c,L-23,y-12,20,22,3,'#72969e');text(c,'P',L-13,y+4,15,'#fff8e1','700');
+  text(c,'Entrée garage',L+ramp.w/2,eaveN-6,11,'#7b8d72');
  }
 }
 function outdoorGround(){const c=ctx;
@@ -545,6 +555,7 @@ function outdoorGround(){const c=ctx;
  // In front of the school: bike racks and a large boulder at the corner of the play area (photo).
  c.strokeStyle='#8e9c98';c.lineWidth=2;for(let i=0;i<4;i++){c.beginPath();c.arc(318+i*15,632,5,Math.PI,0);c.lineTo(323+i*15,640);c.moveTo(313+i*15,632);c.lineTo(313+i*15,640);c.stroke();}
  ellipse(c,409,644,17,9,'#9c9a8f55');ellipse(c,406,639,15,10,'#ddd7c9');ellipse(c,402,636,7,4,'#f1ede3');
+ rr(c,308,606,68,4,1,'#9aa3a0');rr(c,311,610,2,30,0,'#9aa3a0');rr(c,371,610,2,30,0,'#9aa3a0');rr(c,306,603,72,9,2,'#eef0ec');rr(c,306,610,72,2,0,'#c9cfcb');
  // Two small play areas: the annotated table and slide are directly in front of the school.
  rr(c,417,548,220,96,13,'#c7c6b0');rr(c,424,553,206,86,10,'#ddd5bb');
  // Continuous side courtyard from the rear play area to the front gate.
@@ -574,7 +585,10 @@ function outdoorGround(){const c=ctx;
  // The access road continues south between the two lower buildings.
  rr(c,garageAccess.x-9,garageAccess.y,garageAccess.w+18,garageAccess.h,4,'#cfcab6');
  rr(c,garageAccess.x,garageAccess.y,garageAccess.w,garageAccess.h,3,'#aeb3ae');
- for(const [i,y]of [1000,1048,1096,1144].entries()){c.strokeStyle='#e8e4d2';c.lineWidth=1.5;c.strokeRect(garageAccess.x+5,y-4,28,45);if(i!==2)parkedCar(garageAccess.x+9,y,['#c0af7d','#7898a8','#b18a76','#8da28b'][i]);}
+ // Bays facing the Pampres street above the flat building, and down the west side of the garage lane (satellite).
+ c.strokeStyle='#e8e4d2';c.lineWidth=1.2;
+ for(let i=0;i<10;i++){const x=142+i*26;c.strokeRect(x-3,960,26,42);if(i!==2&&i!==7)parkedCar(x,963,['#c9c9c4','#7898a8','#b5574b','#c0af7d','#5d6b78','#8da28b','#c9c9c4','#b18a76','#7898a8','#c9c9c4'][i]);}
+ for(let i=0;i<9;i++){const y=972+i*26;c.strokeRect(garageAccess.x+3,y-12,42,24);if(i!==4&&i!==7){c.save();c.translate(garageAccess.x+24,y);c.rotate(Math.PI/2);parkedCar(-10,-18,['#c0af7d','#7898a8','#b18a76','#8da28b','#c9c9c4','#5d6b78','#b5574b','#c9c9c4','#7898a8'][i]);c.restore();}}
  c.strokeStyle='#ede8d5';c.lineWidth=1.5;c.beginPath();c.moveTo(garageAccess.x+4,garageAccess.y+36);c.lineTo(garageAccess.x+4,garageAccess.y+garageAccess.h-5);c.moveTo(garageAccess.x+garageAccess.w-4,garageAccess.y+36);c.lineTo(garageAccess.x+garageAccess.w-4,garageAccess.y+garageAccess.h-5);c.stroke();
  c.save();c.translate(1034,585);c.rotate(-Math.PI/2);text(c,'Chemin du Bocage',0,0,12,'#999a81');c.restore();
  for(const b of buildings){if(b.school||b.ref.startsWith('right-north'))continue;
@@ -924,14 +938,15 @@ function drawRoadGround(){const c=ctx;
  text(c,'20',598,232,12,'#eef0e6','700');
  c.lineCap='round';c.strokeStyle='#b7cf9a';c.lineWidth=13;c.beginPath();const g0=roadPoint(-125,57),g1=roadPoint(370,57);c.moveTo(g0.x,g0.y);c.lineTo(g1.x,g1.y);c.stroke();
  for(let s=-115;s<365;s+=46){if(Math.abs(s)<60)continue;const p=roadPoint(s,57);ellipse(c,p.x,p.y-3,9,6,'#93b27c');ellipse(c,p.x+3,p.y-6,6,4,'#a9c48e');}
- for(let i=0;i<4;i++){const p=roadPoint(250+i*44,99);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty,road.tx)-Math.PI/2);c.strokeStyle='#f8f3df';c.lineWidth=1.5;c.strokeRect(-13,-22,26,44);parkedCar(-10,-18,['#b18a76','#7898a8','#c0af7d','#8da28b'][i]);c.restore();}
+ // Cars park in a row on the road side of the lane, from the school down to the long building (satellite).
+ for(let i=0;i<6;i++){const p=roadPoint(140+i*44,79);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty,road.tx)-Math.PI/2);c.strokeStyle='#e8e4d2';c.lineWidth=1.2;c.strokeRect(-13,-22,26,44);if(i!==3)parkedCar(-10,-18,['#b18a76','#7898a8','#c0af7d','#8da28b','#c9c9c4','#5d6b78'][i]);c.restore();}
  c.save();c.translate(road.x,road.y);c.transform(road.nx,road.ny,road.tx,road.ty,0,0);
  rr(c,-42,-800,84,1700,0,'#d5d1bd');rr(c,-27,-800,54,1700,0,'#a4aba8');
  c.setLineDash([18,15]);c.strokeStyle='#eee9d7';c.lineWidth=2;c.beginPath();c.moveTo(0,-800);c.lineTo(0,900);c.stroke();c.setLineDash([]);
  for(let s=-18;s<=18;s+=9)rr(c,-27,s,54,5,0,'#f3d875');
  c.strokeStyle='#faf3dc';c.lineWidth=3;for(const s of [-35,35]){c.beginPath();c.moveTo(-27,s);c.lineTo(27,s);c.stroke();}
  c.restore();
- const lbl=roadPoint(150,88);c.save();c.translate(lbl.x,lbl.y+4);c.rotate(-.885);text(c,'Voie privée',0,0,11,'#687765');c.restore();
+ const lbl=roadPoint(55,88);c.save();c.translate(lbl.x,lbl.y+4);c.rotate(-.885);text(c,'Voie privée',0,0,11,'#687765');c.restore();
  c.save();c.translate(270,520);c.rotate(-.885);text(c,'Route du Grand-Lancy',0,0,12,'#64726b');c.restore();
  rr(c,78,170,280,145,35,'#bed39f');text(c,'Le parc',215,185,15,'#567851','600');
 }
