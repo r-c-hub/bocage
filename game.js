@@ -50,9 +50,9 @@ const buildings=[
  {ref:'school-front',x:440,y:440,w:190,h:90,height:65,color:'#ac815c',school:true,name:'École de Belle-Cour',type:'school'},
  {ref:'school-spine',x:575,y:340,w:80,h:145,height:68,color:'#ac815c',school:true,name:'',type:'decor'},
  {ref:'school-rear',x:610,y:285,w:105,h:85,height:57,color:'#ac815c',school:true,name:'',type:'decor'},
- {ref:'right-north-a',x:800,y:110,w:80,h:60,height:57,color:'#ecd4b5',name:'',type:'decor'},
- {ref:'right-north-b',x:895,y:115,w:85,h:60,height:57,color:'#edd6b9',name:'',type:'decor'},
- {ref:'right-row-1',x:800,y:200,w:170,h:75,height:65,color:'#ead5b7',name:'',type:'decor'},
+ {ref:'right-north-a',x:800,y:92,w:80,h:60,height:57,color:'#ecd4b5',name:'',type:'decor'},
+ {ref:'right-north-b',x:895,y:92,w:85,h:60,height:57,color:'#edd6b9',name:'',type:'decor'},
+ {ref:'right-row-1',x:800,y:212,w:170,h:65,height:65,color:'#ead5b7',name:'',type:'decor'},
  {ref:'right-row-2',x:800,y:340,w:180,h:75,height:65,color:'#f1dcc1',name:'Chez toi',type:'home'},
  {ref:'right-row-3',x:810,y:475,w:185,h:80,height:65,color:'#efdabe',name:'Chez Inès',type:'inesHome'},
  {ref:'east-1-a',x:1050,y:150,w:95,h:70,height:62,color:'#ead0b1',name:'',type:'decor'},
@@ -91,7 +91,8 @@ const fixtures=[
 ];
 const trees=[];
 let seed=37;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
-const lanes=[{x:736,y:200,w:30,h:450},{x:1010,y:150,w:35,h:755},{x:300,y:650,w:1070,h:35},{x:200,y:870,w:1180,h:35}];
+// Two small paths leave the lane along the road: behind the school (from the bus-stop square) and in front of it.
+const lanes=[{x:736,y:180,w:30,h:470,paved:true},{x:1010,y:150,w:35,h:755,paved:true},{x:262,y:650,w:1108,h:35,paved:true},{x:200,y:870,w:1180,h:35},{x:612,y:172,w:400,h:22,paved:true}];
 for(let i=0;i<200;i++){
  const x=85+rnd()*1340,y=125+rnd()*935;
  if(x<375&&y<360)continue;
@@ -538,7 +539,12 @@ function outdoorGround(){const c=ctx;
  rr(c,57,75,1380,1150,60,'#bbcba3');rr(c,62,65,1370,1150,60,'#d7dfbf');
  c.globalAlpha=.45;for(let i=0;i<210;i++)ellipse(c,85+(i*137)%1320,105+(i*263)%950,1.4,1,'#a6b789');c.globalAlpha=1;
  drawRoadGround();
- for(const l of lanes){rr(c,l.x-3,l.y+3,l.w+6,l.h,5,'#c5c6b4');rr(c,l.x,l.y,l.w,l.h,4,'#ded9c6');}
+ for(const l of lanes.filter(l=>!l.paved)){rr(c,l.x-3,l.y+3,l.w+6,l.h,5,'#c5c6b4');rr(c,l.x,l.y,l.w,l.h,4,'#ded9c6');}
+ for(const [i,x]of [818,858,910,950].entries()){c.save();c.translate(x,163);c.rotate(Math.PI/2);parkedCar(-10,-18,['#c9c9c4','#b5574b','#c9c9c4','#7f9a8c'][i]);c.restore();}
+ rr(c,1000,176,9,13,2,'#5c84b8');rr(c,1003,179,3,7,1,'#f4f1e6');rr(c,1003,189,2,10,0,'#7d8a85');
+ // In front of the school: bike racks and a large boulder at the corner of the play area (photo).
+ c.strokeStyle='#8e9c98';c.lineWidth=2;for(let i=0;i<4;i++){c.beginPath();c.arc(318+i*15,632,5,Math.PI,0);c.lineTo(323+i*15,640);c.moveTo(313+i*15,632);c.lineTo(313+i*15,640);c.stroke();}
+ ellipse(c,409,644,17,9,'#9c9a8f55');ellipse(c,406,639,15,10,'#ddd7c9');ellipse(c,402,636,7,4,'#f1ede3');
  // Two small play areas: the annotated table and slide are directly in front of the school.
  rr(c,417,548,220,96,13,'#c7c6b0');rr(c,424,553,206,86,10,'#ddd5bb');
  // Continuous side courtyard from the rear play area to the front gate.
@@ -571,7 +577,7 @@ function outdoorGround(){const c=ctx;
  for(const [i,y]of [1000,1048,1096,1144].entries()){c.strokeStyle='#e8e4d2';c.lineWidth=1.5;c.strokeRect(garageAccess.x+5,y-4,28,45);if(i!==2)parkedCar(garageAccess.x+9,y,['#c0af7d','#7898a8','#b18a76','#8da28b'][i]);}
  c.strokeStyle='#ede8d5';c.lineWidth=1.5;c.beginPath();c.moveTo(garageAccess.x+4,garageAccess.y+36);c.lineTo(garageAccess.x+4,garageAccess.y+garageAccess.h-5);c.moveTo(garageAccess.x+garageAccess.w-4,garageAccess.y+36);c.lineTo(garageAccess.x+garageAccess.w-4,garageAccess.y+garageAccess.h-5);c.stroke();
  c.save();c.translate(1034,585);c.rotate(-Math.PI/2);text(c,'Chemin du Bocage',0,0,12,'#999a81');c.restore();
- for(const b of buildings){if(b.school)continue;
+ for(const b of buildings){if(b.school||b.ref.startsWith('right-north'))continue;
  for(let sx=b.x+13;sx<b.x+b.w-10;sx+=gardenSize.spacing){
  const doorX=b.x+b.w/2;if(b.type!=='decor'&&sx<doorX+17&&sx+gardenSize.width>doorX-17)continue;
  rr(c,sx,b.y+b.h+gardenSize.offset,gardenSize.width,gardenSize.depth,3,'#bdcda2');
@@ -912,7 +918,10 @@ function drawRoadGround(){const c=ctx;
  const pampres=()=>{const j=roadPoint(505,0);c.beginPath();c.moveTo(1385,933);c.lineTo(250,933);c.quadraticCurveTo(140,933,j.x,j.y);};
  c.lineCap='butt';for(const [width,color]of [[48,'#cfcab6'],[38,'#aeb3ae']]){c.strokeStyle=color;c.lineWidth=width;pampres();c.stroke();}
  const lanePath=()=>{const a=roadPoint(-255,0),c1=roadPoint(-210,88),b=roadPoint(-165,88),e=roadPoint(395,88),c2=roadPoint(445,88),f=roadPoint(495,0);c.beginPath();c.moveTo(a.x,a.y);c.quadraticCurveTo(c1.x,c1.y,b.x,b.y);c.lineTo(e.x,e.y);c.quadraticCurveTo(c2.x,c2.y,f.x,f.y);};
- c.lineCap='butt';c.lineJoin='round';for(const [width,color]of [[34,'#ddd8c7'],[25,'#c3c6bb']]){c.strokeStyle=color;c.lineWidth=width;lanePath();c.stroke();}
+ // The paths in front of and behind the school, the courtyard path and the lane on the right share its surface.
+ const paths=()=>{lanePath();c.moveTo(580,184);c.lineTo(1027,183);for(const [x0,y0,x1,y1]of [[1027,150,1027,880],[751,183,751,667],[262,667,1370,667]]){c.moveTo(x0,y0);c.lineTo(x1,y1);}};
+ c.lineCap='round';c.lineJoin='round';for(const [width,color]of [[34,'#ddd8c7'],[25,'#c3c6bb']]){c.strokeStyle=color;c.lineWidth=width;paths();c.stroke();}
+ text(c,'20',598,232,12,'#eef0e6','700');
  c.lineCap='round';c.strokeStyle='#b7cf9a';c.lineWidth=13;c.beginPath();const g0=roadPoint(-125,57),g1=roadPoint(370,57);c.moveTo(g0.x,g0.y);c.lineTo(g1.x,g1.y);c.stroke();
  for(let s=-115;s<365;s+=46){if(Math.abs(s)<60)continue;const p=roadPoint(s,57);ellipse(c,p.x,p.y-3,9,6,'#93b27c');ellipse(c,p.x+3,p.y-6,6,4,'#a9c48e');}
  for(let i=0;i<4;i++){const p=roadPoint(250+i*44,99);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty,road.tx)-Math.PI/2);c.strokeStyle='#f8f3df';c.lineWidth=1.5;c.strokeRect(-13,-22,26,44);parkedCar(-10,-18,['#b18a76','#7898a8','#c0af7d','#8da28b'][i]);c.restore();}
