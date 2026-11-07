@@ -944,11 +944,20 @@ function drawRoadGround(){const c=ctx;
  const lanePath=()=>{const a=roadPoint(-516,0),c1=roadPoint(-471,88),b=roadPoint(-426,88);c.moveTo(a.x,a.y);c.quadraticCurveTo(c1.x,c1.y,b.x,b.y);c.lineTo(laneX(933),933);};
  // The paths in front of and behind the school, the courtyard path and the lane on the right share its surface.
  const paths=()=>{c.beginPath();lanePath();c.moveTo(laneX(186)-4,184);c.lineTo(1027,183);for(const [x0,y0,x1,y1]of [[1027,150,1027,880],[751,183,751,667],[laneX(667),667,1370,667]]){c.moveTo(x0,y0);c.lineTo(x1,y1);}};
- // Car park between the lane and the school (satellite): its edge goes under the lane so the two surfaces join.
- rr(c,452,274,112,100,6,'#ddd8c7');
+ // Between the lane and the school (photo): a waste collection point, and above it a fence and wide steps down to the school.
+ rr(c,452,300,112,74,6,'#ddd8c7');
  c.lineCap='round';c.lineJoin='round';for(const [width,color]of [[34,'#ddd8c7'],[25,'#c3c6bb']]){c.strokeStyle=color;c.lineWidth=width;paths();c.stroke();}
- rr(c,456,278,104,92,4,'#c3c6bb');c.strokeStyle='#e8e4d2';c.lineWidth=1.2;
- for(const [row,color]of ['#c9c9c4','#7898a8',null,'#b18a76'].entries()){const y=282+row*21;c.strokeRect(514,y,44,21);if(color){c.save();c.translate(536,y+10.5);c.rotate(Math.PI/2);parkedCar(-10,-18,color);c.restore();}}
+ rr(c,456,304,104,66,4,'#c3c6bb');
+ // Wide steps going down towards the school, behind a green fence.
+ for(let k=0;k<6;k++){const x=512+k*14;rr(c,x,228,14,68,0,k%2?'#d9d4c6':'#e6e1d4');c.strokeStyle='#bdb7a6';c.lineWidth=1;c.beginPath();c.moveTo(x,228);c.lineTo(x,296);c.stroke();}
+ rr(c,512,294,84,4,0,'#c9c3b2');
+ c.strokeStyle='#3f6f50';c.lineWidth=1.6;c.beginPath();c.moveTo(508,224);c.lineTo(508,300);c.moveTo(508,224);c.lineTo(596,224);c.stroke();
+ c.lineWidth=2;for(let y=226;y<=300;y+=10){c.beginPath();c.moveTo(508,y);c.lineTo(508,y-10);c.stroke();}for(let x=518;x<=596;x+=12){c.beginPath();c.moveTo(x,224);c.lineTo(x,214);c.stroke();}
+ c.lineWidth=1.2;c.beginPath();c.moveTo(508,216);c.lineTo(596,216);c.moveTo(508,216);c.lineTo(508,292);c.stroke();
+ // Underground waste containers: dark bodies with blue lids, a large yellow container and a red hydrant.
+ rr(c,520,306,34,26,2,'#e2b33c');rr(c,520,300,34,8,2,'#f0c85a');rr(c,527,312,14,8,1,'#a8522f');
+ for(let k=0;k<4;k++){const y=338+k*0;const x=468+k*21;rr(c,x+2,y+14,16,4,1,'#9c9a8f55');rr(c,x,y,16,16,2,'#3d4644');rr(c,x,y-4,16,6,2,'#5d86b8');rr(c,x+5,y-6,6,3,1,'#8e9a98');}
+ rr(c,470,318,5,12,2,'#c8442f');ellipse(c,472.5,318,3.5,2.5,'#e0614a');
  text(c,'20',548,198,11,'#eef0e6','700');
  const pampres=()=>{c.beginPath();c.moveTo(1385,933);c.lineTo(110,933);};
  c.lineCap='butt';for(const [width,color]of [[48,'#cfcab6'],[38,'#aeb3ae']]){c.strokeStyle=color;c.lineWidth=width;pampres();c.stroke();}
