@@ -47,9 +47,9 @@ const missions=[
 // Layout follows ecole_highlight.png, including its viewing direction.
 // Footprint IDs correspond to visible groups, not to invented street addresses.
 const buildings=[
- {ref:'school-front',x:455,y:462,w:185,h:78,height:62,color:'#ac815c',school:true,name:'École de Belle-Cour',type:'school'},
- {ref:'school-spine',x:560,y:352,w:95,h:110,height:66,color:'#ac815c',school:true,name:'',type:'decor'},
- {ref:'school-rear',x:600,y:268,w:100,h:84,height:58,color:'#ac815c',school:true,name:'',type:'decor'},
+ {ref:'school-front',x:450,y:468,w:200,h:72,height:62,color:'#ac815c',school:true,name:'École de Belle-Cour',type:'school'},
+ {ref:'school-spine',x:565,y:372,w:95,h:96,height:66,color:'#ac815c',school:true,name:'',type:'decor'},
+ {ref:'school-rear',x:600,y:258,w:62,h:114,height:58,color:'#ac815c',school:true,name:'',type:'decor'},
  {ref:'right-north-a',x:800,y:92,w:80,h:60,height:57,color:'#ecd4b5',name:'',type:'decor'},
  {ref:'right-north-b',x:895,y:92,w:85,h:60,height:57,color:'#edd6b9',name:'',type:'decor'},
  {ref:'right-row-1',x:800,y:212,w:170,h:65,height:65,color:'#ead5b7',name:'',type:'decor'},
@@ -565,7 +565,7 @@ function outdoorGround(){const c=ctx;
  ellipse(c,409,644,17,9,'#9c9a8f55');ellipse(c,406,639,15,10,'#ddd7c9');ellipse(c,402,636,7,4,'#f1ede3');
  rr(c,308,606,68,4,1,'#9aa3a0');rr(c,311,610,2,30,0,'#9aa3a0');rr(c,371,610,2,30,0,'#9aa3a0');rr(c,306,603,72,9,2,'#eef0ec');rr(c,306,610,72,2,0,'#c9cfcb');
  // Two small play areas: the annotated table and slide are directly in front of the school.
- rr(c,417,548,220,96,13,'#c7c6b0');rr(c,424,553,206,86,10,'#ddd5bb');
+ rr(c,417,548,220,96,13,'#b9806c');rr(c,424,553,206,86,10,'#c98772');
  // Continuous side courtyard from the rear play area to the front gate.
  rr(c,schoolCourtyard.x,schoolCourtyard.y,schoolCourtyard.w,schoolCourtyard.h,4,'#c8c4b5');
  rr(c,632,528,163,112,4,'#cbc6b7');
