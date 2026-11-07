@@ -9,6 +9,7 @@ Un jeu éducatif dans un quartier illustré inspiré du Bocage à Onex, Genève.
 ## Jouer
 
 - Flèches, ZQSD ou WASD : se déplacer. Des boutons directionnels sont aussi disponibles à l’écran.
+- Sur téléphone ou tablette : posez le doigt sur la carte et faites-le glisser pour marcher (joystick virtuel ; plus on glisse loin, plus on va vite). La vue est rapprochée et suit le personnage. Le grand bouton vert indique avec qui parler ou dans quel lieu entrer.
 - **E ou Entrée** : parler, jouer ou entrer, en étant à proximité.
 - **Échap** : fermer un dialogue.
 - Le préau permet d’entrer dans l’école. Les nouvelles pièces se trouvent dans son couloir.
@@ -46,7 +47,13 @@ Les 52 contrôles utilisent un DOM simulé et une véritable implémentation Can
 
 ## Publication
 
-Site statique servi depuis la racine de la branche **main**, avec GitHub Pages. Le fichier **.nojekyll** désactive le traitement Jekyll. Un push sur main met à jour le jeu publié.
+Site statique servi par GitHub Pages depuis la branche **gh-pages**, que le workflow **Previews des branches** (`.github/workflows/previews.yml`) remplit à chaque push :
+
+- **main** est publiée à la racine : https://r-c-hub.github.io/bocage/
+- chaque autre branche est publiée sous `branches/<nom-de-branche>/` (les `/` deviennent des `-`), par exemple https://r-c-hub.github.io/bocage/branches/claude-spinner-speed-100-percent-ptac1m/
+- la liste des versions de test : https://r-c-hub.github.io/bocage/branches/
+
+Une branche supprimée perd sa version de test. Réglage nécessaire une fois : Settings → Pages → Source « Deploy from a branch », branche **gh-pages**, dossier **/ (root)**.
 
 [Guide complet](docs/GUIDE.md)
 

@@ -1,0 +1,92 @@
+# Publishes the game on the gh-pages branch, served by GitHub Pages:
+#   main               -> https://r-c-hub.github.io/bocage/
+#   any other branch   -> https://r-c-hub.github.io/bocage/branches/<branch-name-with-dashes>/
+# A deleted branch loses its preview.
+name: Previews des branches
+
+on:
+  push:
+    branches: ['**']
+  delete:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer la branche poussée
+        if: github.event_name != 'delete'
+        uses: actions/checkout@v4
+        with:
+          path: src
+
+      - name: Récupérer main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+
+      - name: Récupérer gh-pages
+        run: |
+          if git ls-remote --exit-code --heads "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages >/dev/null; then
+            git clone --depth 1 --branch gh-pages "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" site
+          else
+            mkdir site && cd site && git init -b gh-pages
+            git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          fi
+
+      - name: Construire le site
+        env:
+          EVENT: ${{ github.event_name }}
+          PUSHED: ${{ github.ref_name }}
+          DELETED: ${{ github.event.ref }}
+        run: |
+          set -euo pipefail
+          copy_game() { # $1 source, $2 destination
+            mkdir -p "$2"
+            rsync -a --delete --exclude '.git' --exclude '.github' --exclude 'branches' \
+              --exclude 'tests' --exclude 'scripts' --exclude 'docs' --exclude 'node_modules' \
+              --exclude 'outputs' --exclude 'work' --exclude '*.md' --exclude 'package*.json' \
+              "$1/" "$2/"
+          }
+          slug() { echo "$1" | sed 's#[^A-Za-z0-9._-]#-#g'; }
+
+          # The root always mirrors main, so the public game is unchanged.
+          copy_game main site
+          touch site/.nojekyll
+
+          if [ "$EVENT" = "delete" ]; then
+            rm -rf "site/branches/$(slug "$DELETED")"
+          elif [ "$PUSHED" != "main" ]; then
+            copy_game src "site/branches/$(slug "$PUSHED")"
+          fi
+
+          # Small index page listing the available previews.
+          mkdir -p site/branches
+          {
+            echo '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bocage · versions de test</title>'
+            echo '<style>body{font-family:system-ui,sans-serif;background:#f7f7ef;color:#253d33;max-width:640px;margin:auto;padding:24px 16px}a{color:#355f46;font-size:18px}li{margin:12px 0}</style></head><body>'
+            echo '<h1>Versions de test du Bocage</h1><p><a href="../">Version publiée (main)</a></p><ul>'
+            for d in site/branches/*/; do
+              [ -d "$d" ] || continue
+              name=$(basename "$d"); echo "<li><a href=\"$name/\">$name</a></li>"
+            done
+            echo '</ul></body></html>'
+          } > site/branches/index.html
+
+      - name: Publier
+        run: |
+          cd site
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "Rien à publier"; exit 0; fi
+          git commit -m "Previews : ${{ github.event_name }} ${{ github.ref_name }}"
+          git push origin gh-pages

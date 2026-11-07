@@ -18,3 +18,17 @@ body.immersive{height:100vh;height:100dvh;overflow:hidden}.immersive>header{heig
 
 .park-drive{display:flex;gap:10px;margin-top:12px}.park-drive button{flex:1;min-height:50px;touch-action:none;user-select:none}.park-drive button:active{transform:translateY(2px);filter:brightness(.9)}.park-input-hint{font-size:12px;color:#718075;line-height:1.6}.park-meter-label{display:flex;justify-content:space-between;gap:12px;font-size:12px;margin:12px 0 6px}.park-meter-label output{font-variant-numeric:tabular-nums;font-weight:700}
 .hop-canvas{display:block;width:100%;height:auto;border-radius:18px;margin-top:16px}.hop-aim{position:relative;height:20px;border-radius:12px;background:#e7ddcb;overflow:hidden;margin:16px 0 10px}.hop-aim span{position:absolute;top:0;height:100%;background:#8dbda0}.hop-aim i{position:absolute;top:0;width:5px;height:100%;background:#395a48;transform:translateX(-50%)}.hop-status{display:flex;justify-content:space-between;gap:12px;margin-top:16px;font-size:12px;color:#657b60}.hop-pad{display:flex;flex-wrap:wrap;gap:7px}.hop-pad button{min-width:52px;min-height:46px;flex:1}.hop-pad button:disabled{opacity:.45;cursor:default}.hop-pad .hop-next{outline:3px solid #79a88e;outline-offset:1px}#hopThrow{width:100%}#hopThrowPanel[hidden],#hopCollect[hidden]{display:none}
+
+/* Touch screens: one-finger stick on the map, a single clear talk button, no tiny arrows. */
+button{touch-action:manipulation}
+body.touch .manual-controls .touch-pad button[data-key]{display:none}
+body.touch .immersive .manual-controls,body.touch.immersive .manual-controls{right:auto;left:50%;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom,0px))}
+body.touch .manual-controls .touch-pad{padding:5px;border-radius:16px;box-shadow:0 4px 18px #294f3b22}
+body.touch.immersive .manual-controls .touch-pad button#touchInteract{min-width:220px;max-width:calc(100vw - 40px);height:52px;padding:0 18px;border-radius:12px;font-size:15px;font-weight:600;background:#e6ebdd;color:#6c7b6a;border:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .2s,color .2s}
+body.touch.immersive .manual-controls .touch-pad button#touchInteract.ready{background:#355f46;color:#fff;animation:talk-ready 1.6s ease-in-out infinite}
+body.touch.immersive .game-toolbar{bottom:82px}
+body.touch.immersive .zoom-controls{bottom:82px}
+body.touch.immersive .zoom-controls button{width:42px;height:42px;font-size:24px}
+body.touch.immersive .transport button{padding:9px 12px;font-size:20px}
+@keyframes talk-ready{50%{box-shadow:0 0 0 6px #355f4630}}
+@media(prefers-reduced-motion:reduce){body.touch .touch-pad button#touchInteract.ready{animation:none}}

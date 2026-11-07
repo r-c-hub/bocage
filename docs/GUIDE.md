@@ -4,7 +4,7 @@ Ouvrez **index.html** à la racine des sources en conservant **game.js** et **st
 
 ## Jouer
 
-Créez le personnage : pseudo, âge de 7 à 12 ans, fille ou garçon, coiffure, peau, cheveux, yeux, haut et pantalon. Promenez-vous avec les flèches, ZQSD ou WASD, ou en maintenant les boutons directionnels sous le jeu. Les déplacements sont entièrement manuels.
+Créez le personnage : pseudo, âge de 7 à 12 ans, fille ou garçon, coiffure, peau, cheveux, yeux, haut et pantalon. Promenez-vous avec les flèches, ZQSD ou WASD, ou en maintenant les boutons directionnels sous le jeu. Sur écran tactile, faites glisser le doigt sur la carte : un joystick apparaît sous le doigt. Les déplacements sont entièrement manuels.
 
 Approchez-vous d’une personne ou d’une porte, puis appuyez sur **E ou Entrée**, sur **Parler / entrer**, ou cliquez sur la personne à proximité. **Échap** ferme un dialogue. Un clic au loin ne déclenche ni trajet ni conversation. Les boutons + et − règlent le zoom. Le vélo et la trottinette sont plus rapides ; à l’intérieur, le personnage marche.
 
