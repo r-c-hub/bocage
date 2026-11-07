@@ -50,9 +50,9 @@ const buildings=[
  {ref:'school-front',x:440,y:440,w:190,h:90,height:65,color:'#ac815c',school:true,name:'École de Belle-Cour',type:'school'},
  {ref:'school-spine',x:575,y:340,w:80,h:145,height:68,color:'#ac815c',school:true,name:'',type:'decor'},
  {ref:'school-rear',x:610,y:285,w:105,h:85,height:57,color:'#ac815c',school:true,name:'',type:'decor'},
- {ref:'right-north-a',x:800,y:110,w:80,h:60,height:57,color:'#ecd4b5',name:'',type:'decor'},
- {ref:'right-north-b',x:895,y:115,w:85,h:60,height:57,color:'#edd6b9',name:'',type:'decor'},
- {ref:'right-row-1',x:800,y:200,w:170,h:75,height:65,color:'#ead5b7',name:'',type:'decor'},
+ {ref:'right-north-a',x:800,y:92,w:80,h:60,height:57,color:'#ecd4b5',name:'',type:'decor'},
+ {ref:'right-north-b',x:895,y:92,w:85,h:60,height:57,color:'#edd6b9',name:'',type:'decor'},
+ {ref:'right-row-1',x:800,y:212,w:170,h:65,height:65,color:'#ead5b7',name:'',type:'decor'},
  {ref:'right-row-2',x:800,y:340,w:180,h:75,height:65,color:'#f1dcc1',name:'Chez toi',type:'home'},
  {ref:'right-row-3',x:810,y:475,w:185,h:80,height:65,color:'#efdabe',name:'Chez Inès',type:'inesHome'},
  {ref:'east-1-a',x:1050,y:150,w:95,h:70,height:62,color:'#ead0b1',name:'',type:'decor'},
@@ -91,7 +91,8 @@ const fixtures=[
 ];
 const trees=[];
 let seed=37;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
-const lanes=[{x:736,y:200,w:30,h:450},{x:1010,y:150,w:35,h:755},{x:300,y:650,w:1070,h:35},{x:200,y:870,w:1180,h:35}];
+// Two small paths leave the lane along the road: behind the school (from the bus-stop square) and in front of it.
+const lanes=[{x:736,y:180,w:30,h:470},{x:1010,y:150,w:35,h:755},{x:262,y:650,w:1108,h:35},{x:200,y:870,w:1180,h:35},{x:612,y:172,w:400,h:22}];
 for(let i=0;i<200;i++){
  const x=85+rnd()*1340,y=125+rnd()*935;
  if(x<375&&y<360)continue;
@@ -538,7 +539,15 @@ function outdoorGround(){const c=ctx;
  rr(c,57,75,1380,1150,60,'#bbcba3');rr(c,62,65,1370,1150,60,'#d7dfbf');
  c.globalAlpha=.45;for(let i=0;i<210;i++)ellipse(c,85+(i*137)%1320,105+(i*263)%950,1.4,1,'#a6b789');c.globalAlpha=1;
  drawRoadGround();
+ // The square by the bus stop, with its painted 20 zone, opens onto the path behind the school.
+ c.lineCap='round';for(const [w,col]of [[28,'#c5c6b4'],[22,'#ded9c6']]){c.strokeStyle=col;c.lineWidth=w;c.beginPath();c.moveTo(585,262);c.lineTo(622,183);c.stroke();}
+ ellipse(c,578,262,32,20,'#e6dec8');text(c,'20',578,268,15,'#8d8a7e','700');
  for(const l of lanes){rr(c,l.x-3,l.y+3,l.w+6,l.h,5,'#c5c6b4');rr(c,l.x,l.y,l.w,l.h,4,'#ded9c6');}
+ for(const [i,x]of [818,858,910,950].entries()){c.save();c.translate(x,163);c.rotate(Math.PI/2);parkedCar(-10,-18,['#c9c9c4','#b5574b','#c9c9c4','#7f9a8c'][i]);c.restore();}
+ rr(c,1000,176,9,13,2,'#5c84b8');rr(c,1003,179,3,7,1,'#f4f1e6');rr(c,1003,189,2,10,0,'#7d8a85');
+ // In front of the school: bike racks and a large boulder at the corner of the play area (photo).
+ c.strokeStyle='#8e9c98';c.lineWidth=2;for(let i=0;i<4;i++){c.beginPath();c.arc(318+i*15,632,5,Math.PI,0);c.lineTo(323+i*15,640);c.moveTo(313+i*15,632);c.lineTo(313+i*15,640);c.stroke();}
+ ellipse(c,409,644,17,9,'#9c9a8f55');ellipse(c,406,639,15,10,'#ddd7c9');ellipse(c,402,636,7,4,'#f1ede3');
  // Two small play areas: the annotated table and slide are directly in front of the school.
  rr(c,417,548,220,96,13,'#c7c6b0');rr(c,424,553,206,86,10,'#ddd5bb');
  // Continuous side courtyard from the rear play area to the front gate.
@@ -571,7 +580,7 @@ function outdoorGround(){const c=ctx;
  for(const [i,y]of [1000,1048,1096,1144].entries()){c.strokeStyle='#e8e4d2';c.lineWidth=1.5;c.strokeRect(garageAccess.x+5,y-4,28,45);if(i!==2)parkedCar(garageAccess.x+9,y,['#c0af7d','#7898a8','#b18a76','#8da28b'][i]);}
  c.strokeStyle='#ede8d5';c.lineWidth=1.5;c.beginPath();c.moveTo(garageAccess.x+4,garageAccess.y+36);c.lineTo(garageAccess.x+4,garageAccess.y+garageAccess.h-5);c.moveTo(garageAccess.x+garageAccess.w-4,garageAccess.y+36);c.lineTo(garageAccess.x+garageAccess.w-4,garageAccess.y+garageAccess.h-5);c.stroke();
  c.save();c.translate(1034,585);c.rotate(-Math.PI/2);text(c,'Chemin du Bocage',0,0,12,'#999a81');c.restore();
- for(const b of buildings){if(b.school)continue;
+ for(const b of buildings){if(b.school||b.ref.startsWith('right-north'))continue;
  for(let sx=b.x+13;sx<b.x+b.w-10;sx+=gardenSize.spacing){
  const doorX=b.x+b.w/2;if(b.type!=='decor'&&sx<doorX+17&&sx+gardenSize.width>doorX-17)continue;
  rr(c,sx,b.y+b.h+gardenSize.offset,gardenSize.width,gardenSize.depth,3,'#bdcda2');
