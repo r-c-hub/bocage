@@ -47,7 +47,13 @@ Les 52 contrôles utilisent un DOM simulé et une véritable implémentation Can
 
 ## Publication
 
-Site statique servi depuis la racine de la branche **main**, avec GitHub Pages. Le fichier **.nojekyll** désactive le traitement Jekyll. Un push sur main met à jour le jeu publié.
+Site statique servi par GitHub Pages depuis la branche **gh-pages**, que le workflow **Previews des branches** (`.github/workflows/previews.yml`) remplit à chaque push :
+
+- **main** est publiée à la racine : https://r-c-hub.github.io/bocage/
+- chaque autre branche est publiée sous `branches/<nom-de-branche>/` (les `/` deviennent des `-`), par exemple https://r-c-hub.github.io/bocage/branches/claude-spinner-speed-100-percent-ptac1m/
+- la liste des versions de test : https://r-c-hub.github.io/bocage/branches/
+
+Une branche supprimée perd sa version de test. Réglage nécessaire une fois : Settings → Pages → Source « Deploy from a branch », branche **gh-pages**, dossier **/ (root)**.
 
 [Guide complet](docs/GUIDE.md)
 
