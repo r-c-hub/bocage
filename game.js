@@ -510,29 +510,38 @@ function drawFixture(f){const c=ctx;
   c.strokeStyle='#a87558';c.lineWidth=1.5;c.beginPath();c.moveTo(x-7,roofY);c.lineTo(cx,cy);c.lineTo(x+w+7,roofBottom);c.moveTo(x+w+7,roofY);c.lineTo(cx,cy);c.lineTo(x-7,roofBottom);c.stroke();
   c.restore();text(c,'Préau',x+w/2,y+h+15,11,'#7e8e70');
  }else if(f.id==='garage'){
-  const {x,y,w,h,ramp}=f,left=ramp.x;
-  // The ramp runs from the left into the west-facing portal, under a tile roof.
-  poly(c,[[left-4,y+5],[x+5,y-1],[x+5,y+54],[left-4,y+68]],'#bdbdae');
-  poly(c,[[left+5,y+15],[x,y+10],[x,y+47],[left+5,y+57]],'#929b93');
-  poly(c,[[left-4,y+5],[x+5,y-1],[x,y+10],[left+5,y+15]],'#ceccb9');
-  poly(c,[[left-4,y+68],[x+5,y+54],[x,y+47],[left+5,y+57]],'#c7c7b4');
-  c.strokeStyle='#acb4a8';c.lineWidth=1;for(let xx=left+18;xx<x-8;xx+=14){c.beginPath();c.moveTo(xx,y+15);c.lineTo(xx,y+55-(xx-left)*.04);c.stroke();}
-  // The long front wall is closed. The only opening is on the left side.
-  poly(c,[[x,y-2],[x+23,y+5],[x+23,y+h],[x,y+51]],'#bfc1ad');
-  poly(c,[[x+23,y+5],[x+w,y+5],[x+w,y+h],[x+23,y+h]],'#d0cdb9');
-  poly(c,[[x+3,y+7],[x+18,y+12],[x+18,y+51],[x+3,y+44]],'#344c44');
-  c.strokeStyle='#92a297';c.lineWidth=1.5;c.beginPath();c.moveTo(x+7,y+11);c.lineTo(x+7,y+42);c.stroke();
-  c.strokeStyle='#eee6cf';c.lineWidth=4;c.beginPath();c.moveTo(x-2,y+13);c.lineTo(x-2,y+46);c.stroke();
-  for(let yy=y+16;yy<y+45;yy+=10){c.strokeStyle='#bd7a62';c.beginPath();c.moveTo(x-2,yy);c.lineTo(x-2,yy+5);c.stroke();}
-  const roofTop=y-32,roofBottom=y+8,ridge=y-19;
-  c.save();if(player.x>x-8&&player.x<x+w+8&&player.y>roofTop-15&&player.y<y)c.globalAlpha=.42;
-  poly(c,[[x+4,roofTop],[x+w-4,roofTop],[x+w+2,ridge],[x-2,ridge]],'#d39a7c');
-  poly(c,[[x-2,ridge],[x+w+2,ridge],[x+w+7,roofBottom],[x-7,roofBottom]],'#c78667');
-  c.strokeStyle='#ae73534d';c.lineWidth=.8;for(let yy=roofTop+4;yy<roofBottom;yy+=6){c.beginPath();c.moveTo(x+2,yy);c.lineTo(x+w-2,yy);c.stroke();}
-  for(let xx=x+6;xx<x+w;xx+=8){c.beginPath();c.moveTo(xx,roofTop+1);c.lineTo(xx,roofBottom-1);c.stroke();}
-  c.strokeStyle='#a97054';c.lineWidth=2;c.beginPath();c.moveTo(x-2,ridge);c.lineTo(x+w+2,ridge);c.stroke();c.restore();
-  rr(c,left-7,y+3,3,32,1,'#8c9d88');rr(c,left-15,y-12,20,22,3,'#72969e');text(c,'P',left-5,y+4,15,'#fff8e1','700');
-  text(c,'Entrée garage',left+(x-left)/2,y-3,11,'#7b8d72');
+  const {x,y,w,h,ramp}=f,L=ramp.x,R=ramp.x+ramp.w,T=ramp.y,B=ramp.y+ramp.h,mid=(T+B)/2;
+  // Drawn from the photo: an open timber shelter with a tile roof covers a ramp that goes down,
+  // between two concrete walls topped with black railings, to a grey door. The car park is underground.
+  rr(c,x,y+2,w,h-2,4,'#bdb9a8');rr(c,x+4,y-2,w-8,h-8,6,'#86a86b');
+  for(let i=0;i<6;i++)ellipse(c,x+14+i*16,y+8+(i%2)*14,10,8,['#97b97b','#7d9f63'][i%2]);
+  const slope=c.createLinearGradient(L,0,R,0);slope.addColorStop(0,'#9da19b');slope.addColorStop(1,'#4c524f');
+  rr(c,L,T+9,ramp.w,ramp.h-18,0,slope);
+  c.strokeStyle='#e9e6dc99';c.lineWidth=1.5;c.beginPath();c.moveTo(L+24,mid+9);c.lineTo(R-16,mid-3);c.stroke();
+  rr(c,R-12,T+9,12,ramp.h-18,0,'#d8d3c5');rr(c,R-10,T+12,8,ramp.h-24,1,'#a6abab');
+  c.strokeStyle='#8d9393';c.lineWidth=.8;for(let yy=T+16;yy<B-12;yy+=5){c.beginPath();c.moveTo(R-10,yy);c.lineTo(R-2,yy);c.stroke();}
+  for(const wy of [T,B-9]){rr(c,L,wy,ramp.w,9,1,'#e6e1d3');for(let i=0;i<6;i++)rr(c,L+i*6,wy+5,6,4,0,i%2?'#2f3330':'#e2b33c');}
+  rr(c,L,B,ramp.w,5,0,'#cbc5b4');
+  rr(c,L+9,mid-12,3,14,1,'#f6f4ee');rr(c,L+7,mid,7,4,1,'#e2b33c');
+  // Black railings along both walls, from where the ramp is deep enough.
+  c.strokeStyle='#2e3532';c.lineWidth=1.3;
+  for(const wy of [T+3,B-5]){c.beginPath();c.moveTo(L+34,wy-9);c.lineTo(R,wy-9);c.stroke();for(let xx=L+34;xx<=R;xx+=6){c.beginPath();c.moveTo(xx,wy);c.lineTo(xx,wy-9);c.stroke();}}
+  const eaveN=T-34,eaveS=B-34,ridge=(eaveN+eaveS)/2-12,posts=[L+8,L+ramp.w/2,R-5];
+  c.save();if(player.x>L-10&&player.x<x+w+8&&player.y>eaveN-20&&player.y<T+12)c.globalAlpha=.42;
+  c.strokeStyle='#5b3b29';c.lineCap='butt';
+  for(const wy of [T+4,B-4])for(const px of posts){c.lineWidth=4;c.beginPath();c.moveTo(px,wy);c.lineTo(px,wy-36);c.stroke();}
+  c.lineWidth=2;for(const px of posts){c.beginPath();c.moveTo(px-9,eaveS+4);c.lineTo(px,eaveS+12);c.lineTo(px+9,eaveS+4);c.stroke();}
+  poly(c,[[L-7,ridge],[R+7,ridge],[R+5,eaveN],[L-5,eaveN]],'#d39a7c');
+  poly(c,[[L-9,eaveS+2],[R+9,eaveS+2],[R+7,ridge],[L-7,ridge]],'#c78667');
+  c.strokeStyle='#ae73534d';c.lineWidth=.8;
+  for(let yy=eaveN+5;yy<eaveS;yy+=6){c.beginPath();c.moveTo(L-4,yy);c.lineTo(R+4,yy);c.stroke();}
+  for(let xx=L-2;xx<R+6;xx+=8){c.beginPath();c.moveTo(xx,eaveN+1);c.lineTo(xx,eaveS+1);c.stroke();}
+  c.strokeStyle='#a5694d';c.lineWidth=3;c.beginPath();c.moveTo(L-7,ridge);c.lineTo(R+7,ridge);c.stroke();
+  rr(c,L-9,eaveS+2,ramp.w+18,4,1,'#5b3b29');
+  rr(c,L+ramp.w*.62,eaveS+7,15,8,1,'#fbfaf5');c.strokeStyle='#d24a3a';c.lineWidth=1.2;c.beginPath();c.arc(L+ramp.w*.62+4,eaveS+11,2.6,0,Math.PI*2);c.stroke();
+  c.restore();
+  rr(c,L-15,y+3,3,32,1,'#8c9d88');rr(c,L-23,y-12,20,22,3,'#72969e');text(c,'P',L-13,y+4,15,'#fff8e1','700');
+  text(c,'Entrée garage',L+ramp.w/2,eaveN-6,11,'#7b8d72');
  }
 }
 function outdoorGround(){const c=ctx;
