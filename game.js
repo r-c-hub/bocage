@@ -50,11 +50,11 @@ const buildings=[
  {ref:'school-front',x:450,y:468,w:200,h:72,height:62,color:'#ac815c',school:true,name:'École de Belle-Cour',type:'school'},
  {ref:'school-spine',x:565,y:372,w:95,h:96,height:66,color:'#ac815c',school:true,name:'',type:'decor'},
  {ref:'school-rear',x:600,y:258,w:62,h:114,height:58,color:'#ac815c',school:true,name:'',type:'decor'},
- {ref:'right-north-a',x:800,y:92,w:80,h:60,height:57,color:'#ecd4b5',name:'',type:'decor'},
- {ref:'right-north-b',x:895,y:92,w:85,h:60,height:57,color:'#edd6b9',name:'',type:'decor'},
- {ref:'right-row-1',x:800,y:212,w:170,h:65,height:65,color:'#ead5b7',name:'',type:'decor'},
- {ref:'right-row-2',x:800,y:340,w:180,h:75,height:65,color:'#f1dcc1',name:'Chez toi',type:'home'},
- {ref:'right-row-3',x:810,y:475,w:185,h:80,height:65,color:'#efdabe',name:'Chez Inès',type:'inesHome'},
+ {ref:'right-north-a',x:810,y:92,w:80,h:55,height:57,color:'#ecd4b5',name:'',type:'decor'},
+ {ref:'right-north-b',x:900,y:92,w:90,h:55,height:57,color:'#edd6b9',name:'',type:'decor'},
+ {ref:'right-row-1',x:790,y:215,w:200,h:55,height:62,color:'#ead5b7',name:'',type:'decor'},
+ {ref:'right-row-2',x:820,y:368,w:170,h:55,height:62,color:'#f1dcc1',name:'Chez toi',type:'home'},
+ {ref:'right-row-3',x:820,y:520,w:170,h:55,height:62,color:'#efdabe',name:'Chez Inès',type:'inesHome'},
  {ref:'east-1-a',x:1050,y:150,w:95,h:70,height:62,color:'#ead0b1',name:'',type:'decor'},
  {ref:'east-1-b',x:1170,y:165,w:100,h:70,height:62,color:'#efd8ba',name:'',type:'decor'},
  {ref:'east-2-a',x:1060,y:295,w:95,h:75,height:62,color:'#e6caaa',name:'',type:'decor'},
@@ -603,8 +603,8 @@ function outdoorGround(){const c=ctx;
  for(const b of buildings){if(b.school||b.ref.startsWith('right-north'))continue;
  for(let sx=b.x+13;sx<b.x+b.w-10;sx+=gardenSize.spacing){
  const doorX=b.x+b.w/2;if(b.type!=='decor'&&sx<doorX+17&&sx+gardenSize.width>doorX-17)continue;
- rr(c,sx,b.y+b.h+gardenSize.offset,gardenSize.width,gardenSize.depth,3,'#bdcda2');
- rr(c,sx,b.y+b.h+gardenSize.offset+gardenSize.depth-2,gardenSize.width,4,2,'#91a77a');
+ rr(c,sx,b.y+b.h+gardenSize.offset,gardenSize.width,gardenSize.depth,3,'#bdcda2');c.strokeStyle='#86a46e';c.lineWidth=2;c.strokeRect(sx+1,b.y+b.h+gardenSize.offset+1,gardenSize.width-2,gardenSize.depth-2);
+ rr(c,sx,b.y+b.h+gardenSize.offset+gardenSize.depth-2,gardenSize.width,4,2,'#7f9d68');
  }
  if(b.type!=='decor')rr(c,b.x+b.w/2-11,b.y+b.h+5,22,gardenSize.offset+gardenSize.depth+4,2,'#ded9c6');
  }
