@@ -47,9 +47,9 @@ const missions=[
 // Layout follows ecole_highlight.png, including its viewing direction.
 // Footprint IDs correspond to visible groups, not to invented street addresses.
 const buildings=[
- {ref:'school-front',x:440,y:440,w:190,h:90,height:65,color:'#ac815c',school:true,name:'École de Belle-Cour',type:'school'},
- {ref:'school-spine',x:575,y:340,w:80,h:145,height:68,color:'#ac815c',school:true,name:'',type:'decor'},
- {ref:'school-rear',x:610,y:285,w:105,h:85,height:57,color:'#ac815c',school:true,name:'',type:'decor'},
+ {ref:'school-front',x:455,y:462,w:185,h:78,height:62,color:'#ac815c',school:true,name:'École de Belle-Cour',type:'school'},
+ {ref:'school-spine',x:560,y:352,w:95,h:110,height:66,color:'#ac815c',school:true,name:'',type:'decor'},
+ {ref:'school-rear',x:600,y:268,w:100,h:84,height:58,color:'#ac815c',school:true,name:'',type:'decor'},
  {ref:'right-north-a',x:800,y:92,w:80,h:60,height:57,color:'#ecd4b5',name:'',type:'decor'},
  {ref:'right-north-b',x:895,y:92,w:85,h:60,height:57,color:'#edd6b9',name:'',type:'decor'},
  {ref:'right-row-1',x:800,y:212,w:170,h:65,height:65,color:'#ead5b7',name:'',type:'decor'},
@@ -84,7 +84,7 @@ const outside=[
 ];
 const schoolCourtyard={x:632,y:300,w:163,h:340};
 const fixtures=[
- {id:'pingpong',x:553,y:578,w:78,h:42},
+ {id:'pingpong',x:563,y:578,w:78,h:42},
  {id:'slide',x:438,y:560,w:65,h:78},
  {id:'garage',x:625,y:850,w:105,h:62,roof:'tiles',entrance:'left',ramp:{x:465,y:854,w:160,h:58}},
  {id:'preau',x:650,y:405,w:100,h:80,height:38}
@@ -425,7 +425,16 @@ function building(b){
  if(b.type!=='decor'){rr(c,doorX-12,y+h-33,24,33,1,school?'#c5a249':'#6d7768');rr(c,doorX-9,y+h-29,18,22,1,'#8da29b');rr(c,doorX-21,y+h,42,6,2,'#c8c6b3');}
  // Roof orientation follows each footprint in the selected oblique reference.
  const roofY=y-hh,rise=school?13:17;
- if(b.flat){
+ if(school){
+ // Hip roofs: each school wing slopes on all four sides, as seen from above.
+ const x0=x-6,x1=x+w+7,y0=roofY,y1=top,s=Math.min(w,h)/2;
+ let L,R;if(w>=h){const m=(y0+y1)/2-rise;L=[x+s,m];R=[x+w-s,m];
+  poly(c,[[x0,y0],[x1,y0],R,L],'#d39a7c');poly(c,[[x0,y0],[x0,y1],L],'#cf9273');poly(c,[[x1,y0],[x1,y1],R],'#b8785b');poly(c,[[x0,y1],[x1,y1],R,L],'#c78667');}
+ else{const m=(x0+x1)/2;L=[m,y0+s-rise];R=[m,y1-s-rise];
+  poly(c,[[x0,y0],[x1,y0],L],'#d39a7c');poly(c,[[x0,y0],[x0,y1],R,L],'#cf9273');poly(c,[[x1,y0],[x1,y1],R,L],'#b8785b');poly(c,[[x0,y1],[x1,y1],R],'#c78667');}
+ c.strokeStyle='#a5694d';c.lineWidth=1.6;c.beginPath();c.moveTo(x0,y0);c.lineTo(...L);c.lineTo(...R);c.lineTo(x1,y0);c.moveTo(x0,y1);c.lineTo(...L);c.moveTo(x1,y1);c.lineTo(...R);c.stroke();
+ c.strokeStyle='#ae735333';c.lineWidth=.8;for(let yy=y0+6;yy<y1;yy+=7){c.beginPath();c.moveTo(x0+2,yy);c.lineTo(x1-2,yy);c.stroke();}
+ }else if(b.flat){
  rr(c,x-4,roofY,w+8,h,2,b.wood?'#bea580':b.concrete?'#b5beb8':'#bb8c70');rr(c,x+6,roofY+8,w-12,h-17,1,b.wood?'#dcc49c':b.concrete?'#e1e3da':'#b7ada0');
  if(b.wood){for(let sy=roofY+10,i=0;sy<top-10;sy+=5,i++){rr(c,x+7,sy,w-14,2,0,i%3===0?'#ead4ae':'#e2cba5');c.strokeStyle='#bca17b88';c.lineWidth=.65;c.beginPath();c.moveTo(x+7,sy+3);c.lineTo(x+w-7,sy+3);c.stroke();}}
  if(b.concrete){for(let sx=x+26;sx<x+w-30;sx+=45){rr(c,sx,roofY+28,31,33,1,'#a4b4b3','#7e9392');rr(c,sx+5,roofY+32,20,25,1,'#d3dfda');}}else rr(c,x+18,roofY+22,w-36,h-42,1,'#455769');c.strokeStyle=b.wood?'#b89d78':'#a7b0ae';c.lineWidth=2;c.strokeRect(x+6,roofY+8,w-12,h-17);
@@ -445,7 +454,6 @@ function building(b){
  c.strokeStyle='#ac7155';c.lineWidth=2;c.beginPath();c.moveTo(x+ridge,roofY-rise);c.lineTo(x+ridge,top-rise);c.stroke();
  }
  if(!school){rr(c,x+w*.7,y-hh+h*.32-19,7,17,1,'#9b8b77');rr(c,x+w*.7-2,y-hh+h*.32-21,11,4,1,'#b3a38b');}
- if(b.ref==='school-spine'){poly(c,[[x+w,444],[x+w+12,438],[x+w+12,473],[x+w,479]],'#d6b254');poly(c,[[x+w+2,446],[x+w+10,442],[x+w+10,470],[x+w+2,474]],'#72988d');}
  if(b.type==='school'){rr(c,x-7,top+30,w+14,12,1,'#e9c648');text(c,'ÉCOLE DE BELLE-COUR',doorX,top+39,7,'#5b5936','700');}
 }
 function character(c,x,y,a,moving=false,portrait=false){
@@ -935,7 +943,7 @@ function drawRoadGround(){const c=ctx;
  // The paths in front of and behind the school, the courtyard path and the lane on the right share its surface.
  const paths=()=>{lanePath();c.moveTo(580,184);c.lineTo(1027,183);for(const [x0,y0,x1,y1]of [[1027,150,1027,880],[751,183,751,667],[262,667,1370,667]]){c.moveTo(x0,y0);c.lineTo(x1,y1);}};
  c.lineCap='round';c.lineJoin='round';for(const [width,color]of [[34,'#ddd8c7'],[25,'#c3c6bb']]){c.strokeStyle=color;c.lineWidth=width;paths();c.stroke();}
- text(c,'20',598,232,12,'#eef0e6','700');
+ text(c,'20',604,199,11,'#eef0e6','700');
  c.lineCap='round';c.strokeStyle='#b7cf9a';c.lineWidth=13;c.beginPath();const g0=roadPoint(-125,57),g1=roadPoint(370,57);c.moveTo(g0.x,g0.y);c.lineTo(g1.x,g1.y);c.stroke();
  for(let s=-115;s<365;s+=46){if(Math.abs(s)<60)continue;const p=roadPoint(s,57);ellipse(c,p.x,p.y-3,9,6,'#93b27c');ellipse(c,p.x+3,p.y-6,6,4,'#a9c48e');}
  // Cars park in a row on the road side of the lane, from the school down to the long building (satellite).
