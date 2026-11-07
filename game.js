@@ -20,6 +20,10 @@ let scene='outside',mode='walk',zoom=1,lang='de';
 let player={x:1045,y:705},near=null,time=0,last=0,saveTimer=0,dialogCleanup=null;
 let attempts={...saved.attempts},sound=false;
 const keys=new Set();
+// Touch devices steer with a virtual stick: the child still walks manually, only the input changes.
+const touchUI=!!window.matchMedia?.('(pointer: coarse)').matches;
+let stick=null;
+const moveHint=()=>touchUI?'Pose ton doigt sur la carte et fais-le glisser pour marcher.':'Avance avec les flèches ou ZQSD.';
 const canvas=$('#world'),ctx=canvas.getContext('2d');
 let cw=1000,ch=700,view={scale:1,ox:0,oy:0};
 const W=1500,H=1280;
@@ -117,7 +121,7 @@ function updateUI(){
 }
 function discover(id){if(!discovered.has(id)){discovered.add(id);save();}}
 function modal(html,cleanup){
- if(dialogCleanup)dialogCleanup();dialogCleanup=cleanup||null;keys.clear();$('#modalContent').innerHTML=html;
+ if(dialogCleanup)dialogCleanup();dialogCleanup=cleanup||null;keys.clear();stick=null;$('#modalContent').innerHTML=html;
  if(!$('#modal').open)$('#modal').showModal();
  if(!html.includes('<form')){const button=$('#modalContent .primary')||$('#modalContent [data-answer]');if(button)button.focus({preventScroll:true});}
 }
@@ -133,7 +137,7 @@ function profileEditor(first=false){
  $('#avatarGender').onchange=e=>{draft.gender=e.target.value;draft.hairstyle=draft.gender==='girl'?'long':'short';$('#avatarHair').value=draft.hairstyle;preview();};
  $('#avatarHair').onchange=e=>{draft.hairstyle=e.target.value;preview();};
  document.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{draft[b.dataset.color]=b.dataset.value;document.querySelectorAll(`[data-color="${b.dataset.color}"]`).forEach(c=>{c.classList.toggle('selected',c===b);c.setAttribute('aria-pressed',String(c===b));});preview();});
- $('#avatarForm').onsubmit=e=>{e.preventDefault();draft.name=draft.name.trim();if(!draft.name){$('#avatarName').focus();return;}profile=cleanProfile(draft);created=true;save();updateUI();closeModal();toast(`Bienvenue ${profile.name} ! Le quartier t’attend : avance avec les flèches ou ZQSD.`);};
+ $('#avatarForm').onsubmit=e=>{e.preventDefault();draft.name=draft.name.trim();if(!draft.name){$('#avatarName').focus();return;}profile=cleanProfile(draft);created=true;save();updateUI();closeModal();toast(`Bienvenue ${profile.name} ! Le quartier t’attend. ${moveHint()}`);};
  if($('#cancelAvatar'))$('#cancelAvatar').onclick=closeModal;preview();
 }
 
@@ -339,18 +343,18 @@ function enterPrompt(destination){
 }
 function interact(n){
  if(!n)return;
- if(Math.hypot(player.x-n.x,player.y-n.y)>=82){toast('Approche-toi avec les flèches ou ZQSD pour parler ou entrer.');return;}
+ if(Math.hypot(player.x-n.x,player.y-n.y)>=82){toast('Approche-toi pour parler ou entrer. '+moveHint());return;}
  if(n.task==='crossing')requestCrossing();else if(n.task==='park')parkActivity(n.id);else if(n.task==='decorate')editRoom();else if(n.task==='pet')careForCat();else if(n.task==='cat')catDialog();else if(n.task==='clock')watchQuiz();else if(n.task==='duration')durationQuiz();else if(n.task==='language')languageMenu();else if(n.task==='ball')ballGame();else if(n.task==='findCat')findCat();else if(n.task==='enter')enterPrompt(n.destination);else if(n.task==='math')mathQuiz();else if(n.task==='puzzle')puzzleGame();else if(n.task==='mystery')mysteryQuiz();else if(n.task==='room')enterRoom(n.destination);else if(n.task==='exit')exitRoom();else if(n.task==='wardrobe')profileEditor();else if(n.task==='journal')showMemories();else if(n.task==='stories')storyShelf();else if(n.task==='coloring')coloringShelf();else if(n.task==='library-puzzle')libraryPuzzle();else if(n.task==='revision-fr')revisionShelf('fr');else if(n.task==='revision-de')revisionShelf('de');else if(n.task==='revision-math')revisionShelf('math');else if(n.task==='basket')basketballGame();else if(n.task==='movements')movementGame();else if(n.task==='melody')melodyGame();else if(n.task==='rhythm')rhythmGame();else if(n.task==='hopscotch')hopscotchGame();
 }
 let outsideReturn={x:1045,y:705};
 function enterRoom(s){
- if(scene==='outside')outsideReturn={...player};if(scene==='school'&&schoolChildren.includes(s))schoolReturn={...player};scene=s;near=null;keys.clear();mode='walk';updateTransport();player={x:750,y:915};setZoom(1);
+ if(scene==='outside')outsideReturn={...player};if(scene==='school'&&schoolChildren.includes(s))schoolReturn={...player};scene=s;near=null;keys.clear();mode='walk';updateTransport();player={x:750,y:915};setZoom(defaultZoom());
  const titles={school:'Bienvenue à l’école',class1:'La classe des découvertes',class2:'La classe des explorateurs',home:'Ton petit chez-toi',inesHome:'Une visite chez Inès',tomHome:'Une visite chez Tom',library:'La petite bibliothèque',gym:'La salle de sport',music:'La salle de musique'};
  $('#locationTitle').textContent=titles[s];$('#placeTag').textContent=s.startsWith('class')?'EN CLASSE':s==='school'?'ÉCOLE DE BELLE-COUR':s==='library'?'BIBLIOTHÈQUE':s==='gym'?'SALLE DE SPORT':s==='music'?'SALLE DE MUSIQUE':s==='home'?'CHEZ TOI':s==='inesHome'?'CHEZ INÈS':'CHEZ TOM';canvas.focus({preventScroll:true});
 }
 function exitRoom(){
  if(schoolChildren.includes(scene)){enterRoom('school');player={...schoolReturn};return;}
- scene='outside';near=null;player={...outsideReturn};setZoom(1);$('#locationTitle').textContent='Une après-midi au Bocage';$('#placeTag').textContent='LE QUARTIER';canvas.focus({preventScroll:true});
+ scene='outside';near=null;player={...outsideReturn};setZoom(defaultZoom());$('#locationTitle').textContent='Une après-midi au Bocage';$('#placeTag').textContent='LE QUARTIER';canvas.focus({preventScroll:true});
 }
 function entities(){
  if(scene==='outside')return [...outside.filter(n=>n.id!=='cat'||catStage==='search'),...crossingEntities(),...parkGames.map(g=>({...g,task:'park'}))];
@@ -384,7 +388,7 @@ function family(){modal(`<div class="modal-eyebrow">Espace famille · prototype 
  $('#importSave').onclick=()=>$('#saveFile').click();$('#saveFile').onchange=async e=>{try{const f=e.target.files[0];if(!f||f.size>100000)throw Error();const d=JSON.parse(await f.text());if(d.version!==1||!d.profile||!Array.isArray(d.completed))throw Error();modal('<h2 class="modal-title">Charger cette aventure ?</h2><p class="modal-description">La progression actuelle sera remplacée par celle du fichier. Tu peux annuler pour garder ta partie.</p><div class="actions"><button id="confirmImport" class="primary">Charger la sauvegarde</button><button id="cancelImport" class="secondary">Annuler</button></div>');$('#cancelImport').onclick=family;$('#confirmImport').onclick=()=>{roomDecor=cleanRoom(d.room);petCare={food:!!d.pet?.food,water:!!d.pet?.water};profile=cleanProfile(d.profile);completed=new Set(d.completed.filter(k=>known.includes(k)));catStage=['search','found','done'].includes(d.catStage)?d.catStage:'new';attempts={};coloringPages=d.coloring&&typeof d.coloring==='object'&&!Array.isArray(d.coloring)?d.coloring:{};discovered=new Set(Array.isArray(d.discovered)?d.discovered.filter(k=>known.includes(k)):[...completed]);created=true;save();updateUI();closeModal();if(scene!=='outside'){if(schoolChildren.includes(scene))exitRoom();exitRoom();}toast('Ton aventure a été chargée.');};}catch{$('#familyFeedback').textContent='Ce fichier n’est pas une sauvegarde valide du Bocage.';}};
  $('#resetSave').onclick=()=>{modal('<h2 class="modal-title">Une nouvelle aventure ?</h2><p class="modal-description">Cela remettra à zéro les étoiles, les missions et les coloriages sur cet appareil. Ton personnage sera conservé. Pense à exporter ta sauvegarde si tu veux la garder.</p><div class="actions"><button id="confirmReset" class="primary">Oui, recommencer</button><button id="cancelReset" class="secondary">Garder ma partie</button></div>');$('#cancelReset').onclick=family;$('#confirmReset').onclick=()=>{completed.clear();discovered.clear();catStage='new';attempts={};coloringPages={};roomDecor=cleanRoom();petCare={food:false,water:false};save();updateUI();closeModal();scene='outside';outsideReturn={x:1045,y:705};exitRoom();toast('Une nouvelle histoire commence !');};};
 }
-function help(){modal(`<div class="modal-eyebrow">Un quartier à explorer</div><h2 class="modal-title">À toi de jouer !</h2><ul class="info-list"><li><b>Déplace ton personnage manuellement</b> avec les flèches, ZQSD ou WASD. Tu peux aussi maintenir les boutons directionnels sous la carte.</li><li>Approche-toi d’une personne, puis appuie sur <b>E ou Entrée</b> ou sur <b>Parler / entrer</b>. Tu peux aussi cliquer sur elle lorsque tu es tout près.</li><li>Les missions et jeux se découvrent <b>dans les conversations</b>. Prends le temps de te promener.</li><li>Pour entrer dans un bâtiment, approche-toi de sa porte. Chez un copain, tu pourras sonner.</li><li>La vue suit ta photo : N pointe presque vers la gauche, un peu vers le haut ; E pointe vers le haut, légèrement à droite. Le nord-est est entre les deux : vers le haut et la gauche de la vue.</li><li>Le vélo et la trottinette permettent d’avancer plus vite dehors. À l’intérieur, on marche.</li><li>À gauche de l’école, approche-toi du bouton du passage piéton et appuie sur E ou Entrée. Attends le vert : tu as dix secondes pour traverser vers le parc. La route est bloquée ailleurs.</li><li>Chez toi, découvre le bouton Décorer ta chambre et occupe-toi de Moustache.</li><li>Change ton apparence et ton âge avec le bouton de ton personnage. Échap ferme un dialogue.</li></ul><div class="actions"><button class="primary" id="helpDone">Partons nous promener !</button></div>`);$('#helpDone').onclick=closeModal;}
+function help(){modal(`<div class="modal-eyebrow">Un quartier à explorer</div><h2 class="modal-title">À toi de jouer !</h2><ul class="info-list">${touchUI?'<li><b>Pour marcher</b>, pose ton doigt sur la carte et fais-le glisser dans la direction voulue. Plus tu glisses loin, plus tu vas vite. Lève le doigt pour t’arrêter.</li>':'<li><b>Déplace ton personnage manuellement</b> avec les flèches, ZQSD ou WASD. Tu peux aussi maintenir les boutons directionnels sous la carte.</li>'}<li>Approche-toi d’une personne, puis appuie sur ${touchUI?'le grand bouton vert':'<b>E ou Entrée</b> ou sur <b>Parler / entrer</b>'}. Tu peux aussi cliquer sur elle lorsque tu es tout près.</li><li>Les missions et jeux se découvrent <b>dans les conversations</b>. Prends le temps de te promener.</li><li>Pour entrer dans un bâtiment, approche-toi de sa porte. Chez un copain, tu pourras sonner.</li><li>La vue suit ta photo : N pointe presque vers la gauche, un peu vers le haut ; E pointe vers le haut, légèrement à droite. Le nord-est est entre les deux : vers le haut et la gauche de la vue.</li><li>Le vélo et la trottinette permettent d’avancer plus vite dehors. À l’intérieur, on marche.</li><li>À gauche de l’école, approche-toi du bouton du passage piéton et appuie sur E ou Entrée. Attends le vert : tu as dix secondes pour traverser vers le parc. La route est bloquée ailleurs.</li><li>Chez toi, découvre le bouton Décorer ta chambre et occupe-toi de Moustache.</li><li>Change ton apparence et ton âge avec le bouton de ton personnage. Échap ferme un dialogue.</li></ul><div class="actions"><button class="primary" id="helpDone">Partons nous promener !</button></div>`);$('#helpDone').onclick=closeModal;}
 
 
 // All scenery is drawn locally. Coordinates follow the selected oblique reference view.
@@ -618,32 +622,49 @@ function render(){
  if(scene==='outside')objects=[...trees.map(t=>({y:t.y,draw:()=>tree(t)})),...fixtures.map(f=>({y:f.y+f.h,draw:()=>drawFixture(f)})),...buildings.map(b=>({y:b.y+b.h,draw:()=>{ctx.save();if(player.x>b.x-8&&player.x<b.x+b.w+20&&player.y>b.y-b.height-30&&player.y<b.y)ctx.globalAlpha=.42;building(b);ctx.restore();}}))];
  for(const n of es){if(n.id==='cat')objects.push({y:n.y,draw:()=>catDraw(n)});else if(n.shirt)objects.push({y:n.y,draw:()=>character(ctx,n.x,n.y,n,false)});}
  objects.push({y:player.y,draw:()=>{
- ellipse(ctx,player.x,player.y+3,24,10,'#f9f2c371');ctx.strokeStyle='#ffffdf';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(player.x,player.y+3,22,9,0,0,Math.PI*2);ctx.stroke();character(ctx,player.x,player.y,{...profile,isPlayer:true},keys.size>0);
+ ellipse(ctx,player.x,player.y+3,24,10,'#f9f2c371');ctx.strokeStyle='#ffffdf';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(player.x,player.y+3,22,9,0,0,Math.PI*2);ctx.stroke();character(ctx,player.x,player.y,{...profile,isPlayer:true},keys.size>0||!!stick?.active);
  if(catStage==='found'){ctx.save();ctx.translate(player.x,player.y-24);ctx.scale(.65,.65);catDraw({x:0,y:0},ctx);ctx.restore();ctx.strokeStyle=profile.skin;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(player.x-12,player.y-31);ctx.quadraticCurveTo(player.x,player.y-16,player.x+13,player.y-29);ctx.stroke();}
  text(ctx,'TOI',player.x,player.y-74,11,'#4c7257','700');if(roadWarning>0&&scene==='outside')text(ctx,'⚠',player.x,player.y-100,30,'#c88432','700');}});
  objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());
  es.forEach(label);
  ctx.setTransform(dpr,0,0,dpr,0,0);
+ if(stick?.active){const r=stick.radius;ctx.globalAlpha=.85;ellipse(ctx,stick.sx,stick.sy,r,r,'#ffffff80');ctx.strokeStyle='#264e4055';ctx.lineWidth=2;ctx.beginPath();ctx.arc(stick.sx,stick.sy,r,0,Math.PI*2);ctx.stroke();ellipse(ctx,stick.sx+stick.dx*r,stick.sy+stick.dy*r,r*.42,r*.42,'#355f46');ctx.globalAlpha=1;}
 }
 function tick(now){
  const dt=last?Math.min((now-last)/1000,.04):0;last=now;time+=dt;
  if(!$('#modal').open){if(scene==='outside')updateTraffic(dt);roadWarning=Math.max(0,roadWarning-dt);let dx=0,dy=0;if(keys.has('ArrowUp')||keys.has('w')||keys.has('z'))dy--;if(keys.has('ArrowDown')||keys.has('s'))dy++;if(keys.has('ArrowLeft')||keys.has('a')||keys.has('q'))dx--;if(keys.has('ArrowRight')||keys.has('d'))dx++;
  const speed=scene==='outside'?{walk:170,bike:310,scooter:245}[mode]:170;
- if(dx||dy){const norm=Math.hypot(dx,dy);dx=dx/norm*speed*dt;dy=dy/norm*speed*dt;movePlayer(dx,dy);}
+ let power=1;if(!dx&&!dy&&stick?.active){power=Math.min(1,Math.hypot(stick.dx,stick.dy));if(power>.15){dx=stick.dx;dy=stick.dy;}}
+ if(dx||dy){const norm=Math.hypot(dx,dy);dx=dx/norm*speed*power*dt;dy=dy/norm*speed*power*dt;movePlayer(dx,dy);}
  near=entities().filter(n=>Math.hypot(n.x-player.x,n.y-player.y)<82).sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0]||null;
- $('#interaction').classList.toggle('hidden',!near);if(near)$('#interaction span').textContent=(near.task==='enter'?'Entrer : ':near.task==='exit'?'':near.task==='room'?'Visiter : ':'')+near.name;
+ const nearLabel=near?(near.task==='enter'?'Entrer : ':near.task==='exit'?'':near.task==='room'?'Visiter : ':'')+near.name:'';
+ $('#interaction').classList.toggle('hidden',!near||touchUI);if(near)$('#interaction span').textContent=nearLabel;
+ if(touchUI&&$('#touchInteract').dataset.label!==nearLabel){$('#touchInteract').dataset.label=nearLabel;$('#touchInteract').textContent=near?(near.task==='enter'||near.task==='room'||near.task==='exit'?'🚪 ':'💬 ')+nearLabel:'Approche-toi de quelqu’un';$('#touchInteract').classList.toggle('ready',!!near);}
  if(time-saveTimer>30){saveTimer=time;if(created)save();}
  }
  render();requestAnimationFrame(tick);
 }
-canvas.addEventListener('pointerdown',e=>{
- if($('#modal').open)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left-view.ox)/view.scale,y=(e.clientY-r.top-view.oy)/view.scale;
+function tapWorld(e){
+ const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left-view.ox)/view.scale,y=(e.clientY-r.top-view.oy)/view.scale;
  const es=entities();let n=es.filter(n=>Math.hypot(x-n.x,y-(n.y-(n.shirt?30:0)))<62).sort((a,b)=>Math.hypot(x-a.x,y-a.y)-Math.hypot(x-b.x,y-b.y))[0];
  if(!n&&scene==='outside'){const b=buildings.find(b=>x>=b.x&&x<=b.x+b.w&&y>=b.y-b.height&&y<=b.y+b.h);if(b)n=es.find(n=>n.id===b.type);}
- if(n&&Math.hypot(player.x-n.x,player.y-n.y)<85)interact(n);else if(n)toast('Approche-toi avec les flèches ou ZQSD.');else canvas.focus({preventScroll:true});
+ if(n&&Math.hypot(player.x-n.x,player.y-n.y)<85)interact(n);else if(n)toast('Approche-toi d’abord. '+moveHint());else canvas.focus({preventScroll:true});
+}
+canvas.addEventListener('pointerdown',e=>{
+ if($('#modal').open)return;
+ if(e.pointerType!=='touch'&&e.pointerType!=='pen'){tapWorld(e);return;}
+ // A touch becomes a stick once the finger slides; a short tap still talks to someone nearby.
+ if(stick)return;e.preventDefault?.();canvas.setPointerCapture?.(e.pointerId);const r=canvas.getBoundingClientRect();
+ stick={id:e.pointerId,sx:e.clientX-r.left,sy:e.clientY-r.top,dx:0,dy:0,active:false,radius:Math.max(38,Math.min(60,r.width*.12))};
 });
+canvas.addEventListener('pointermove',e=>{
+ if(!stick||e.pointerId!==stick.id)return;const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left-stick.sx,my=e.clientY-r.top-stick.sy,d=Math.hypot(mx,my);
+ if(d>10)stick.active=true;if(stick.active){const k=Math.min(d,stick.radius)/(d||1)/stick.radius;stick.dx=mx*k;stick.dy=my*k;}
+});
+const endStick=e=>{if(!stick||e.pointerId!==stick.id)return;const tap=!stick.active;stick=null;if(tap&&e.type==='pointerup'&&!$('#modal').open)tapWorld(e);};
+canvas.addEventListener('pointerup',endStick);canvas.addEventListener('pointercancel',endStick);
 document.addEventListener('keydown',e=>{if($('#modal').open)return;const k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','z','q','e','Enter'].includes(k)){e.preventDefault();if(k==='e'||k==='Enter'){if(!e.repeat)interact(entities().filter(n=>Math.hypot(n.x-player.x,n.y-player.y)<82).sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0]);}else keys.add(k);}});
-document.addEventListener('keyup',e=>keys.delete(e.key.length===1?e.key.toLowerCase():e.key));window.addEventListener('blur',()=>keys.clear());document.addEventListener('visibilitychange',()=>{keys.clear();if(created)save();});
+document.addEventListener('keyup',e=>keys.delete(e.key.length===1?e.key.toLowerCase():e.key));window.addEventListener('blur',()=>{keys.clear();stick=null;});document.addEventListener('visibilitychange',()=>{keys.clear();stick=null;if(created)save();});
 document.querySelectorAll('[data-key]').forEach(b=>{b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(b.dataset.key);};b.onpointerup=b.onpointercancel=()=>keys.delete(b.dataset.key);});
 $('#touchInteract').onclick=()=>interact(near);$('#interaction').onclick=()=>interact(near);
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
@@ -1085,8 +1106,11 @@ function drawHomeRoom(){const c=ctx;rr(c,305,290,890,32,3,roomDecor.wall);text(c
 }
 function careForCat(action){if(action==='food'||action==='water'){petCare[action]=true;save();}modal(activityHeader('Moustache, ton chat','Chez toi')+`<div class="pet-scene"><svg viewBox="0 0 360 140" role="img" aria-label="Moustache près de ses gamelles"><g class="pet-cat ${action?'pet-eating':''}" transform="translate(170 90) scale(2)">${catSVG()}</g><ellipse cx="260" cy="115" rx="26" ry="12" fill="${petCare.food?'#b28b62':'#e1d7bd'}"/><ellipse cx="320" cy="115" rx="26" ry="12" fill="${petCare.water?'#8bbbd1':'#e1d7bd'}"/></svg></div><p class="modal-description" role="status">${action==='food'?'Moustache grignote ses croquettes. Ronron !':action==='water'?'Tu remplis sa gamelle d’eau fraîche. Moustache vient boire.':'Moustache vient te saluer. Occupe-toi de ses deux gamelles.'}</p><p>🍽 ${petCare.food?'Croquettes servies':'Gamelle vide'} · 💧 ${petCare.water?'Eau fraîche servie':'Gamelle vide'}</p><div class="actions"><button id="petFood" class="primary">Donner à manger</button><button id="petWater" class="secondary">Donner à boire</button></div>`+activityReturn());$('#petFood').onclick=()=>careForCat('food');$('#petWater').onclick=()=>careForCat('water');bindActivityClose();}
 const MIN_ZOOM=1,MAX_ZOOM=2.5;
+// On a phone the whole map is too small to read: start closer, following the player.
+function defaultZoom(){if(!touchUI)return 1;const r=canvas.getBoundingClientRect();return r.height>r.width?2:1.6;}
 function setZoom(value){zoom=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,value));$('#zoomOut').disabled=zoom===MIN_ZOOM;$('#zoomIn').disabled=zoom===MAX_ZOOM;$('#zoomOut').title=zoom===MIN_ZOOM?'Vue globale':'Éloigner la vue';$('#zoomIn').title=zoom===MAX_ZOOM?'Vue la plus proche':'Rapprocher la vue';}
 
-setZoom(1);
+if(touchUI)document.body.classList.add('touch');
+setZoom(defaultZoom());
 updateUI();requestAnimationFrame(tick);if(!created)profileEditor(true);
 })();

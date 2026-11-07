@@ -9,6 +9,7 @@ Un jeu éducatif dans un quartier illustré inspiré du Bocage à Onex, Genève.
 ## Jouer
 
 - Flèches, ZQSD ou WASD : se déplacer. Des boutons directionnels sont aussi disponibles à l’écran.
+- Sur téléphone ou tablette : posez le doigt sur la carte et faites-le glisser pour marcher (joystick virtuel ; plus on glisse loin, plus on va vite). La vue est rapprochée et suit le personnage. Le grand bouton vert indique avec qui parler ou dans quel lieu entrer.
 - **E ou Entrée** : parler, jouer ou entrer, en étant à proximité.
 - **Échap** : fermer un dialogue.
 - Le préau permet d’entrer dans l’école. Les nouvelles pièces se trouvent dans son couloir.
