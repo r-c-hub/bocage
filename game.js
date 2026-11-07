@@ -1012,12 +1012,12 @@ function parkCarousel(c,m){
 }
 function drawParkAnimation(c,id,seconds,control=null){const m=parkMotion(id,seconds);if(control){m.t=seconds;m.angle=control.angle;m.pump=control.id==='swing'?Math.max(-1,Math.min(1,control.velocity/1.4)):0;}c.save();c.clearRect(0,0,760,420);parkBackdrop(c,m.t);if(id==='swing')parkSwing(c,m);else if(id==='playhouse')parkSlide(c,m);else parkCarousel(c,m);c.restore();return m;}
 // Inputs add or remove energy; the scene keeps its position and momentum.
-const parkLimits={swingAngle:1.35,carouselSpeed:6};
+const parkLimits={swingAngle:1.35,carouselSpeed:12};
 function createParkControl(id){return {id,angle:0,velocity:0,effort:0};}
 function parkImpulse(control,action){
  if(action==='brake')control.velocity*=.62;
  else if(control.id==='swing'){const energy=4.4*(1-Math.cos(control.angle))+.5*control.velocity**2,limit=4.4*(1-Math.cos(parkLimits.swingAngle));if(energy<limit)control.velocity=(Math.sign(control.velocity)||1)*Math.min(Math.abs(control.velocity)+.38,Math.sqrt(Math.max(0,2*(limit-4.4*(1-Math.cos(control.angle))))));}
- else control.velocity=Math.min(parkLimits.carouselSpeed,control.velocity+.6);
+ else control.velocity=Math.min(parkLimits.carouselSpeed,control.velocity+1.2);
 }
 function advanceParkControl(control,dt,action=null){
  dt=Math.max(0,Math.min(dt,.06));const steps=Math.max(1,Math.ceil(dt/.008)),h=dt/steps;
@@ -1028,7 +1028,7 @@ function advanceParkControl(control,dt,action=null){
    control.velocity+=(-4.4*Math.sin(control.angle)-(action==='brake'?3.5:.17)*control.velocity+push)*h;
    control.angle+=control.velocity*h;
    if(action!=='boost'&&Math.abs(control.angle)<.001&&Math.abs(control.velocity)<.004){control.angle=0;control.velocity=0;}
-  }else{control.velocity=Math.max(0,Math.min(parkLimits.carouselSpeed,control.velocity+((action==='boost'?1.8:0)-(action==='brake'?2.2:.12)*control.velocity-.025)*h));control.angle=(control.angle+control.velocity*h)%(Math.PI*2);}
+  }else{control.velocity=Math.max(0,Math.min(parkLimits.carouselSpeed,control.velocity+((action==='boost'?3:0)-(action==='brake'?2.2:.12)*control.velocity-.025)*h));control.angle=(control.angle+control.velocity*h)%(Math.PI*2);}
  }
  const energy=4.4*(1-Math.cos(control.angle))+.5*control.velocity**2;
  control.effort=control.id==='swing'?Math.min(1,Math.acos(Math.max(-1,Math.min(1,1-energy/4.4)))/parkLimits.swingAngle):control.velocity/parkLimits.carouselSpeed;
