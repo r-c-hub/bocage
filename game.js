@@ -12,7 +12,7 @@ const cleanProfile = p => {
  if(!['girl','boy'].includes(a.gender)) a.gender='girl'; if(!['long','short','curls'].includes(a.hairstyle)) a.hairstyle='long'; return a;
 };
 let profile=cleanProfile(saved.profile), created=!!saved.profile;
-const known=['cat','clock','duration','math','en','de','it','ball','puzzle','mystery','story','coloring','revision-fr','revision-de','revision-math','basket','movements','melody','rhythm','hopscotch'];
+const known=['cat','clock','duration','math','en','de','it','ball','puzzle','mystery','story','coloring','revision-fr','revision-de','revision-math','basket','movements','melody','rhythm','hopscotch','pingpong'];
 let completed=new Set(Array.isArray(saved.completed)?saved.completed.filter(k=>known.includes(k)):[]);
 let catStage=['search','found','done'].includes(saved.catStage)?saved.catStage:'new';
 let discovered=new Set(Array.isArray(saved.discovered)?saved.discovered.filter(k=>known.includes(k)):[...completed]);
@@ -80,6 +80,7 @@ const outside=[
  ...buildings.filter(b=>b.type!=='decor').map(b=>({id:b.type,x:b.x+b.w*.5,y:b.y+b.h+24,name:b.name,icon:b.type==='school'?'🏫':'🔔',task:'enter',destination:b.type})),
  {id:'schoolPreau',x:685,y:445,name:'Entrée de l’école par le préau',icon:'🚪',task:'enter',destination:'school'},
  {id:'hopscotch',x:699,y:590,name:'Jouer à la marelle',icon:'🔢',task:'hopscotch'},
+ {id:'lina',x:600,y:652,name:'Lina',icon:'🏓',task:'pingpong',shirt:'#e07a5f',skin:'#c68a62',hair:'#2f2724',hairstyle:'long'},
  {id:'cat',x:730,y:149,name:'Moka',icon:'🐾',task:'findCat'}
 ];
 const schoolCourtyard={x:632,y:300,w:163,h:340};
@@ -349,7 +350,7 @@ function enterPrompt(destination){
 function interact(n){
  if(!n)return;
  if(Math.hypot(player.x-n.x,player.y-n.y)>=82){toast('Approche-toi pour parler ou entrer. '+moveHint());return;}
- if(n.task==='crossing')requestCrossing();else if(n.task==='park')parkActivity(n.id);else if(n.task==='decorate')editRoom();else if(n.task==='pet')careForCat();else if(n.task==='cat')catDialog();else if(n.task==='clock')watchQuiz();else if(n.task==='duration')durationQuiz();else if(n.task==='language')languageMenu();else if(n.task==='ball')ballGame();else if(n.task==='findCat')findCat();else if(n.task==='enter')enterPrompt(n.destination);else if(n.task==='math')mathQuiz();else if(n.task==='puzzle')puzzleGame();else if(n.task==='mystery')mysteryQuiz();else if(n.task==='room')enterRoom(n.destination);else if(n.task==='exit')exitRoom();else if(n.task==='wardrobe')profileEditor();else if(n.task==='journal')showMemories();else if(n.task==='stories')storyShelf();else if(n.task==='coloring')coloringShelf();else if(n.task==='library-puzzle')libraryPuzzle();else if(n.task==='revision-fr')revisionShelf('fr');else if(n.task==='revision-de')revisionShelf('de');else if(n.task==='revision-math')revisionShelf('math');else if(n.task==='basket')basketballGame();else if(n.task==='movements')movementGame();else if(n.task==='melody')melodyGame();else if(n.task==='rhythm')rhythmGame();else if(n.task==='hopscotch')hopscotchGame();
+ if(n.task==='crossing')requestCrossing();else if(n.task==='park')parkActivity(n.id);else if(n.task==='decorate')editRoom();else if(n.task==='pet')careForCat();else if(n.task==='cat')catDialog();else if(n.task==='clock')watchQuiz();else if(n.task==='duration')durationQuiz();else if(n.task==='language')languageMenu();else if(n.task==='ball')ballGame();else if(n.task==='findCat')findCat();else if(n.task==='enter')enterPrompt(n.destination);else if(n.task==='math')mathQuiz();else if(n.task==='puzzle')puzzleGame();else if(n.task==='mystery')mysteryQuiz();else if(n.task==='room')enterRoom(n.destination);else if(n.task==='exit')exitRoom();else if(n.task==='wardrobe')profileEditor();else if(n.task==='journal')showMemories();else if(n.task==='stories')storyShelf();else if(n.task==='coloring')coloringShelf();else if(n.task==='library-puzzle')libraryPuzzle();else if(n.task==='revision-fr')revisionShelf('fr');else if(n.task==='revision-de')revisionShelf('de');else if(n.task==='revision-math')revisionShelf('math');else if(n.task==='basket')basketballGame();else if(n.task==='movements')movementGame();else if(n.task==='melody')melodyGame();else if(n.task==='rhythm')rhythmGame();else if(n.task==='hopscotch')hopscotchGame();else if(n.task==='pingpong')pingDialog();
 }
 let outsideReturn={x:1045,y:705};
 function enterRoom(s){
@@ -906,6 +907,7 @@ function drawSchoolHall(){const c=ctx;rr(c,370,310,770,65,5,'#d9dfc2');text(c,'B
 }
 
 missions.push(...[{"id":"story","icon":"📖","title":"Les petites histoires","skill":"Lire et comprendre","who":"school"},{"id":"coloring","icon":"🎨","title":"Les cahiers de couleurs","skill":"Créer et colorier","who":"school"},{"id":"revision-fr","icon":"📕","title":"Mon livre de français","skill":"Français · réviser","who":"school"},{"id":"revision-de","icon":"📗","title":"Mon livre d’allemand","skill":"Allemand · réviser","who":"school"},{"id":"revision-math","icon":"📘","title":"Mon livre de maths","skill":"Maths · réviser","who":"school"},{"id":"basket","icon":"🏀","title":"Trois paniers pour l’équipe","skill":"Sport · précision","who":"school"},{"id":"movements","icon":"🤸","title":"Le circuit des mouvements","skill":"Sport · coordination","who":"school"},{"id":"melody","icon":"🎹","title":"La petite mélodie","skill":"Musique · mémoire","who":"school"},{"id":"rhythm","icon":"🥁","title":"Le jeu des rythmes","skill":"Musique · durées","who":"school"},{"id":"hopscotch","icon":"🔢","title":"À toi la marelle","skill":"Cour · nombres et ordre","who":"school"}]);
+missions.push({id:'pingpong',icon:'🏓',title:'Une partie de ping-pong',skill:'Sport · réflexes et coordination',who:'lina'});
 // Road coordinates: s runs along Grand-Lancy, d runs across it toward the school.
 // The Grand-Lancy road runs about 20 degrees from vertical, as on the satellite view; its centre line is x = 480 - 0.364 y.
 // s=0 is the pedestrian crossing, level with the bike shelter in front of the school.
@@ -1137,6 +1139,126 @@ function parkActivity(id){
  bindActivityClose();paint();frame=requestAnimationFrame(animate);
 }
 
+
+// Ping-pong with Lina. Table coordinates: x from -1 to 1 across the table, y from 0 (your end) to 1 (hers),
+// z is the height above the table. Physics, rules and the opponent are pure functions; drawing is separate.
+const PING={G:2.6,netH:.085,win:7,paddleW:[.3,.25,.21],follow:[5,4.6,4.2],aiSpeed:[.85,1.15,1.45],aiReach:[.24,.27,.3],aiReact:[.34,.24,.16],aiErr:[.09,.07,.05],aiShot:[1.15,1.45,1.75],myShot:[1.3,1.5,1.7]};
+const pingClamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function createPingGame(lv=level()){return {level:lv,px:0,pvx:0,ox:0,ball:{x:0,y:-.04,z:.22,vx:0,vy:0,vz:0},state:'serve',server:'player',score:{me:0,ai:0},bounced:null,lastHit:null,missed:false,aiMissed:false,timer:0,aiClock:0,trail:[],effects:[],events:[],message:'À toi de servir ! Touche la table ou appuie sur Espace.',rally:0,winner:null,swing:0,time:0};}
+function pingFx(g,type){const b=g.ball;g.effects.push({type,x:b.x,y:b.y,z:Math.max(0,b.z),t:0});g.events.push(type);}
+// Aim at (tx,ty) on the table; a shot that would hit the net is slowed down until it clears it, unless it is a deliberate mistake.
+function pingLaunch(g,tx,ty,speed,mistake=false){const b=g.ball;let T=Math.max(.25,Math.abs(ty-b.y)/speed);
+ for(let i=0;!mistake&&i<14;i++){const vz=(PING.G*T*T/2-b.z)/T,f=(.5-b.y)/(ty-b.y),tn=f*T,zn=b.z+vz*tn-PING.G*tn*tn/2;if(!(f>0&&f<1)||zn>PING.netH+.06)break;T*=1.08;}
+ b.vx=(tx-b.x)/T;b.vy=(ty-b.y)/T;b.vz=(PING.G*T*T/2-b.z)/T;g.bounced=null;g.missed=false;g.aiMissed=false;}
+function pingServe(g){if(g.state!=='serve')return g;const b=g.ball;
+ if(g.server==='player'){b.x=g.px;b.y=-.04;b.z=.22;g.lastHit='player';pingLaunch(g,pingClamp(g.px*.4+(Math.random()-.5)*1.1,-.8,.8),.8,PING.myShot[g.level]*.85);g.swing=.25;}
+ else{b.x=g.ox;b.y=1.04;b.z=.22;g.lastHit='ai';pingLaunch(g,(Math.random()-.5)*1.3,.22,PING.aiShot[g.level]*.85);}
+ g.state='play';g.rally=0;g.aiClock=0;g.trail=[];g.message='';pingFx(g,'hit');return g;}
+function pingPoint(g,who,reason){g.score[who]++;g.events.push(who==='me'?'scored':'lost');
+ g.message={net:'Dans le filet !',out:'La balle sort de la table.',long:who==='me'?'Lina n’a pas pu la rattraper !':'La balle t’a échappé…',twice:who==='me'?'Deux rebonds chez Lina : point pour toi !':'Deux rebonds de ton côté : point pour Lina.'}[reason]||'';
+ if(g.score[who]>=PING.win){g.state='over';g.winner=who;g.timer=0;g.events.push(who==='me'?'win':'defeat');g.message=who==='me'?'Victoire ! Tu as gagné '+g.score.me+' à '+g.score.ai+'. Bravo !':'Lina gagne '+g.score.ai+' à '+g.score.me+'. Une revanche ?';return g;}
+ const total=g.score.me+g.score.ai;g.server=Math.floor(total/2)%2===0?'player':'ai';g.state='point';g.timer=1.1;return g;}
+function pingStep(g,dt,input={}){
+ dt=Math.max(0,Math.min(dt,.05));g.time+=dt;g.swing=Math.max(0,g.swing-dt);g.effects=g.effects.filter(e=>(e.t+=dt)<.55);
+ const prev=g.px;if(input.targetX!=null)g.px+=pingClamp(input.targetX-g.px,-PING.follow[g.level]*dt,PING.follow[g.level]*dt);else if(input.dir)g.px+=input.dir*2.4*dt;
+ g.px=pingClamp(g.px,-1.35,1.35);if(dt>0)g.pvx=g.pvx*.7+((g.px-prev)/dt)*.3;
+ const b=g.ball;g.aiClock+=dt;let target=0;
+ if(g.state==='play'&&b.vy>0&&g.aiClock>PING.aiReact[g.level]){const t=(1.02-b.y)/b.vy;target=b.x+b.vx*t;}else if(g.state==='serve'&&g.server==='ai')target=g.ox;
+ g.ox=pingClamp(g.ox+pingClamp(target-g.ox,-PING.aiSpeed[g.level]*dt,PING.aiSpeed[g.level]*dt),-1.3,1.3);
+ if(g.state==='over')return g;
+ if(g.state==='point'){g.timer-=dt;if(g.timer<=0){g.state='serve';g.trail=[];g.timer=g.server==='ai'?1.1:0;g.message=g.server==='player'?'À toi de servir !':'Lina va servir…';}return g;}
+ if(g.state==='serve'){if(g.server==='player'){b.x=g.px;b.y=-.04;b.z=.22;}else{b.x=g.ox;b.y=1.04;b.z=.22;g.timer-=dt;if(g.timer<=0)pingServe(g);}return g;}
+ const py=b.y,other=g.lastHit==='player'?'ai':'me',hitter=g.lastHit==='player'?'me':'ai';
+ b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;b.vz-=PING.G*dt;g.trail.push({x:b.x,y:b.y,z:b.z});if(g.trail.length>9)g.trail.shift();
+ if((py-.5)*(b.y-.5)<=0&&py!==b.y&&b.z>=-.02&&b.z<PING.netH&&Math.abs(b.x)<=1.08){b.vy*=-.2;b.vx*=.3;return pingPoint(g,other,'net');}
+ if(b.z<=0&&b.vz<0){const onTable=Math.abs(b.x)<=1&&b.y>=0&&b.y<=1;
+  if(onTable){const side=b.y<.5?'player':'ai',expected=g.lastHit==='player'?'ai':'player';
+   if(g.bounced)return pingPoint(g,hitter,'twice');
+   if(side!==expected)return pingPoint(g,other,'out');
+   b.z=0;b.vz=-b.vz*.78;g.bounced=side;pingFx(g,'bounce');}
+  else if(b.z<-.45)return pingPoint(g,g.bounced?hitter:other,g.bounced?'long':'out');}
+ // Your paddle: position under the ball is enough; the edge of the paddle aims, moving while hitting adds power.
+ if(b.vy<0&&g.bounced==='player'&&!g.missed&&b.y<=.02){const W=PING.paddleW[g.level];
+  if(Math.abs(b.x-g.px)<=W+.03&&b.z<.85){const off=pingClamp((b.x-g.px)/W,-1,1);g.lastHit='player';g.rally++;b.y=.02;b.z=Math.max(b.z,.08);
+   pingLaunch(g,pingClamp(off*.95+g.pvx*.1+b.x*.15,-.94,.94),.74+Math.min(.18,Math.abs(g.pvx)*.06),PING.myShot[g.level]+Math.abs(off)*.3+Math.min(.55,Math.abs(g.pvx)*.12)+g.rally*.01);
+   g.aiClock=0;g.swing=.25;pingFx(g,'hit');g.message=Math.abs(off)>.6?'Joli coup en diagonale !':Math.abs(g.pvx)>2?'Smash !':g.rally>=6?'Quel échange : '+g.rally+' coups !':'';}
+  else g.missed=true;}
+ if(b.vy>0&&g.bounced==='ai'&&!g.aiMissed&&b.y>=.98){
+  if(Math.abs(b.x-g.ox)<=PING.aiReach[g.level]&&b.z<.85){g.lastHit='ai';b.y=.98;b.z=Math.max(b.z,.08);
+   if(Math.random()<PING.aiErr[g.level]+g.rally*.008)pingLaunch(g,(Math.random()-.5)*1.2,Math.random()<.5?.47:-.18,PING.aiShot[g.level],true);
+   else{const away=g.px>0?-1:1,wide=[.55,.8,.9][g.level];pingLaunch(g,pingClamp(away*(.3+Math.random()*.6)*wide+(Math.random()-.5)*.3,-.9,.9),.1+Math.random()*.22,PING.aiShot[g.level]+Math.min(.6,g.rally*.045));}
+   pingFx(g,'hit');}
+  else g.aiMissed=true;}
+ if(b.y<-.4)return pingPoint(g,g.bounced==='player'?'ai':'me',g.bounced==='player'?'long':'out');
+ if(b.y>1.4)return pingPoint(g,g.bounced==='ai'?'me':'ai',g.bounced==='ai'?'long':'out');
+ return g;}
+// Perspective: your end of the table at the bottom, Lina's end further away.
+const pingK=y=>1/(1+.733*y);
+const pingP=(x,y,z=0)=>{const k=pingK(y);return {x:380+x*260*k,y:-191+591*k-z*260*k,k};};
+function drawPing(c,g,npc){
+ c.save();c.clearRect(0,0,760,460);
+ const sky=c.createLinearGradient(0,0,0,170);sky.addColorStop(0,'#cfe6ec');sky.addColorStop(1,'#eef3dd');c.fillStyle=sky;c.fillRect(0,0,760,170);
+ // The school wall behind Lina, with its yellow band, and the red play surface.
+ rr(c,0,62,760,92,0,'#b98d63');for(let x=0;x<760;x+=6){c.fillStyle=x%12?'#b48759':'#be9366';c.fillRect(x,62,3,92);}rr(c,0,96,760,10,0,'#e4bf4f');
+ for(let i=0;i<6;i++){rr(c,40+i*130,72,60,20,2,'#566965');rr(c,44+i*130,75,22,14,0,'#a7bbb0');}
+ const ground=c.createLinearGradient(0,150,0,460);ground.addColorStop(0,'#c98f78');ground.addColorStop(1,'#b76f57');c.fillStyle=ground;c.fillRect(0,150,760,310);
+ c.strokeStyle='#ffffff22';c.lineWidth=1;for(let i=0;i<14;i++){c.beginPath();c.moveTo(380+(i-7)*90,460);c.lineTo(380+(i-7)*25,150);c.stroke();}
+ const b=g.ball,over=Math.abs(b.x)<=1&&b.y>=0&&b.y<=1;
+ // Lina behind the table, following her paddle.
+ const op=pingP(g.ox,1.05,.24),edge=pingP(0,1).y;
+ ellipse(c,op.x-14,edge+2,34,8,'#5a2d2033');parkAvatar(c,op.x-16,edge-14,npc,'stand',0,.95,1);
+ c.save();c.translate(op.x,op.y);c.rotate(-g.ox*.25);rr(c,-2,8,4,12,2,'#9b6b45');ellipse(c,0,0,13*op.k,12*op.k,'#2b3533');ellipse(c,0,-1,11*op.k,10*op.k,'#c8372d');c.restore();
+ // Table: legs, edge, green top with white lines.
+ const A=pingP(-1,0),B=pingP(1,0),C=pingP(1,1),D=pingP(-1,1);
+ c.strokeStyle='#3b4744';c.lineWidth=7;for(const [p,h]of [[A,62],[B,62],[C,40],[D,40]]){c.beginPath();c.moveTo(p.x+(p===A||p===D?14:-14),p.y);c.lineTo(p.x+(p===A||p===D?14:-14),p.y+h);c.stroke();}
+ ellipse(c,380,pingP(0,.4).y+58,250,22,'#5a2d2018');
+ poly(c,[[A.x,A.y],[B.x,B.y],[B.x,B.y+14],[A.x,A.y+14]],'#164d40');
+ const top=c.createLinearGradient(0,D.y,0,A.y);top.addColorStop(0,'#2c8a72');top.addColorStop(1,'#1f6f5c');poly(c,[[A.x,A.y],[B.x,B.y],[C.x,C.y],[D.x,D.y]],top);
+ c.strokeStyle='#f7f7ef';c.lineWidth=3;c.beginPath();c.moveTo(A.x,A.y);c.lineTo(B.x,B.y);c.lineTo(C.x,C.y);c.lineTo(D.x,D.y);c.closePath();c.stroke();
+ const m0=pingP(0,0),m1=pingP(0,1);c.lineWidth=1.5;c.beginPath();c.moveTo(m0.x,m0.y);c.lineTo(m1.x,m1.y);c.stroke();
+ const shadow=()=>{if(over&&b.z>=0){const p=pingP(b.x,b.y,0);ellipse(c,p.x,p.y,Math.max(2,9*p.k-b.z*8),Math.max(1,3.5*p.k-b.z*3),'#0b2a2255');}};
+ const ballDraw=()=>{g.trail.forEach((t,i)=>{const p=pingP(t.x,t.y,t.z);c.globalAlpha=(i+1)/g.trail.length*.28;ellipse(c,p.x,p.y,6*p.k,6*p.k,'#fff6e2');});c.globalAlpha=1;
+  const p=pingP(b.x,b.y,b.z),r=8*p.k,grad=c.createRadialGradient(p.x-r*.35,p.y-r*.4,r*.1,p.x,p.y,r);grad.addColorStop(0,'#ffffff');grad.addColorStop(1,'#f0a24a');c.beginPath();c.arc(p.x,p.y,r,0,Math.PI*2);c.fillStyle=grad;c.fill();};
+ const net=()=>{const n0=pingP(-1.1,.5,0),n1=pingP(1.1,.5,0),t0=pingP(-1.1,.5,PING.netH),t1=pingP(1.1,.5,PING.netH);
+  poly(c,[[n0.x,n0.y],[n1.x,n1.y],[t1.x,t1.y],[t0.x,t0.y]],'#1d2a2799');c.strokeStyle='#ffffff33';c.lineWidth=1;for(let i=1;i<24;i++){const a=pingP(-1.1+i*2.2/24,.5,0),z=pingP(-1.1+i*2.2/24,.5,PING.netH);c.beginPath();c.moveTo(a.x,a.y);c.lineTo(z.x,z.y);c.stroke();}
+  c.strokeStyle='#f7f7ef';c.lineWidth=3;c.beginPath();c.moveTo(t0.x,t0.y);c.lineTo(t1.x,t1.y);c.stroke();rr(c,n0.x-3,t0.y-2,5,n0.y-t0.y+6,1,'#2f3a37');rr(c,n1.x-2,t1.y-2,5,n1.y-t1.y+6,1,'#2f3a37');};
+ if(b.y>.5){shadow();if(g.state!=='serve'||g.server==='ai')ballDraw();net();}else{net();shadow();ballDraw();}
+ for(const e of g.effects){const p=pingP(e.x,e.y,e.z);c.globalAlpha=1-e.t/.55;c.strokeStyle=e.type==='hit'?'#fff2c2':'#ffffff';c.lineWidth=2;c.beginPath();c.arc(p.x,p.y,(8+e.t*60)*p.k,0,Math.PI*2);c.stroke();}c.globalAlpha=1;
+ // Your paddle in front, tilting with your movement and swinging when you hit.
+ const me=pingP(g.px,-.07,.2),tilt=pingClamp(g.pvx*.08,-.45,.45)-(g.swing>0?Math.sin(g.swing/.25*Math.PI)*.5*Math.sign(g.pvx||1):0);
+ c.save();c.translate(me.x,me.y);c.rotate(tilt);rr(c,-7,18,14,40,6,'#a8744a');rr(c,-7,18,14,7,3,'#8a5c38');ellipse(c,3,4,40,36,'#00000022');ellipse(c,0,0,40,36,'#252c2b');ellipse(c,0,-1,36,32,'#c8372d');ellipse(c,-10,-11,10,6,'#ffffff22');c.restore();
+ // Score and messages.
+ rr(c,14,12,188,38,10,'#25352ff0');text(c,'Toi  '+g.score.me+'  ·  '+g.score.ai+'  Lina',112,38,17,'#f7f4e6','700');
+ ellipse(c,g.server==='player'?27:197,31,4,4,'#f0c85a');
+ if(g.state==='point'||g.state==='over'||(g.state==='serve'&&g.message)){const msg=g.state==='serve'?g.message:typeof g.message==='string'?g.message:'';if(msg){c.font='700 18px Segoe UI,Arial';const w=Math.min(700,c.measureText(msg).width+40);rr(c,380-w/2,214,w,40,12,'#fffdf2ee');text(c,msg,380,240,18,'#2f5a45','700');}}
+ if(g.state==='over'&&g.winner==='me')for(let i=0;i<40;i++){const x=(i*97+g.time*60*(1+i%3))%760,y=(i*53+g.time*120*(1+i%2))%460;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}
+ c.restore();}
+let pingAudio=null;
+function pingSound(type){if(!sound)return;try{pingAudio=pingAudio||new(window.AudioContext||window.webkitAudioContext)();const a=pingAudio,t=a.currentTime;
+ const notes={hit:[[1250,.05]],bounce:[[820,.04]],scored:[[660,.1],[880,.12]],lost:[[330,.14]],win:[[523,.12],[659,.12],[784,.2]],defeat:[[392,.14],[330,.2]]}[type]||[];
+ notes.forEach(([f,d],i)=>{const o=a.createOscillator(),gn=a.createGain();o.type=type==='hit'||type==='bounce'?'triangle':'sine';o.frequency.value=f;o.connect(gn);gn.connect(a.destination);const s=t+i*.11;gn.gain.setValueAtTime(.0001,s);gn.gain.exponentialRampToValueAtTime(.12,s+.005);gn.gain.exponentialRampToValueAtTime(.0001,s+d);o.start(s);o.stop(s+d+.02);});}catch{}}
+function pingDialog(){discover('pingpong');modal(`<div class="modal-eyebrow">Le terrain de jeux · sport</div>${speaker('Lina','🏓')}<div class="speech">Salut ${esc(profile.name)} ! Tu fais une partie de ping-pong avec moi ? Le premier à ${PING.win} points gagne.</div><div class="actions"><button id="pingYes" class="primary">Jouer avec Lina 🏓</button><button id="pingLater" class="secondary">Plus tard</button></div>`);$('#pingYes').onclick=pingpongGame;$('#pingLater').onclick=closeModal;}
+function pingpongGame(){
+ discover('pingpong');const npc=outside.find(n=>n.id==='lina');let g=createPingGame(level());activeActivity={kind:'pingpong',get game(){return g;}};
+ let frame=0,last=null,closed=false,pointerX=null,shown='';const held=new Set();
+ modal(activityHeader('Une partie de ping-pong','Le terrain de jeux · avec Lina')+`<canvas id="pingCanvas" class="ping-canvas" width="760" height="460" role="img" aria-label="Table de ping-pong : ta raquette en bas, Lina en face"></canvas><p id="pingFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint">Glisse le doigt ou la souris sur la table pour placer ta raquette sous la balle · touches ← → (ou Q D) · Espace pour servir.<br>Frappe avec le bord de la raquette pour viser sur le côté ; bouge en frappant pour taper plus fort.</p><div class="actions"><button id="pingServe" class="primary">Servir</button><button id="pingRestart" class="secondary">Nouvelle partie</button><button id="activityClose" class="secondary">Retour au terrain</button></div>`,
+  ()=>{closed=true;cancelAnimationFrame(frame);$('#modal').onkeydown=null;$('#modal').onkeyup=null;if(pingAudio){pingAudio.close().catch(()=>{});pingAudio=null;}});
+ const cv=$('#pingCanvas'),c=cv.getContext('2d');
+ const toTable=e=>{const r=cv.getBoundingClientRect();return ((e.clientX-r.left)*760/(r.width||760)-380)/(260*pingK(-.07));};
+ const serve=()=>{if(g.state==='serve'&&g.server==='player'){pingServe(g);sync();}};
+ const sync=()=>{const key=g.state+g.server+g.score.me+'-'+g.score.ai+(typeof g.message==='string'?g.message:'');if(key===shown)return;shown=key;
+  $('#pingServe').disabled=!(g.state==='serve'&&g.server==='player');$('#pingFeedback').textContent=typeof g.message==='string'?g.message:'';
+  $('#pingFeedback').className='feedback'+(g.state==='over'&&g.winner==='me'?' success':'');
+  if(g.state==='over'&&g.winner==='me'&&!g.awarded){g.awarded=true;award('pingpong');}};
+ cv.onpointerdown=e=>{e.preventDefault?.();cv.setPointerCapture?.(e.pointerId);pointerX=toTable(e);held.clear();serve();};
+ cv.onpointermove=e=>{if(e.pointerType==='mouse'||e.buttons||e.pressure)pointerX=toTable(e);};
+ $('#pingServe').onclick=serve;$('#pingRestart').onclick=()=>{g=createPingGame(level());shown='';sync();};bindActivityClose();
+ $('#modal').onkeydown=e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowLeft','q','a'].includes(k)){held.add('L');pointerX=null;e.preventDefault();}else if(['ArrowRight','d'].includes(k)){held.add('R');pointerX=null;e.preventDefault();}else if(k===' '&&!e.repeat){e.preventDefault();serve();}};
+ $('#modal').onkeyup=e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowLeft','q','a'].includes(k))held.delete('L');if(['ArrowRight','d'].includes(k))held.delete('R');};
+ const animate=now=>{if(closed)return;if(document.hidden){last=null;held.clear();frame=requestAnimationFrame(animate);return;}
+  const dt=last===null?0:Math.min(.05,(now-last)/1000);last=now;const dir=(held.has('R')?1:0)-(held.has('L')?1:0);
+  pingStep(g,dt,{targetX:dir?null:pointerX,dir});g.events.splice(0).forEach(pingSound);drawPing(c,g,npc);sync();frame=requestAnimationFrame(animate);};
+ sync();drawPing(c,g,npc);frame=requestAnimationFrame(animate);}
 
 const decorColors=['#8eaa88','#8bafc2','#c997ab','#d5b66f','#c28f6c','#b29ac8'];
 const decorTypes={bed:['Lit','🛏️'],desk:['Bureau','✏️'],shelf:['Bibliothèque','📚'],wardrobe:['Armoire','👕'],toybox:['Coffre à jouets','🧺'],teddy:['Peluche','🧸'],ball:['Ballon','⚽'],rug:['Tapis','🟠'],plant:['Plante','🪴']};
