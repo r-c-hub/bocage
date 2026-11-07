@@ -944,7 +944,11 @@ function drawRoadGround(){const c=ctx;
  const lanePath=()=>{const a=roadPoint(-516,0),c1=roadPoint(-471,88),b=roadPoint(-426,88);c.moveTo(a.x,a.y);c.quadraticCurveTo(c1.x,c1.y,b.x,b.y);c.lineTo(laneX(933),933);};
  // The paths in front of and behind the school, the courtyard path and the lane on the right share its surface.
  const paths=()=>{c.beginPath();lanePath();c.moveTo(laneX(186)-4,184);c.lineTo(1027,183);for(const [x0,y0,x1,y1]of [[1027,150,1027,880],[751,183,751,667],[laneX(667),667,1370,667]]){c.moveTo(x0,y0);c.lineTo(x1,y1);}};
+ // Car park between the lane and the school (satellite): its edge goes under the lane so the two surfaces join.
+ rr(c,452,274,112,100,6,'#ddd8c7');
  c.lineCap='round';c.lineJoin='round';for(const [width,color]of [[34,'#ddd8c7'],[25,'#c3c6bb']]){c.strokeStyle=color;c.lineWidth=width;paths();c.stroke();}
+ rr(c,456,278,104,92,4,'#c3c6bb');c.strokeStyle='#e8e4d2';c.lineWidth=1.2;
+ for(const [row,color]of ['#c9c9c4','#7898a8',null,'#b18a76'].entries()){const y=282+row*21;c.strokeRect(514,y,44,21);if(color){c.save();c.translate(536,y+10.5);c.rotate(Math.PI/2);parkedCar(-10,-18,color);c.restore();}}
  text(c,'20',548,198,11,'#eef0e6','700');
  const pampres=()=>{c.beginPath();c.moveTo(1385,933);c.lineTo(110,933);};
  c.lineCap='butt';for(const [width,color]of [[48,'#cfcab6'],[38,'#aeb3ae']]){c.strokeStyle=color;c.lineWidth=width;pampres();c.stroke();}
