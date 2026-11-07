@@ -68,7 +68,7 @@ const buildings=[
  {ref:'foreground-east',x:680,y:700,w:330,h:85,height:68,color:'#ebd3b4',name:'',type:'decor'},
  {ref:'terrace-a',x:1110,y:745,w:115,h:90,height:62,color:'#ebd6bc',flat:true,name:'',type:'decor'},
  {ref:'terrace-b',x:1245,y:760,w:125,h:90,height:62,color:'#e8d2b6',flat:true,name:'',type:'decor'},
- {ref:'pampres-flat',x:115,y:1030,w:290,h:120,height:55,color:'#d8bf92',wood:true,flat:true,concrete:true,name:'',type:'decor'},
+ {ref:'pampres-flat',x:115,y:1062,w:290,h:98,height:55,color:'#d8bf92',wood:true,flat:true,concrete:true,name:'',type:'decor'},
  {ref:'pampres-long',x:780,y:1040,w:590,h:110,height:70,color:'#e4d5bf',name:'',type:'decor'}
 ];
 const outside=[
@@ -99,6 +99,7 @@ for(let i=0;i<200;i++){
  if(x>545&&x<785&&y>790&&y<1010)continue;
  if(Math.abs(x-(811-.817*y))<62)continue;
  if(y>880&&y<1020)continue;
+ if(x<620&&y>=1020&&y<1050)continue;
  if(x<300&&y>690&&y<960)continue;
  if(x>garageAccess.x-35&&x<garageAccess.x+garageAccess.w+35&&y>garageAccess.y-20)continue;
  if(fixtures.some(f=>(x>f.x-32&&x<f.x+f.w+32&&y>f.y-55&&y<f.y+f.h+35)||(f.ramp&&x>f.ramp.x-30&&x<f.ramp.x+f.ramp.w+30&&y>f.ramp.y-55&&y<f.ramp.y+f.ramp.h+30)))continue;
@@ -554,6 +555,7 @@ function outdoorGround(){const c=ctx;
  // In front of the school: bike racks and a large boulder at the corner of the play area (photo).
  c.strokeStyle='#8e9c98';c.lineWidth=2;for(let i=0;i<4;i++){c.beginPath();c.arc(318+i*15,632,5,Math.PI,0);c.lineTo(323+i*15,640);c.moveTo(313+i*15,632);c.lineTo(313+i*15,640);c.stroke();}
  ellipse(c,409,644,17,9,'#9c9a8f55');ellipse(c,406,639,15,10,'#ddd7c9');ellipse(c,402,636,7,4,'#f1ede3');
+ rr(c,308,606,68,4,1,'#9aa3a0');rr(c,311,610,2,30,0,'#9aa3a0');rr(c,371,610,2,30,0,'#9aa3a0');rr(c,306,603,72,9,2,'#eef0ec');rr(c,306,610,72,2,0,'#c9cfcb');
  // Two small play areas: the annotated table and slide are directly in front of the school.
  rr(c,417,548,220,96,13,'#c7c6b0');rr(c,424,553,206,86,10,'#ddd5bb');
  // Continuous side courtyard from the rear play area to the front gate.
@@ -583,7 +585,10 @@ function outdoorGround(){const c=ctx;
  // The access road continues south between the two lower buildings.
  rr(c,garageAccess.x-9,garageAccess.y,garageAccess.w+18,garageAccess.h,4,'#cfcab6');
  rr(c,garageAccess.x,garageAccess.y,garageAccess.w,garageAccess.h,3,'#aeb3ae');
- for(const [i,y]of [1000,1048,1096,1144].entries()){c.strokeStyle='#e8e4d2';c.lineWidth=1.5;c.strokeRect(garageAccess.x+5,y-4,28,45);if(i!==2)parkedCar(garageAccess.x+9,y,['#c0af7d','#7898a8','#b18a76','#8da28b'][i]);}
+ // Bays facing the Pampres street above the flat building, and down the west side of the garage lane (satellite).
+ c.strokeStyle='#e8e4d2';c.lineWidth=1.2;
+ for(let i=0;i<10;i++){const x=142+i*26;c.strokeRect(x-3,960,26,42);if(i!==2&&i!==7)parkedCar(x,963,['#c9c9c4','#7898a8','#b5574b','#c0af7d','#5d6b78','#8da28b','#c9c9c4','#b18a76','#7898a8','#c9c9c4'][i]);}
+ for(let i=0;i<9;i++){const y=972+i*26;c.strokeRect(garageAccess.x+3,y-12,42,24);if(i!==4&&i!==7){c.save();c.translate(garageAccess.x+24,y);c.rotate(Math.PI/2);parkedCar(-10,-18,['#c0af7d','#7898a8','#b18a76','#8da28b','#c9c9c4','#5d6b78','#b5574b','#c9c9c4','#7898a8'][i]);c.restore();}}
  c.strokeStyle='#ede8d5';c.lineWidth=1.5;c.beginPath();c.moveTo(garageAccess.x+4,garageAccess.y+36);c.lineTo(garageAccess.x+4,garageAccess.y+garageAccess.h-5);c.moveTo(garageAccess.x+garageAccess.w-4,garageAccess.y+36);c.lineTo(garageAccess.x+garageAccess.w-4,garageAccess.y+garageAccess.h-5);c.stroke();
  c.save();c.translate(1034,585);c.rotate(-Math.PI/2);text(c,'Chemin du Bocage',0,0,12,'#999a81');c.restore();
  for(const b of buildings){if(b.school||b.ref.startsWith('right-north'))continue;
@@ -933,14 +938,15 @@ function drawRoadGround(){const c=ctx;
  text(c,'20',598,232,12,'#eef0e6','700');
  c.lineCap='round';c.strokeStyle='#b7cf9a';c.lineWidth=13;c.beginPath();const g0=roadPoint(-125,57),g1=roadPoint(370,57);c.moveTo(g0.x,g0.y);c.lineTo(g1.x,g1.y);c.stroke();
  for(let s=-115;s<365;s+=46){if(Math.abs(s)<60)continue;const p=roadPoint(s,57);ellipse(c,p.x,p.y-3,9,6,'#93b27c');ellipse(c,p.x+3,p.y-6,6,4,'#a9c48e');}
- for(let i=0;i<4;i++){const p=roadPoint(250+i*44,99);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty,road.tx)-Math.PI/2);c.strokeStyle='#f8f3df';c.lineWidth=1.5;c.strokeRect(-13,-22,26,44);parkedCar(-10,-18,['#b18a76','#7898a8','#c0af7d','#8da28b'][i]);c.restore();}
+ // Cars park in a row on the road side of the lane, from the school down to the long building (satellite).
+ for(let i=0;i<6;i++){const p=roadPoint(140+i*44,79);c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(road.ty,road.tx)-Math.PI/2);c.strokeStyle='#e8e4d2';c.lineWidth=1.2;c.strokeRect(-13,-22,26,44);if(i!==3)parkedCar(-10,-18,['#b18a76','#7898a8','#c0af7d','#8da28b','#c9c9c4','#5d6b78'][i]);c.restore();}
  c.save();c.translate(road.x,road.y);c.transform(road.nx,road.ny,road.tx,road.ty,0,0);
  rr(c,-42,-800,84,1700,0,'#d5d1bd');rr(c,-27,-800,54,1700,0,'#a4aba8');
  c.setLineDash([18,15]);c.strokeStyle='#eee9d7';c.lineWidth=2;c.beginPath();c.moveTo(0,-800);c.lineTo(0,900);c.stroke();c.setLineDash([]);
  for(let s=-18;s<=18;s+=9)rr(c,-27,s,54,5,0,'#f3d875');
  c.strokeStyle='#faf3dc';c.lineWidth=3;for(const s of [-35,35]){c.beginPath();c.moveTo(-27,s);c.lineTo(27,s);c.stroke();}
  c.restore();
- const lbl=roadPoint(150,88);c.save();c.translate(lbl.x,lbl.y+4);c.rotate(-.885);text(c,'Voie privée',0,0,11,'#687765');c.restore();
+ const lbl=roadPoint(55,88);c.save();c.translate(lbl.x,lbl.y+4);c.rotate(-.885);text(c,'Voie privée',0,0,11,'#687765');c.restore();
  c.save();c.translate(270,520);c.rotate(-.885);text(c,'Route du Grand-Lancy',0,0,12,'#64726b');c.restore();
  rr(c,78,170,280,145,35,'#bed39f');text(c,'Le parc',215,185,15,'#567851','600');
 }
