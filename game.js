@@ -655,9 +655,23 @@ function render(){
  text(ctx,'TOI',player.x,player.y-74,11,'#4c7257','700');if(roadWarning>0&&scene==='outside')text(ctx,'⚠',player.x,player.y-100,30,'#c88432','700');}});
  objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());
  es.forEach(label);
+ if(near&&!$('#modal').open){const bob=Math.abs(Math.sin(time*5))*9,door=near.task==='enter'||near.task==='room'||near.task==='exit',top=near.y-(near.shirt?118:door?52:46)-bob,pulse=.5+.5*Math.sin(time*6);
+  ctx.globalAlpha=.35+.35*pulse;ctx.strokeStyle='#ffd34d';ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(near.x,near.y+3,28+pulse*6,10+pulse*2,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+  poly(ctx,[[near.x-13,top-14],[near.x+13,top-14],[near.x,top+4]],'#ffd34d','#b98a1a');}
  ctx.setTransform(dpr,0,0,dpr,0,0);
  if(stick?.active){const r=stick.radius;ctx.globalAlpha=.85;ellipse(ctx,stick.sx,stick.sy,r,r,'#ffffff80');ctx.strokeStyle='#264e4055';ctx.lineWidth=2;ctx.beginPath();ctx.arc(stick.sx,stick.sy,r,0,Math.PI*2);ctx.stroke();ellipse(ctx,stick.sx+stick.dx*r,stick.sy+stick.dy*r,r*.42,r*.42,'#355f46');ctx.globalAlpha=1;}
 }
+// What happens at the place you reached, said in words a child understands.
+function nearAction(n){const door=n.task==='enter'||n.task==='room'||n.task==='exit',person=!!n.shirt&&n.task!=='crossing';
+ return {icon:door?'🚪':n.icon||'✨',title:n.task==='enter'?'Entrer : '+n.name:n.task==='room'?'Visiter : '+n.name:n.task==='exit'?n.name:person?'Parler à '+n.name:n.name,
+  hint:touchUI?(person?'Touche ici pour parler':door?'Touche ici pour entrer':'Touche ici pour commencer'):'Appuie sur E ou Entrée (ou clique ici)'};}
+// The card at the bottom of the screen springs up each time you arrive somewhere, then keeps gently pulsing.
+let shownAction=null;
+function updateActionCard(n,label){if(shownAction===label)return;shownAction=label;const bubble=$('#interaction'),button=$('#touchInteract');
+ const html=n?(a=>`<span class="act-icon" aria-hidden="true">${a.icon}</span><span class="act-text"><b>${esc(a.title)}</b><small>${esc(a.hint)}</small></span>${touchUI?'<span class="act-finger" aria-hidden="true">👆</span>':''}`)(nearAction(n)):'';
+ const replay=el=>{el.classList.remove('arrive');void el.offsetWidth;el.classList.add('arrive');};
+ if(touchUI){button.classList.toggle('ready',!!n);if(n){button.innerHTML=html;replay(button);}else{button.classList.remove('arrive');button.textContent='Approche-toi de quelqu’un ou d’un jeu';}bubble.classList.add('hidden');}
+ else{bubble.classList.toggle('hidden',!n);if(n){bubble.innerHTML=html;replay(bubble);}}}
 function tick(now){
  const dt=last?Math.min((now-last)/1000,.04):0;last=now;time+=dt;
  if(!$('#modal').open){if(scene==='outside')updateTraffic(dt);roadWarning=Math.max(0,roadWarning-dt);let dx=0,dy=0;if(keys.has('ArrowUp')||keys.has('w')||keys.has('z'))dy--;if(keys.has('ArrowDown')||keys.has('s'))dy++;if(keys.has('ArrowLeft')||keys.has('a')||keys.has('q'))dx--;if(keys.has('ArrowRight')||keys.has('d'))dx++;
@@ -665,9 +679,7 @@ function tick(now){
  let power=1;if(!dx&&!dy&&stick?.active){power=Math.min(1,Math.hypot(stick.dx,stick.dy));if(power>.15){dx=stick.dx;dy=stick.dy;}}
  if(dx||dy){const norm=Math.hypot(dx,dy);dx=dx/norm*speed*power*dt;dy=dy/norm*speed*power*dt;movePlayer(dx,dy);}
  near=entities().filter(n=>Math.hypot(n.x-player.x,n.y-player.y)<82).sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0]||null;
- const nearLabel=near?(near.task==='enter'?'Entrer : ':near.task==='exit'?'':near.task==='room'?'Visiter : ':'')+near.name:'';
- $('#interaction').classList.toggle('hidden',!near||touchUI);if(near)$('#interaction span').textContent=nearLabel;
- if(touchUI&&$('#touchInteract').dataset.label!==nearLabel){$('#touchInteract').dataset.label=nearLabel;$('#touchInteract').textContent=near?(near.task==='enter'||near.task==='room'||near.task==='exit'?'🚪 ':'💬 ')+nearLabel:'Approche-toi de quelqu’un';$('#touchInteract').classList.toggle('ready',!!near);}
+ const nearLabel=near?nearAction(near).title:'';updateActionCard(near,nearLabel);
  if(time-saveTimer>30){saveTimer=time;if(created)save();}
  }
  render();requestAnimationFrame(tick);
