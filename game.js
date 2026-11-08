@@ -926,7 +926,7 @@ missions.push({id:'pingpong',icon:'🏓',title:'Une partie de ping-pong',skill:'
 // Road coordinates: s runs along Grand-Lancy, d runs across it toward the school.
 // The Grand-Lancy road runs about 20 degrees from vertical, as on the satellite view; its centre line is x = 480 - 0.364 y.
 // s=0 is the pedestrian crossing, level with the bike shelter in front of the school.
-const road={x:262,y:600,tx:-.342,ty:.94,nx:.94,ny:.342,half:27,crossHalf:22};
+const road={x:262,y:600,tx:-.342,ty:.94,nx:.94,ny:.342,half:27,crossHalf:40}; // crossing allowed between the stop lines, wide enough to cross straight across
 const laneX=y=>573.6-.364*y; // centre of the private lane, 88 from the road centre
 const traffic={phase:'drive',remaining:0,cars:[],spawn:1,serial:0};
 let roadWarning=0;
@@ -986,8 +986,8 @@ function drawRoadGround(){const c=ctx;
  c.save();c.translate(road.x,road.y);c.transform(road.nx,road.ny,road.tx,road.ty,0,0);
  rr(c,-42,-1150,84,2100,0,'#d5d1bd');rr(c,-27,-1150,54,2100,0,'#a4aba8');
  c.setLineDash([18,15]);c.strokeStyle='#eee9d7';c.lineWidth=2;c.beginPath();c.moveTo(0,-1150);c.lineTo(0,950);c.stroke();c.setLineDash([]);
- for(let s=-18;s<=18;s+=9)rr(c,-27,s,54,5,0,'#f3d875');
- c.strokeStyle='#faf3dc';c.lineWidth=3;for(const s of [-35,35]){c.beginPath();c.moveTo(-27,s);c.lineTo(27,s);c.stroke();}
+ for(let s=-36;s<=36;s+=9)rr(c,-27,s,54,5,0,'#f3d875');
+ c.strokeStyle='#faf3dc';c.lineWidth=3;for(const s of [-44,44]){c.beginPath();c.moveTo(-27,s);c.lineTo(27,s);c.stroke();}
  c.restore();
  const along=Math.atan2(road.ty,road.tx)-Math.PI;const lbl=roadPoint(-150,88);c.save();c.translate(lbl.x,lbl.y+4);c.rotate(along);text(c,'Voie privée',0,0,11,'#687765');c.restore();
  {const p=roadPoint(-250,0);c.save();c.translate(p.x+3,p.y);c.rotate(along);text(c,'Route du Grand-Lancy',0,0,12,'#64726b');c.restore();}
@@ -1152,7 +1152,7 @@ function drawParkChallenge(c,activity){const ch=activity.challenge,ctl=activity.
   for(const f of ch.fx){const k=f.t/f.life,x=pivot.x-Math.sin(f.a)*len,y=pivot.y+Math.cos(f.a)*len;c.globalAlpha=1-k;for(let i=0;i<8;i++){const a=i*Math.PI/4;star(x+Math.cos(a)*k*50,y+Math.sin(a)*k*50,6,'#ffd34d');}text(c,'+1 étoile',x,y-24-k*30,16,'#fff6c8','800');}c.globalAlpha=1;
   if(activity.perfect>0){const seat={x:pivot.x-Math.sin(ctl.angle)*225,y:pivot.y+Math.cos(ctl.angle)*225};c.globalAlpha=activity.perfect/.6;pill('Parfait !',seat.x,seat.y-120,22,'#ffd34d');c.globalAlpha=1;}
   else if(activity.playing&&!ch.done&&swingPerfect(ctl)&&Math.abs(ctl.angle)>.1){const seat={x:pivot.x-Math.sin(ctl.angle)*225,y:pivot.y+Math.cos(ctl.angle)*225};c.strokeStyle='#ffd34d';c.lineWidth=4;c.globalAlpha=.85;c.beginPath();c.arc(seat.x,seat.y-40,46,0,Math.PI*2);c.stroke();c.globalAlpha=1;pill('Maintenant !',seat.x,seat.y-98,16,'#fff2b3');}
-  rr(c,14,12,150,34,10,'#25352fdd');text(c,'Étoiles '+ch.stars.filter(s=>s.got).length+' / '+ch.stars.length,89,35,15,'#f7f4e6','700');}
+  rr(c,596,12,150,34,10,'#25352fdd');text(c,'Étoiles '+ch.stars.filter(s=>s.got).length+' / '+ch.stars.length,671,35,15,'#f7f4e6','700');}
  else{const cx=660,cy=96,r=56,ang=e=>Math.PI+Math.max(0,Math.min(1,e))*Math.PI,[lo,hi]=CAROUSEL_ZONES[ch.zone];
   rr(c,586,24,148,96,16,'#25352fdd');c.lineCap='butt';c.lineWidth=12;c.strokeStyle='#ffffff33';c.beginPath();c.arc(cx,cy,r-6,Math.PI,2*Math.PI);c.stroke();
   c.strokeStyle=ch.inside?'#7fd88a':'#5fae6b';c.beginPath();c.arc(cx,cy,r-6,ang(lo),ang(hi));c.stroke();
