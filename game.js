@@ -787,51 +787,67 @@ function makeHopRoute(stone){
  return {sequence,pickupAt};
 }
 function hopSpot(row,cells=hopRows[row]){const offset=row>=0&&hopRows[row].length===2&&cells.length===1?(cells[0]===hopRows[row][0]?-38:38):0;return {x:400+offset,y:row<0?536:476-row*61};}
+let hopAudio=null;
+function hopSound(type){if(!sound)return;try{hopAudio=hopAudio||new(window.AudioContext||window.webkitAudioContext)();const a=hopAudio,t=a.currentTime;
+ const notes={throw:[[520,.06]],clack:[[1100,.05],[900,.05]],miss:[[260,.14]],jump:[[440,.07]],land:[[330,.06]],win:[[523,.12],[659,.12],[784,.12],[1046,.25]]}[type]||[];
+ notes.forEach(([f,d],i)=>{const o=a.createOscillator(),g=a.createGain();o.type=type==='clack'?'triangle':'sine';o.frequency.value=f;o.connect(g);g.connect(a.destination);const s0=t+i*.09;g.gain.setValueAtTime(.0001,s0);g.gain.exponentialRampToValueAtTime(.11,s0+.005);g.gain.exponentialRampToValueAtTime(.0001,s0+d);o.start(s0);o.stop(s0+d+.02);});}catch{}}
+// A swipe upward from the player throws the stone: length = distance, sideways = direction.
+function hopLanding(s,drag){const dx=drag.to.x-drag.from.x,dy=Math.min(0,drag.to.y-drag.from.y),x=400+dx*1.1,y=536+dy*1.6,row=hopRows.findIndex(r=>r.includes(s.stone)),spot=hopSpot(row,[s.stone]),tol=[16,9,3][level()];
+ return {x,y,hit:x>=spot.x-36-tol&&x<=spot.x+36+tol&&y>=spot.y-48-tol&&y<=spot.y+8+tol};}
 function drawHopscotch(c,s){
  c.save();c.clearRect(0,0,800,580);
- const bg=c.createLinearGradient(0,0,0,580);bg.addColorStop(0,'#dce8d7');bg.addColorStop(1,'#f0e9d6');c.fillStyle=bg;c.fillRect(0,0,800,580);
- rr(c,28,24,744,62,16,'#edf2e5');text(c,'LA COUR DES PETITS BONDS',400,52,15,'#65806b','700');text(c,'TERRE → CIEL → TERRE',400,73,12,'#788975');
- for(let i=0;i<22;i++)ellipse(c,26+(i*137)%750,110+(i*83)%450,2,1,'#a6ad9235');
- rr(c,293,99,214,458,28,'#cbd2bf');rr(c,299,95,202,458,28,'#e0e5d7');
- text(c,'CIEL',400,117,13,'#658878','700');text(c,'TERRE',400,561,12,'#658878','700');
+ // The school yard: grey asphalt with chalk drawings.
+ const bg=c.createLinearGradient(0,0,0,580);bg.addColorStop(0,'#c9c6bb');bg.addColorStop(1,'#b7b3a6');c.fillStyle=bg;c.fillRect(0,0,800,580);
+ for(let i=0;i<260;i++)ellipse(c,(i*137)%800,(i*83+i*i)%580,1.3,1,i%3?'#a19d9055':'#d6d3c955');
+ rr(c,24,14,236,46,14,'#efece3ee');text(c,'LA COUR DES PETITS BONDS',142,35,13,'#5d6f5e','800');text(c,'TERRE → CIEL → TERRE',142,51,11,'#77836f','600');
+ const chalk=(pts,color,w=2.5)=>{c.strokeStyle=color;c.lineWidth=w;c.lineCap='round';for(let k=0;k<2;k++){c.beginPath();pts.forEach(([x,y],i)=>{const jx=Math.sin(x*.7+y*.3+k*5)*1.2,jy=Math.cos(x*.4+y*.9+k*3)*1.2;i?c.lineTo(x+jx,y+jy):c.moveTo(x+jx,y+jy);});c.stroke();}};
+ c.globalAlpha=.75;c.beginPath();c.arc(400,102,44,Math.PI,0);c.fillStyle='#f3efe0';c.fill();c.globalAlpha=1;chalk([[356,104],[358,82],[372,66],[400,58],[428,66],[442,82],[444,104]],'#ffffffd9');
+ text(c,'CIEL',400,98,15,'#6a7f8f','800');rr(c,330,540,140,26,8,'#f3efe055');text(c,'TERRE',400,559,13,'#6d6a5b','800');
  const next=s.sequence[s.progress],targetRow=s.phase==='play'?next?.row:-2;
  for(let row=0;row<hopRows.length;row++){
   const ns=hopRows[row],spot=hopSpot(row);
   for(let j=0;j<ns.length;j++){
    const n=ns[j],x=400+(ns.length===2?(j?38:-38):0),blocked=n===s.stone&&!s.collected;
-   rr(c,x-36,spot.y-48,72,56,6,blocked?'#ddcdb4':['#e6bd9f','#dbd79e','#abc9bf','#b8c9dd','#d2bdd4','#edcf92'][row],'#fffdf2');
-   if(row===targetRow&&s.hints&&!blocked){c.lineWidth=3;rr(c,x-33,spot.y-45,66,50,5,null,'#4b846b');c.lineWidth=1;}
-   text(c,String(n),x,spot.y-14,25,blocked?'#8e806e':'#526e63','700');
+   c.globalAlpha=.62;rr(c,x-36,spot.y-48,72,56,4,blocked?'#d8cdb8':['#f0b8a0','#efe39a','#a9d8c6','#b4cbe8','#d8b8dd','#f5d08a'][row]);c.globalAlpha=1;
+   chalk([[x-36,spot.y-48],[x+36,spot.y-48],[x+36,spot.y+8],[x-36,spot.y+8],[x-36,spot.y-48]],'#fbfaf3e6',3);
+   if(row===targetRow&&s.hints&&!blocked){const pulse=.5+.5*Math.sin((s.time||0)*6);c.globalAlpha=.35+.35*pulse;rr(c,x-34,spot.y-46,68,52,4,'#fff6b8');c.globalAlpha=1;c.lineWidth=3;rr(c,x-33,spot.y-45,66,50,5,null,'#3f8a63');c.lineWidth=1;}
+   text(c,String(n),x,spot.y-12,27,blocked?'#8e806e':'#fbfaf3','800');
   }
  }
  const stoneRow=hopRows.findIndex(r=>r.includes(s.stone)),ns=hopRows[stoneRow],sx=400+(ns.length===2?(ns[0]===s.stone?-38:38):0),sy=hopSpot(stoneRow).y-32;
  const a=s.animation,u=a?Math.min(1,a.elapsed/a.duration):0,e=parkEase(u);
  if(!s.collected&&s.phase!=='aim'){
   let x=sx+16,y=sy;
-  if(a?.type==='throw'){x=418+(sx+16-418)*e+(a.hit?0:120*e);y=500+(sy-500)*e-Math.sin(Math.PI*u)*140;}
+  if(a?.type==='throw'){const to=a.to||{x:a.hit?sx+16:sx+136,y:sy};x=418+(to.x-418)*e;y=500+(to.y-500)*e-Math.sin(Math.PI*u)*140;}
+  else if(s.landing&&!s.landingHit){x=s.landing.x;y=s.landing.y;}
   ellipse(c,x+3,y+5,10,4,'#73736332');ellipse(c,x,y,9,6,'#867d72');ellipse(c,x-2,y-2,4,2,'#b9b0a2');
  }
+ if(s.phase==='aim'&&s.drag){const L=hopLanding(s,s.drag);c.fillStyle=L.hit?'#fff6c8':'#ffd0bf';for(let i=1;i<=16;i++){const k=i/17,px=418+(L.x-418)*k,py=500+(L.y-500)*k-Math.sin(Math.PI*k)*140;c.globalAlpha=.3+.6*k;c.beginPath();c.arc(px,py,3.4-k*1.2,0,Math.PI*2);c.fill();}
+  c.globalAlpha=1;c.strokeStyle=L.hit?'#3f8a63':'#d9734f';c.lineWidth=3;c.beginPath();c.ellipse(L.x,L.y,16,9,0,0,Math.PI*2);c.stroke();text(c,L.hit?'Pile sur le '+s.stone+' !':'Pas encore…',L.x,L.y-18,13,L.hit?'#2f6b4c':'#9a4a2f','800');}
  let x=s.position.x,y=s.position.y,lift=0,pose=s.double?'hop-double':'hop',phase=0;
  if(a?.type==='jump'){x=a.from.x+(a.to.x-a.from.x)*e;y=a.from.y+(a.to.y-a.from.y)*e;lift=Math.sin(Math.PI*u)*58;pose=a.double?'hop-double':'hop';phase=Math.sin(Math.PI*u);}
  if(a?.type==='pickup'){pose='pickup';phase=Math.sin(Math.PI*u);}
  if(s.phase==='aim'||a?.type==='throw'){pose='throw';phase=a?Math.sin(Math.PI*u):0;}
  if(s.phase==='done'){pose='wave';phase=s.time;}
- ellipse(c,x,y+4,25-lift*.13,6-lift*.04,'#5f77682d');
- parkAvatar(c,x,y-28-lift,profile,pose,phase,.64,s.back?-1:1);
+ ellipse(c,x,y+4,25-lift*.13,6-lift*.04,'#4b4a4033');
+ // Squash before take-off and on landing, stretch in the air.
+ let squash=1;if(a?.type==='jump')squash=u<.15?1-.16*(u/.15):u>.85?1-.16*((1-u)/.15):1+.08*Math.sin(Math.PI*u);
+ c.save();c.translate(x,y+4);c.scale(2-squash,squash);c.translate(-x,-(y+4));parkAvatar(c,x,y-28-lift,profile,pose,phase,.64,s.back?-1:1);c.restore();
  if(s.phase==='aim')ellipse(c,x+20,y-41,7,5,'#867d72');
- text(c,s.phase==='done'?'BRAVO !':s.phase==='aim'?'À TOI DE LANCER':s.back?'LE RETOUR':'L’ALLER',145,166,16,'#4b715d','700');
- const guide=s.phase==='aim'?['Arrête le curseur','dans la zone verte.']:s.phase==='collect'||a?.type==='pickup'?['Récupère ton caillou','avant de rentrer.']:s.phase==='done'?['Caillou récupéré,','parcours réussi !']:['Un pied : case seule','Deux pieds : cases doubles'];
- guide.forEach((line,i)=>text(c,line,145,195+i*23,13,'#738575'));
- text(c,'CASE DU CAILLOU',650,166,12,'#738575','700');text(c,String(s.stone),650,210,38,'#8c7965','700');
- if(s.phase==='done')for(let i=0;i<24;i++){const x=100+(i*89)%600,y=130+(i*67)%350;rr(c,x,y,5,10,1,['#d5ad68','#8eb7a4','#ba9bac'][i%3]);}
+ text(c,s.phase==='done'?'BRAVO !':s.phase==='aim'?'À TOI DE LANCER':s.back?'LE RETOUR':'L’ALLER',145,166,16,'#3f5f4b','800');
+ const guide=s.phase==='aim'?['Glisse ton doigt vers','le haut, puis lâche.']:s.phase==='collect'||a?.type==='pickup'?['Récupère ton caillou','avant de rentrer.']:s.phase==='done'?['Caillou récupéré,','parcours réussi !']:['Un pied : case seule','Deux pieds : cases doubles'];
+ guide.forEach((line,i)=>text(c,line,145,195+i*23,13,'#4f5d4f'));
+ text(c,'CASE DU CAILLOU',650,166,12,'#5d6f5e','700');text(c,String(s.stone),650,210,38,'#6d6253','700');
+ for(const f of s.fx||[]){const k=f.t/f.life;c.globalAlpha=1-k;if(f.type==='dust')for(let i=0;i<7;i++){const ang=i*Math.PI*2/7;ellipse(c,f.x+Math.cos(ang)*(8+k*28),f.y+Math.sin(ang)*(3+k*8),5-k*3,3-k*2,'#eae6d9');}else text(c,f.text,f.x,f.y-k*36,f.size||18,f.color||'#fff6c8','800');}c.globalAlpha=1;
+ if(s.phase==='done')for(let i=0;i<44;i++){const x=(i*89+(s.time||0)*40*(1+i%3))%800,y=(i*67+(s.time||0)*90*(1+i%2))%580;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}
  c.restore();
 }
 function hopscotchGame(){
  discover('hopscotch');const stone=fresh('hop-stone',()=>{const n=randomInt(1,8);return {stone:n,signature:String(n)};}).stone;
- const s={kind:'hopscotch',stone,...makeHopRoute(stone),progress:0,phase:'aim',position:hopSpot(-1),double:false,back:false,collected:false,time:0,aim:0,animation:null,hints:level()===0};activeActivity=s;
+ const s={kind:'hopscotch',stone,...makeHopRoute(stone),progress:0,phase:'aim',position:hopSpot(-1),double:false,back:false,collected:false,time:0,aim:0,animation:null,hints:level()===0,fx:[],drag:null,landing:null};activeActivity=s;
  let frame=0,last=null,closed=false;
  const buttons=hopRows.map((cells,row)=>`<button class="secondary" data-hop="${row}" aria-label="Sauter sur ${cells.join(' et ')}">${cells.join(' + ')}</button>`).join('');
- modal(activityHeader('La marelle des petits bonds','La cour de l’école')+`<p class="modal-description">Lance ton caillou, saute à cloche-pied ou à deux pieds sur les cases doubles. Au retour, récupère-le avant de rejoindre la terre.</p><canvas id="hopCanvas" class="hop-canvas" width="800" height="580" role="img" aria-label="Marelle avec ton personnage et ton caillou"></canvas><div id="hopThrowPanel"><div class="hop-aim" aria-hidden="true"><span id="hopTarget"></span><i id="hopCursor"></i></div><button id="hopThrow" class="primary">Lancer le caillou · Espace</button></div><div class="hop-status"><span id="hopStage">1 · Le lancer</span><span id="hopCount">0 saut</span></div><p id="hopFeedback" class="feedback" role="status">Vise la zone verte pour envoyer le caillou sur la case ${stone}.</p><div class="hop-pad" aria-label="Choisis où sauter">${buttons}<button id="hopHome" class="secondary">Terre</button></div><div class="actions"><button id="hopCollect" class="primary" hidden>Ramasser le caillou</button><button id="hopHint" class="secondary">${s.hints?'Masquer':'Montrer'} les indices</button><button id="hopAgain" class="secondary">Nouvelle partie</button><button id="activityClose" class="secondary">Retour à la cour</button></div>`,()=>{closed=true;cancelAnimationFrame(frame);$('#modal').onkeydown=null;});
+ modal(activityHeader('La marelle des petits bonds','La cour de l’école')+`<p class="modal-description"><b>Lancer :</b> pose le doigt sur la marelle et glisse vers le haut, puis lâche : plus tu glisses loin, plus le caillou va loin (tu peux aussi utiliser la barre). <b>Sauter :</b> touche la case suivante. Au retour, ramasse ton caillou avant de rejoindre la terre.</p><canvas id="hopCanvas" class="hop-canvas" width="800" height="580" role="img" aria-label="Marelle avec ton personnage et ton caillou"></canvas><div id="hopThrowPanel"><div class="hop-aim" aria-hidden="true"><span id="hopTarget"></span><i id="hopCursor"></i></div><button id="hopThrow" class="primary">Lancer le caillou · Espace</button></div><div class="hop-status"><span id="hopStage">1 · Le lancer</span><span id="hopCount">0 saut</span></div><p id="hopFeedback" class="feedback" role="status">Vise la zone verte pour envoyer le caillou sur la case ${stone}.</p><div class="hop-pad" aria-label="Choisis où sauter">${buttons}<button id="hopHome" class="secondary">Terre</button></div><div class="actions"><button id="hopCollect" class="primary" hidden>Ramasser le caillou</button><button id="hopHint" class="secondary">${s.hints?'Masquer':'Montrer'} les indices</button><button id="hopAgain" class="secondary">Nouvelle partie</button><button id="activityClose" class="secondary">Retour à la cour</button></div>`,()=>{closed=true;cancelAnimationFrame(frame);$('#modal').onkeydown=null;});
  const c=$('#hopCanvas').getContext('2d'),half=[.23,.17,.12][level()];$('#hopTarget').style.left=(.5-half)*100+'%';$('#hopTarget').style.width=half*200+'%';
  const feedback=message=>$('#hopFeedback').textContent=message;
  const sync=()=>{
@@ -844,21 +860,25 @@ function hopscotchGame(){
  const jump=row=>{
   if(s.phase!=='play')return;const next=s.sequence[s.progress];
   if(next.row!==row){feedback(row>=0&&hopRows[row].length===1&&hopRows[row][0]===stone?'Le caillou bloque cette case : saute par-dessus !':'Regarde l’ordre des cases. Tu peux afficher les indices.');return;}
-  s.phase='jump';s.back=next.back;s.animation={type:'jump',from:{...s.position},to:hopSpot(row,next.cells),double:next.cells.length===2,elapsed:0,duration:.62};sync();
+  s.phase='jump';hopSound('jump');s.back=next.back;s.animation={type:'jump',from:{...s.position},to:hopSpot(row,next.cells),double:next.cells.length===2,elapsed:0,duration:.62};sync();
  };
- const throwStone=()=>{if(s.phase!=='aim')return;const hit=Math.abs(s.aim-.5)<=half;s.phase='throw';s.animation={type:'throw',elapsed:0,duration:.85,hit};feedback(hit?'Le caillou s’envole…':'Un peu à côté… Tu pourras réessayer !');sync();};
+ const throwStone=(landing=null)=>{if(s.phase!=='aim')return;const hit=landing?landing.hit:Math.abs(s.aim-.5)<=half;s.phase='throw';s.landing=landing;s.landingHit=hit;s.animation={type:'throw',elapsed:0,duration:.85,hit,to:landing?{x:landing.x,y:landing.y}:null};hopSound('throw');feedback(hit?'Le caillou s’envole…':'Un peu à côté… Tu pourras réessayer !');sync();};
  const collect=()=>{if(s.phase!=='collect')return;s.phase='pickup';s.animation={type:'pickup',elapsed:0,duration:.7};sync();};
  document.querySelectorAll('[data-hop]').forEach(b=>b.onclick=()=>jump(Number(b.dataset.hop)));$('#hopHome').onclick=()=>jump(-1);$('#hopThrow').onclick=throwStone;$('#hopCollect').onclick=collect;
  $('#hopHint').onclick=()=>{s.hints=!s.hints;$('#hopHint').textContent=(s.hints?'Masquer':'Montrer')+' les indices';if(s.phase==='play')nextMessage();sync();};
+ const cv=$('#hopCanvas'),cpos=e=>{const r=cv.getBoundingClientRect();return {x:(e.clientX-r.left)*800/(r.width||800),y:(e.clientY-r.top)*580/(r.height||580)};};
+ cv.onpointerdown=e=>{if(s.phase!=='aim')return;e.preventDefault?.();cv.setPointerCapture?.(e.pointerId);const p=cpos(e);s.drag={from:p,to:p,id:e.pointerId};};
+ cv.onpointermove=e=>{if(s.drag&&e.pointerId===s.drag.id)s.drag.to=cpos(e);};
+ cv.onpointerup=cv.onpointercancel=e=>{if(!s.drag)return;const d=s.drag;s.drag=null;if(e.type==='pointercancel'||d.from.y-d.to.y<25)return;throwStone(hopLanding(s,d));};
  $('#hopCanvas').onclick=e=>{if(s.phase!=='play')return;const r=$('#hopCanvas').getBoundingClientRect(),x=(e.clientX-r.left)*800/r.width,y=(e.clientY-r.top)*580/r.height;if(x<320||x>480)return;if(y>505){jump(-1);return;}for(let row=0;row<6;row++){const p=hopSpot(row);if(y>=p.y-48&&y<=p.y+8){jump(row);break;}}};
  $('#modal').onkeydown=e=>{if(e.repeat)return;if((e.key===' '||e.key==='Enter')&&(s.phase==='aim'||s.phase==='collect')&&!(e.target?.tagName==='BUTTON'&&e.target.id!=='hopThrow'&&e.target.id!=='hopCollect')){e.preventDefault();s.phase==='aim'?throwStone():collect();}else if(/^[1-8]$/.test(e.key)&&s.phase==='play'){e.preventDefault();jump(hopRows.findIndex(r=>r.includes(Number(e.key))));}};
  const finishAnimation=()=>{
   const a=s.animation;s.animation=null;
-  if(a.type==='throw'){s.phase=a.hit?'play':'aim';if(a.hit)nextMessage();else feedback('Réessaie : arrête le curseur dans la zone verte.');}
-  if(a.type==='pickup'){s.collected=true;s.phase='play';nextMessage();}
+  if(a.type==='throw'){const p=a.to||{x:418,y:300};s.fx.push({type:'dust',x:p.x,y:p.y+4,t:0,life:.5});s.phase=a.hit?'play':'aim';hopSound(a.hit?'clack':'miss');if(a.hit){s.fx.push({type:'pop',text:'Dans la case !',x:p.x,y:p.y-24,t:0,life:.9,color:'#fff6c8'});nextMessage();}else{s.landing=null;feedback('Réessaie : glisse plus ou moins loin pour viser la case '+s.stone+'.');}}
+  if(a.type==='pickup'){s.collected=true;s.phase='play';hopSound('clack');s.fx.push({type:'pop',text:'Ramassé !',x:s.position.x,y:s.position.y-80,t:0,life:.9});nextMessage();}
   if(a.type==='jump'){
-   s.position=a.to;s.double=a.double;s.progress++;
-   if(s.progress===s.sequence.length){s.phase='done';award('hopscotch');feedback('Bravo ! Aller-retour réussi, caillou récupéré. Une nouvelle partie change la case à éviter.');}
+   s.position=a.to;s.double=a.double;s.progress++;s.fx.push({type:'dust',x:a.to.x,y:a.to.y+4,t:0,life:.45});s.fx.push({type:'pop',text:['Bien !','Hop !','Super !','En équilibre !'][s.progress%4],x:a.to.x+60,y:a.to.y-60,t:0,life:.8,size:16});hopSound('land');
+   if(s.progress===s.sequence.length){s.phase='done';hopSound('win');award('hopscotch');feedback('Bravo ! Aller-retour réussi, caillou récupéré. Une nouvelle partie change la case à éviter.');}
    else if(s.progress===s.pickupAt&&!s.collected){s.back=true;s.phase='collect';feedback('Garde ton équilibre ! Ramasse ton caillou avant de continuer.');}
    else{s.phase='play';s.back=s.sequence[s.progress].back;nextMessage();}
   }sync();
@@ -866,6 +886,7 @@ function hopscotchGame(){
  const animate=now=>{if(closed)return;if(document.hidden){last=null;frame=requestAnimationFrame(animate);return;}const dt=last===null?0:Math.min(.06,(now-last)/1000);last=now;s.time+=dt;
   if(s.phase==='aim'){s.aim=(Math.sin(s.time*2.8-Math.PI/2)+1)/2;$('#hopCursor').style.left=s.aim*100+'%';}
   if(s.animation){s.animation.elapsed+=dt;if(s.animation.elapsed>=s.animation.duration)finishAnimation();}
+  s.fx=s.fx.filter(f=>(f.t+=dt)<f.life);
   drawHopscotch(c,s);frame=requestAnimationFrame(animate);
  };
  $('#hopAgain').onclick=hopscotchGame;bindActivityClose();sync();drawHopscotch(c,s);frame=requestAnimationFrame(animate);
