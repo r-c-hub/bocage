@@ -1463,13 +1463,13 @@ function ballGame(){
 
 // Sorting waste at the collection point next to the school, following the rules used in Geneva.
 const RECYCLE_BINS=[
- {id:'verre',name:'Verre',sub:'bouteilles, bocaux',icon:'🍾',color:'#4f8a5b',lid:'#3c7049'},
+ {id:'verre',name:'Verre',sub:'bouteilles et bocaux',icon:'🍾',color:'#4f8a5b',lid:'#3c7049'},
  {id:'pet',name:'PET',sub:'bouteilles de boisson',icon:'🧴',color:'#5d86b8',lid:'#45699a'},
- {id:'papier',name:'Papier et carton',sub:'propres et secs',icon:'📰',color:'#8d9aa6',lid:'#6f7d8a'},
- {id:'alu',name:'Alu et fer-blanc',sub:'boîtes, canettes',icon:'🥫',color:'#a9b0b3',lid:'#878f93'},
- {id:'cuisine',name:'Déchets de cuisine',sub:'P’tite poubelle verte',icon:'🍂',color:'#7aa25a',lid:'#5f8744'},
+ {id:'papier',name:'Papier · carton',sub:'propres et secs',icon:'📰',color:'#8d9aa6',lid:'#6f7d8a'},
+ {id:'alu',name:'Alu · fer-blanc',sub:'boîtes, canettes',icon:'🥫',color:'#a9b0b3',lid:'#878f93'},
+ {id:'cuisine',name:'Cuisine',sub:'P’tite poubelle verte',icon:'🍂',color:'#7aa25a',lid:'#5f8744'},
  {id:'textile',name:'Textiles',sub:'habits, chaussures',icon:'👕',color:'#e2b33c',lid:'#c69a2c'},
- {id:'ordures',name:'Ordures ménagères',sub:'tout le reste',icon:'🗑️',color:'#4a5250',lid:'#353b3a'}];
+ {id:'ordures',name:'Ordures',sub:'ménagères : tout le reste',icon:'🗑️',color:'#4a5250',lid:'#353b3a'}];
 // level: from which age band the item appears (0 = everyone); trap: a classic mistake worth learning.
 const RECYCLE_ITEMS=[
  {name:'Bouteille d’eau en PET',icon:'🧴',bin:'pet',level:0,why:'Les bouteilles de boisson en PET vont dans la collecte PET.'},
@@ -1504,40 +1504,42 @@ function recycleStep(g,dt){g.time+=dt;g.fx=g.fx.filter(f=>(f.t+=dt)<f.life);if(g
    else g.state='play';}
   else if(g.anim.type==='back'&&g.anim.t>=.4)g.anim=null;}
  return g;}
-const recycleBinRect=i=>{const row=i<4?0:1,col=row?i-4:i,w=178,gap=10,x0=row?(760-(3*w+2*gap))/2:(760-(4*w+3*gap))/2;return {x:x0+col*(w+gap),y:row?418:280,w,h:130};};
+const RECYCLE_H=880;
+const recycleBinRect=i=>{const row=Math.floor(i/2),col=i%2,w=364,last=i===RECYCLE_BINS.length-1&&i%2===0;return {x:last?(760-w)/2:12+col*(w+8),y:312+row*140,w,h:128};};
 // Large text that shrinks only if it would not fit.
+function fitTextLeft(c,str,x,y,size,max,color,weight='800'){c.font=`${weight} ${size}px Segoe UI,Arial`;while(size>12&&c.measureText(str).width>max){size--;c.font=`${weight} ${size}px Segoe UI,Arial`;}c.fillStyle=color;c.textAlign='left';c.fillText(str,x,y);c.textAlign='center';}
 function fitText(c,str,x,y,size,max,color,weight='800'){c.font=`${weight} ${size}px Segoe UI,Arial`;while(size>10&&c.measureText(str).width>max){size--;c.font=`${weight} ${size}px Segoe UI,Arial`;}text(c,str,x,y,size,color,weight);}
-const RECYCLE_HOME={x:380,y:150};
-function recycleItemPos(g){if(g.drag)return g.drag.pos;const a=g.anim;if(a?.type==='in'){const r=recycleBinRect(RECYCLE_BINS.findIndex(b=>b.id===a.bin)),from=a.from||RECYCLE_HOME,k=Math.min(1,a.t/.5),e=k*k;return {x:from.x+(r.x+r.w/2-from.x)*e,y:from.y+(r.y+10-from.y)*e-Math.sin(Math.PI*k)*60,scale:1-.6*k};}
+const RECYCLE_HOME={x:380,y:162};
+function recycleItemPos(g){if(g.drag)return g.drag.pos;const a=g.anim;if(a?.type==='in'){const r=recycleBinRect(RECYCLE_BINS.findIndex(b=>b.id===a.bin)),from=a.from||RECYCLE_HOME,k=Math.min(1,a.t/.5),e=k*k;return {x:from.x+(r.x+52-from.x)*e,y:from.y+(r.y+30-from.y)*e-Math.sin(Math.PI*k)*60,scale:1-.6*k};}
  if(a?.type==='back'){const from=a.from||RECYCLE_HOME,k=Math.min(1,a.t/.4),e=1-(1-k)*(1-k);return {x:from.x+(RECYCLE_HOME.x-from.x)*e+Math.sin(k*Math.PI*6)*8*(1-k),y:from.y+(RECYCLE_HOME.y-from.y)*e,scale:1};}
  return {x:RECYCLE_HOME.x,y:RECYCLE_HOME.y+Math.sin(g.time*2.4)*5,scale:1};}
-function drawRecycle(c,g){c.save();c.clearRect(0,0,760,560);
- const wall=c.createLinearGradient(0,0,0,270);wall.addColorStop(0,'#b48759');wall.addColorStop(1,'#a77b4f');c.fillStyle=wall;c.fillRect(0,0,760,270);for(let x=0;x<760;x+=6){c.fillStyle=x%12?'#ad8054':'#b98d60';c.fillRect(x,0,3,270);}rr(c,0,150,760,12,0,'#e4bf4f');
- const ground=c.createLinearGradient(0,270,0,560);ground.addColorStop(0,'#c3c6bb');ground.addColorStop(1,'#aeb1a6');c.fillStyle=ground;c.fillRect(0,262,760,298);
- rr(c,14,12,240,36,10,'#25352fdd');text(c,'POINT DE COLLECTE · BELLE-COUR',134,35,12,'#f7f4e6','800');
- const item=recycleItem(g);rr(c,500,12,246,36,10,'#25352fdd');text(c,g.state==='over'?'Partie terminée':'Déchet '+(g.index+1)+' / '+g.items.length+'  ·  ✓ '+g.score,623,36,17,'#f7f4e6','800');
+function drawRecycle(c,g){const H=RECYCLE_H;c.save();c.clearRect(0,0,760,H);
+ const wall=c.createLinearGradient(0,0,0,300);wall.addColorStop(0,'#b48759');wall.addColorStop(1,'#a77b4f');c.fillStyle=wall;c.fillRect(0,0,760,300);for(let x=0;x<760;x+=6){c.fillStyle=x%12?'#ad8054':'#b98d60';c.fillRect(x,0,3,300);}rr(c,0,170,760,12,0,'#e4bf4f');
+ const ground=c.createLinearGradient(0,290,0,H);ground.addColorStop(0,'#c3c6bb');ground.addColorStop(1,'#aeb1a6');c.fillStyle=ground;c.fillRect(0,290,760,H-290);
+ rr(c,12,12,300,44,12,'#25352fdd');text(c,'Point de collecte',162,41,20,'#f7f4e6','800');
+ const item=recycleItem(g);rr(c,448,12,300,44,12,'#25352fdd');text(c,g.state==='over'?'Partie terminée':'Déchet '+(g.index+1)+' / '+g.items.length+'  ·  ✓ '+g.score,598,42,22,'#f7f4e6','800');
  RECYCLE_BINS.forEach((b,i)=>{const r=recycleBinRect(i),hint=g.hint&&g.hint.bin===b.id,hot=g.drag&&g.drag.over===b.id,open=g.anim?.type==='in'&&g.anim.bin===b.id?Math.sin(Math.min(1,g.anim.t/.5)*Math.PI):0;
   ellipse(c,r.x+r.w/2,r.y+r.h+4,r.w*.48,8,'#00000022');
   if(hint){c.globalAlpha=.5+.4*Math.sin(g.hint.t*8);rr(c,r.x-7,r.y-7,r.w+14,r.h+14,16,'#ffd34d');c.globalAlpha=1;}
   if(hot)rr(c,r.x-5,r.y-5,r.w+10,r.h+10,14,'#ffffff88');
-  rr(c,r.x,r.y+18,r.w,r.h-18,10,b.color);rr(c,r.x+6,r.y+24,r.w-12,6,3,'#ffffff22');
-  c.save();c.translate(r.x+8,r.y+18);c.rotate(-open*.5);rr(c,-8,-18,r.w,20,8,b.lid);rr(c,r.w/2-30,-12,44,7,3,'#00000040');c.restore();
-  c.font='40px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.fillStyle='#ffffff';c.fillText(b.icon,r.x+r.w/2,r.y+68);
-  fitText(c,b.name,r.x+r.w/2,r.y+98,20,r.w-10,'#ffffff');fitText(c,b.sub,r.x+r.w/2,r.y+120,15,r.w-10,'#ffffffdd','700');
-  if(hint)text(c,'ici !',r.x+r.w/2,r.y-12,20,'#fff2b3','800');});
- for(const f of g.fx){const i=RECYCLE_BINS.findIndex(b=>b.id===f.bin),r=recycleBinRect(i),k=f.t/f.life,cx=r.x+r.w/2,cy=r.y+10;c.globalAlpha=1-k;
+  rr(c,r.x,r.y+16,r.w,r.h-16,12,b.color);rr(c,r.x+8,r.y+22,r.w-16,6,3,'#ffffff22');
+  c.save();c.translate(r.x+8,r.y+16);c.rotate(-open*.35);rr(c,-8,-16,r.w,20,8,b.lid);rr(c,r.w/2-38,-10,60,7,3,'#00000040');c.restore();
+  ellipse(c,r.x+52,r.y+74,38,38,'#ffffff2a');c.font='54px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#ffffff';c.fillText(b.icon,r.x+52,r.y+76);c.textBaseline='alphabetic';
+  fitTextLeft(c,b.name,r.x+102,r.y+74,40,r.w-112,'#ffffff');fitTextLeft(c,b.sub,r.x+102,r.y+108,25,r.w-112,'#ffffffe6','700');
+  if(hint){rr(c,r.x+r.w-96,r.y-14,84,36,18,'#25352fee');text(c,'ici !',r.x+r.w-54,r.y+11,24,'#ffd34d','800');}});
+ for(const f of g.fx){const i=RECYCLE_BINS.findIndex(b=>b.id===f.bin),r=recycleBinRect(i),k=f.t/f.life,cx=r.x+52,cy=r.y+40;c.globalAlpha=1-k;
   if(f.type==='stars')for(let s=0;s<8;s++){const a=s*Math.PI/4;text(c,'✦',cx+Math.cos(a)*(10+k*60),cy+Math.sin(a)*(10+k*40)-k*20,18,'#ffd34d','800');}
   else{c.strokeStyle='#e0614a';c.lineWidth=6;c.beginPath();c.moveTo(cx-18,cy+30);c.lineTo(cx+18,cy+66);c.moveTo(cx+18,cy+30);c.lineTo(cx-18,cy+66);c.stroke();}}
  c.globalAlpha=1;
- if(item&&g.state!=='over'){const p=recycleItemPos(g),sc=p.scale||1;if(!g.drag&&!g.anim){rr(c,RECYCLE_HOME.x-170,RECYCLE_HOME.y-92,340,184,18,'#fffdf2ee');}
-  ellipse(c,p.x,p.y+46*sc,34*sc,8*sc,'#00000025');c.save();c.translate(p.x,p.y);c.rotate(g.drag?Math.sin(g.time*12)*.06:0);c.scale(sc,sc);c.font='92px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#3d4644';c.fillText(item.icon,0,0);c.restore();c.textBaseline='alphabetic';
-  if(!g.drag&&!g.anim){fitText(c,item.name,RECYCLE_HOME.x,RECYCLE_HOME.y+78,25,320,'#2f4a3c');if(g.index===0&&!g.hint){const y=RECYCLE_HOME.y+118+Math.sin(g.time*4)*3;rr(c,RECYCLE_HOME.x-160,y-19,320,26,13,'#25352fcc');text(c,'↓ glisse-moi dans la bonne poubelle',RECYCLE_HOME.x,y,16,'#fff6e0','800');}}}
- if(g.state==='over'){rr(c,180,90,400,120,18,'#fffdf2ee');text(c,g.won?'Super tri !':'Encore un essai ?',380,140,28,'#2f5a45','800');text(c,g.score+' / '+g.items.length+' du premier coup',380,180,18,'#4f5d4f','700');
-  if(g.won)for(let i=0;i<46;i++){const x=(i*97+g.time*55*(1+i%3))%760,y=(i*53+g.time*110*(1+i%2))%560;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}}
+ if(item&&g.state!=='over'){const p=recycleItemPos(g),sc=p.scale||1;if(!g.drag&&!g.anim){rr(c,RECYCLE_HOME.x-250,RECYCLE_HOME.y-96,500,212,20,'#fffdf2ee');}
+  ellipse(c,p.x,p.y+58*sc,42*sc,9*sc,'#00000025');c.save();c.translate(p.x,p.y);c.rotate(g.drag?Math.sin(g.time*12)*.06:0);c.scale(sc,sc);c.font='112px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#3d4644';c.fillText(item.icon,0,0);c.restore();c.textBaseline='alphabetic';
+  if(!g.drag&&!g.anim){fitText(c,item.name,RECYCLE_HOME.x,RECYCLE_HOME.y+94,38,470,'#2f4a3c');if(g.index===0&&!g.hint){const y=RECYCLE_HOME.y+138+Math.sin(g.time*4)*3;rr(c,RECYCLE_HOME.x-220,y-26,440,36,18,'#25352fdd');text(c,'↓ glisse-moi dans la bonne poubelle',RECYCLE_HOME.x,y,22,'#fff6e0','800');}}}
+ if(g.state==='over'){rr(c,130,80,500,170,20,'#fffdf2ee');text(c,g.won?'Super tri !':'Encore un essai ?',380,150,40,'#2f5a45','800');text(c,g.score+' / '+g.items.length+' du premier coup',380,205,26,'#4f5d4f','700');
+  if(g.won)for(let i=0;i<60;i++){const x=(i*97+g.time*55*(1+i%3))%760,y=(i*53+g.time*110*(1+i%2))%H;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}}
  c.restore();}
 function recycleGame(){
  discover('recycle');let g=createRecycleGame(level());activeActivity={kind:'recycle',get game(){return g;}};let frame=0,last=null,closed=false,shown='';
- modal(activityHeader('Le tri des déchets','Le point de collecte · à Genève')+`<canvas id="recycleCanvas" class="ping-canvas" width="760" height="560" role="img" aria-label="Un déchet à trier et sept poubelles de tri"></canvas><p id="recycleFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Trier :</b> fais glisser le déchet sur la bonne poubelle, ou touche directement la poubelle. Si tu te trompes, la bonne poubelle s’allume et tu apprends pourquoi. Attention aux pièges !</p><div class="actions"><button id="recycleAgain" class="secondary">Nouvelle partie</button><button id="activityClose" class="secondary">Retour</button></div>`,
+ modal(activityHeader('Le tri des déchets','Le point de collecte · à Genève')+`<canvas id="recycleCanvas" class="ping-canvas" style="aspect-ratio:760/880" width="760" height="880" role="img" aria-label="Un déchet à trier et sept poubelles de tri"></canvas><p id="recycleFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Trier :</b> fais glisser le déchet sur la bonne poubelle, ou touche directement la poubelle. Si tu te trompes, la bonne poubelle s’allume et tu apprends pourquoi. Attention aux pièges !</p><div class="actions"><button id="recycleAgain" class="secondary">Nouvelle partie</button><button id="activityClose" class="secondary">Retour</button></div>`,
   ()=>{closed=true;cancelAnimationFrame(frame);});
  const cv=$('#recycleCanvas'),c=cv.getContext('2d');
  const pos=e=>{const r=cv.getBoundingClientRect(),k=760/(r.width||760);return {x:(e.clientX-r.left)*k,y:(e.clientY-r.top)*k};};
