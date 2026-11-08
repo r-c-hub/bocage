@@ -1328,84 +1328,118 @@ function pingpongGame(){
   pingStep(g,dt,{targetX:dir?null:pointerX,dir,swing:swingPulse});swingPulse=false;g.events.splice(0).forEach(pingSound);drawPing(c,g,npc);sync();frame=requestAnimationFrame(animate);};
  sync();drawPing(c,g,npc);frame=requestAnimationFrame(animate);}
 
-// Penalties against Sami. Shot target in the goal plane: gx from -1 to 1 between the posts, gy from 0 (ground) to 1 (crossbar).
-const SHOOT={shots:5,goals:3,react:[.32,.26,.2],dive:[1.5,1.85,2.2],guess:[.3,.4,.5],reach:.26};
-function createShootGame(lv=level()){return {level:lv,aim:{gx:0,gy:.45,power:.6},aiming:false,state:'aim',shots:[],kx:0,kdive:0,kTarget:0,t:0,T:.6,ball:null,result:null,timer:0,effects:[],events:[],net:0,netAt:{gx:0,gy:0},message:'Glisse depuis le ballon vers le but, puis lâche pour tirer.',time:0,kick:0};}
+// Penalties against Sami, seen from behind the shooter. World units: x across (posts at ±1), y height (crossbar at 1),
+// z from the penalty spot (0) to the goal line (1); the back of the net is at z=1.3.
+const SHOOT={shots:5,goals:3,react:[.32,.26,.2],dive:[1.5,1.85,2.2],guess:[.3,.4,.5],reach:.26,G:2.4,runup:.4,netZ:1.3};
+const shootS=z=>2.1/(1+1.1*z);
+const shootP=(x,y,z)=>{const s=shootS(z);return {x:380+x*200*s,y:50+200*s-y*150*s,s};};
+function createShootGame(lv=level()){return {level:lv,aim:{gx:0,gy:.45,power:.6},aiming:false,state:'aim',shots:[],kx:0,kdive:0,kTarget:0,kClock:0,ball:{x:0,y:.06,z:0,vx:0,vy:0,vz:0,spin:0},trail:[],result:null,caught:false,timer:0,effects:[],events:[],net:0,netAt:{x:0,y:0},message:'Pose le doigt sur le ballon, glisse vers le but, puis lâche.',time:0,run:0,kick:0,shake:0,slow:1,cheer:0};}
 // Aim from a drag: sideways movement aims, the length of the swipe sets the power (and the height).
 function shootAim(g,dx,dy){const power=pingClamp(Math.hypot(dx,dy)/230,0,1.45),gx=pingClamp(dx/170,-1.5,1.5);g.aim={gx,gy:pingClamp(.08+power*.8,0,1.35),power};return g.aim;}
+function shootFlightTime(power){return .78-Math.min(1,power)*.3;}
 function shootKick(g){if(g.state!=='aim'||g.aim.power<.12)return false;const a=g.aim;
- g.state='flight';g.t=0;g.T=.78-Math.min(1,a.power)*.3;g.ball={gx:a.gx,gy:a.gy};g.kick=.35;g.result=null;g.events.push('kick');
- // Sami guesses the side; a good guess dives towards the ball, a wrong one to the other side.
+ g.state='runup';g.run=0;g.result=null;g.caught=false;g.events.push('run');
+ // Sami guesses a side: a good guess dives towards the ball, a wrong one to the other side.
  const good=Math.random()<SHOOT.guess[g.level]||Math.abs(a.gx)<.25;g.kTarget=good?pingClamp(a.gx+(Math.random()-.5)*.25,-1,1):(a.gx>0?-1:1)*(.45+Math.random()*.5);g.kdive=0;g.kClock=0;return true;}
-function shootStep(g,dt){dt=Math.max(0,Math.min(dt,.05));g.time+=dt;g.kick=Math.max(0,g.kick-dt);g.net=Math.max(0,g.net-dt*1.6);g.effects=g.effects.filter(e=>(e.t+=dt)<1.2);
- if(g.state==='flight'){g.t+=dt;g.kClock+=dt;
-  if(g.kClock>SHOOT.react[g.level]){const step=SHOOT.dive[g.level]*dt;g.kx+=pingClamp(g.kTarget-g.kx,-step,step);g.kdive=Math.min(1,g.kdive+dt*4);}
-  if(g.t>=g.T){const b=g.ball,ax=Math.abs(b.gx);let r;
-   if(b.gy>1.04||ax>1.05)r='miss';else if(ax>.975||b.gy>.98)r='post';
-   else if(Math.abs(b.gx-g.kx)<SHOOT.reach+(g.kdive>.5?.06:0)&&b.gy<(g.kdive>.5?.95:.72))r='save';else r='goal';
-   g.result=r;g.shots.push(r==='goal');g.state='result';g.timer=1.6;g.events.push(r);
-   if(r==='goal'){g.net=1;g.netAt={gx:b.gx,gy:b.gy};}
-   g.effects.push({type:r,gx:b.gx,gy:b.gy,t:0});
+function shootLaunch(g){const a=g.aim,b=g.ball,T=shootFlightTime(a.power);Object.assign(b,{x:0,y:.06,z:0,vz:1/T,vx:a.gx/T,vy:(a.gy-.06+SHOOT.G*T*T/2)/T,spin:0});g.trail=[];g.state='flight';g.kick=.3;g.kClock=0;g.events.push('kick');}
+function shootBallPhysics(g,dt){const b=g.ball;b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;b.vy-=SHOOT.G*dt;b.spin+=dt*(6+Math.hypot(b.vx,b.vz)*4);
+ if(b.y<.06){b.y=.06;b.vy=Math.abs(b.vy)>.3?Math.abs(b.vy)*.45:0;b.vx*=.85;b.vz*=.85;}
+ if(g.result==='goal'){if(b.z>SHOOT.netZ-.03){b.z=SHOOT.netZ-.03;if(b.vz>0){g.net=1;g.netAt={x:b.x,y:b.y};g.events.push('net');}b.vz=-Math.abs(b.vz)*.08;b.vx*=.4;}if(Math.abs(b.x)>.96){b.x=Math.sign(b.x)*.96;b.vx*=-.3;}if(b.y>.95){b.y=.95;b.vy=-Math.abs(b.vy)*.3;}}
+ if(g.caught){const dir=g.kTarget>=0?1:-1,d=Math.min(1,g.kdive);b.x=g.kx+dir*d*.32;b.y=.42+d*.08;b.z=.96;b.vx=b.vy=b.vz=0;}}
+function shootStep(g,dt){dt=Math.max(0,Math.min(dt,.05));g.time+=dt;g.kick=Math.max(0,g.kick-dt);g.shake=Math.max(0,g.shake-dt*2.2);g.net=Math.max(0,g.net-dt*1.3);g.cheer=Math.max(0,g.cheer-dt*.5);g.effects=g.effects.filter(e=>(e.t+=dt)<1.3);
+ if(g.state==='runup'){g.run+=dt;if(g.run>=SHOOT.runup)shootLaunch(g);return g;}
+ if(g.state==='flight'){const b=g.ball,sd=dt*g.slow;g.kClock+=sd;
+  if(g.kClock>SHOOT.react[g.level]){const step=SHOOT.dive[g.level]*sd;g.kx+=pingClamp(g.kTarget-g.kx,-step,step);g.kdive=Math.min(1.6,g.kdive+sd*4);}
+  shootBallPhysics(g,sd);g.trail.push({x:b.x,y:b.y,z:b.z});if(g.trail.length>8)g.trail.shift();
+  // A short slow motion when the ball reaches Sami: the moment everyone holds their breath.
+  g.slow=b.z>.8&&b.z<1&&Math.abs(b.x-g.kx)<.65?.4:1;
+  if(b.z>=1){const ax=Math.abs(b.x);let r;
+   if(b.y>1.04||ax>1.05)r='miss';else if(ax>.975||b.y>.98)r='post';
+   else if(Math.abs(b.x-g.kx)<SHOOT.reach+(g.kdive>.5?.06:0)&&b.y<(g.kdive>.5?.95:.72))r='save';else r='goal';
+   g.result=r;g.shots.push(r==='goal');g.state='result';g.timer=2;g.slow=1;g.events.push(r);g.effects.push({type:r,x:b.x,y:b.y,t:0});
+   if(r==='save'){g.caught=g.aim.power<.62;if(!g.caught){b.vz=-Math.abs(b.vz)*.45;b.vy=.9;b.vx=(b.x>=g.kx?1:-1)*.7;}}
+   else if(r==='post'){b.vz=-Math.abs(b.vz)*.4;b.vx=-Math.sign(b.x||1)*.8;b.vy=.5;}
+   else if(r==='goal'){g.shake=.5;g.cheer=1.6;}
    const goals=g.shots.filter(Boolean).length,left=SHOOT.shots-g.shots.length;
-   g.message={goal:'BUT ! ',save:Math.abs(b.gx)<.35?'Sami était juste là : vise plutôt un coin ! ':'Arrêt de Sami ! ',post:'Poteau ! ',miss:b.gy>1.04?'Au-dessus de la barre ! ':'À côté ! '}[r]+(left?`${goals} but${goals>1?'s':''}, encore ${left} tir${left>1?'s':''}.`:'');
-   if(!left){g.state='over';g.won=goals>=SHOOT.goals;g.message+=g.won?`Bravo, ${goals} buts sur ${SHOOT.shots} !`:`${goals} but${goals>1?'s':''} sur ${SHOOT.shots}. Il en faut ${SHOOT.goals} : une nouvelle série ?`;g.events.push(g.won?'win':'defeat');}}}
- else if(g.state==='result'){g.timer-=dt;if(g.timer<=0){g.state='aim';g.kx=0;g.kdive=0;g.ball=null;g.message='À toi ! Tir n° '+(g.shots.length+1)+' sur '+SHOOT.shots+'.';}}
+   g.message={goal:'BUT ! ',save:(g.caught?'Sami attrape la balle ! ':'Arrêt de Sami ! ')+(Math.abs(b.x)<.35?'Il était juste là : vise plutôt un coin ! ':''),post:'Poteau ! ',miss:b.y>1.04?'Au-dessus de la barre ! ':'À côté ! '}[r]+(left?`${goals} but${goals>1?'s':''}, encore ${left} tir${left>1?'s':''}.`:'');
+   if(!left){g.state='over';g.won=goals>=SHOOT.goals;g.message+=g.won?`Bravo, ${goals} buts sur ${SHOOT.shots} !`:`${goals} but${goals>1?'s':''} sur ${SHOOT.shots}. Il en faut ${SHOOT.goals} : une nouvelle série ?`;g.events.push(g.won?'win':'defeat');if(g.won)g.cheer=4;}}
+  return g;}
+ if(g.state==='result'||g.state==='over'){g.kdive=Math.min(1.6,g.kdive+dt*2);if(g.kdive>.5){const step=SHOOT.dive[g.level]*dt*.5;g.kx+=pingClamp(g.kTarget-g.kx,-step,step);}shootBallPhysics(g,dt);
+  if(g.state==='result'){g.timer-=dt;if(g.timer<=0){g.state='aim';g.kx=0;g.kdive=0;g.caught=false;g.result=null;Object.assign(g.ball,{x:0,y:.06,z:0,vx:0,vy:0,vz:0});g.trail=[];g.message='À toi ! Tir n° '+(g.shots.length+1)+' sur '+SHOOT.shots+'.';g.events.push('whistle');}}}
  return g;}
-const goalP=(gx,gy)=>({x:380+gx*200,y:250-gy*150});
-const SPOT={x:380,y:468};
-function shootBallPos(g){const b=g.ball,u=Math.min(1,g.t/g.T),e=u<1?1-(1-u)*(1-u)*.25-.75*(1-u):1,E=goalP(b.gx,b.gy),k=1-.55*u;
- return {x:SPOT.x+(E.x-SPOT.x)*u,y:SPOT.y+(E.y-SPOT.y)*u-Math.sin(Math.PI*u)*(26+b.gy*30),r:17*k,ground:{x:SPOT.x+(E.x-SPOT.x)*u,y:SPOT.y+(250-SPOT.y)*u},u,e};}
-function drawShoot(c,g,me,sami){
- c.save();c.clearRect(0,0,760,560);
- const sky=c.createLinearGradient(0,0,0,120);sky.addColorStop(0,'#cde5ec');sky.addColorStop(1,'#e9f1dc');c.fillStyle=sky;c.fillRect(0,0,760,120);
- for(let i=0;i<9;i++){ellipse(c,40+i*90,96,58,40,['#86a86b','#7b9f62','#91b277'][i%3]);}
- const grass=c.createLinearGradient(0,110,0,560);grass.addColorStop(0,'#8fbb6c');grass.addColorStop(1,'#6e9d52');c.fillStyle=grass;c.fillRect(0,110,760,450);
- for(let i=0;i<8;i++){const y0=110+i*56;c.fillStyle=i%2?'#ffffff10':'#00000008';c.beginPath();c.moveTo(0,y0);c.lineTo(760,y0);c.lineTo(760,y0+56);c.lineTo(0,y0+56);c.fill();}
- c.strokeStyle='#f4f7ec';c.lineWidth=3;c.beginPath();c.moveTo(60,252);c.lineTo(700,252);c.moveTo(130,252);c.lineTo(80,372);c.lineTo(680,372);c.lineTo(630,252);c.stroke();ellipse(c,SPOT.x,SPOT.y+4,5,3,'#f4f7ec');
- // Goal: back frame, net (bulges where a goal goes in), posts and crossbar.
- const L=goalP(-1,0),R=goalP(1,0),TL=goalP(-1,1),TR=goalP(1,1),back=(p,d)=>({x:380+(p.x-380)*.86,y:p.y-34*d});
- const bulge=(x,y)=>{if(g.net<=0)return {x,y};const n=goalP(g.netAt.gx,g.netAt.gy),d=Math.hypot(x-n.x,y-n.y),f=Math.max(0,1-d/120)*g.net*Math.sin(g.net*Math.PI)*22;return {x:x+(x-n.x)*f/120,y:y-f};};
- c.strokeStyle='#ffffffaa';c.lineWidth=1;
- for(let i=0;i<=20;i++){const gx=-1+i/10;const a=bulge(goalP(gx,1).x,goalP(gx,1).y-0),b=bulge(goalP(gx,0).x*.995+1.9,goalP(gx,0).y-30);const top=back(goalP(gx,1),1),bot=back(goalP(gx,0),1);const p=bulge(top.x,top.y),q=bulge(bot.x,bot.y);c.beginPath();c.moveTo(p.x,p.y);c.lineTo(q.x,q.y);c.stroke();}
- for(let j=0;j<=10;j++){const gy=j/10,l=back(goalP(-1,gy),1),r=back(goalP(1,gy),1);c.beginPath();const steps=20;for(let i=0;i<=steps;i++){const x=l.x+(r.x-l.x)*i/steps,y=l.y,p=bulge(x,y);i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y);}c.stroke();}
- c.strokeStyle='#ffffff88';for(const p of [TL,TR]){const b=back(p,1);c.beginPath();c.moveTo(p.x,p.y);c.lineTo(b.x,b.y);c.stroke();}
- // Sami in goal: ready stance, then a dive towards his guess.
- const kp=goalP(g.kx,0),dir=g.kTarget>=g.kx?1:-1,dive=g.state==='aim'?0:g.kdive;
- ellipse(c,kp.x,kp.y+2,34,8,'#2f4a2a33');
- c.save();c.translate(kp.x,kp.y-56+dive*24);c.rotate(dir*dive*1.25);parkAvatar(c,0,0,sami,'hop-double',.6+Math.sin(g.time*6)*.1*(1-dive),1.15,1);c.restore();
- c.strokeStyle='#f7f7ef';c.lineWidth=9;c.lineCap='round';c.beginPath();c.moveTo(L.x,L.y);c.lineTo(TL.x,TL.y);c.lineTo(TR.x,TR.y);c.lineTo(R.x,R.y);c.stroke();
- c.strokeStyle='#d8dccd';c.lineWidth=2;c.beginPath();c.moveTo(L.x+3,L.y);c.lineTo(TL.x+3,TL.y+3);c.lineTo(TR.x-3,TR.y+3);c.stroke();
- // Aim preview while dragging: dotted path and a target in the goal.
- if(g.state==='aim'&&g.aiming){const E=goalP(g.aim.gx,g.aim.gy),over=g.aim.gy>1.04||Math.abs(g.aim.gx)>1.06;c.fillStyle=over?'#ffb3a1':'#fff7d6';
-  for(let i=1;i<=14;i++){const u=i/15,x=SPOT.x+(E.x-SPOT.x)*u,y=SPOT.y+(E.y-SPOT.y)*u-Math.sin(Math.PI*u)*(26+g.aim.gy*30);c.globalAlpha=.35+.5*u;c.beginPath();c.arc(x,y,3.2-u*1.4,0,Math.PI*2);c.fill();}
-  c.globalAlpha=1;c.strokeStyle=over?'#e0614a':'#ffd34d';c.lineWidth=3;c.beginPath();c.arc(E.x,E.y,14,0,Math.PI*2);c.moveTo(E.x-20,E.y);c.lineTo(E.x-8,E.y);c.moveTo(E.x+8,E.y);c.lineTo(E.x+20,E.y);c.moveTo(E.x,E.y-20);c.lineTo(E.x,E.y-8);c.moveTo(E.x,E.y+8);c.lineTo(E.x,E.y+20);c.stroke();
-  rr(c,20,520,200,14,7,'#00000025');rr(c,20,520,Math.min(1,g.aim.power/1.45)*200,14,7,g.aim.power>1.2?'#e0614a':g.aim.power>.9?'#f0c85a':'#8fd17a');text(c,'Force',120,512,13,'#fff8e6','700');}
- // You, next to the ball, kicking.
- c.save();ellipse(c,300,512,30,8,'#2f4a2a33');parkAvatar(c,300+(g.kick>0?40*(1-g.kick/.35):0),470,me,g.kick>0?'hop':'stand',g.kick>0?1-g.kick/.35:0,1.05,1);c.restore();
- // The ball.
- let bp={x:SPOT.x,y:SPOT.y,r:17,ground:{x:SPOT.x,y:SPOT.y}},spin=0;
- if(g.ball&&(g.state==='flight'||g.state==='result'||g.state==='over')){bp=shootBallPos(g);spin=g.t*14;
-  if(g.state!=='flight'){const E=goalP(g.ball.gx,g.ball.gy),r=g.result,k=Math.min(1,(1.6-g.timer)/.6);
-   bp={x:E.x+(r==='save'?(g.ball.gx>g.kx?50:-50)*k:r==='post'?(g.ball.gx>0?60:-60)*k:0),y:E.y+(r==='goal'?-14*k+Math.min(60,k*80)*.6:r==='miss'?-30*k:30*k),r:8,ground:{x:E.x,y:252}};if(r==='miss')c.globalAlpha=1-k*.8;}}
- if(!g.ball||g.state==='aim'){}
- if(!(g.state==='over'&&g.result==='miss')){ellipse(c,bp.ground.x,bp.ground.y+bp.r*.6,bp.r*.9,bp.r*.3,'#2f4a2a44');
-  const grad=c.createRadialGradient(bp.x-bp.r*.35,bp.y-bp.r*.4,bp.r*.15,bp.x,bp.y,bp.r);grad.addColorStop(0,'#ffffff');grad.addColorStop(1,'#d9dcd2');c.beginPath();c.arc(bp.x,bp.y,bp.r,0,Math.PI*2);c.fillStyle=grad;c.fill();
-  c.fillStyle='#2f3533';for(let i=0;i<5;i++){const a=spin+i*Math.PI*2/5,d=bp.r*.55;c.beginPath();c.arc(bp.x+Math.cos(a)*d,bp.y+Math.sin(a)*d*.8,bp.r*.2,0,Math.PI*2);c.fill();}c.beginPath();c.arc(bp.x,bp.y,bp.r*.24,0,Math.PI*2);c.fill();}
+// The shooter seen from behind: hair, shirt with a number, arms and a kicking leg.
+function drawBackKid(c,x,y,a,step,kick,k){c.save();c.translate(x,y);c.scale(k,k);
+ const skin=a.skin||'#edc19b',hair=a.hair||'#66432f',shirt=a.shirt||'#d77f54',pants=a.pants||'#4c6878',sw=Math.sin(step),kk=Math.sin(Math.min(1,kick)*Math.PI);
+ ellipse(c,0,2,24,7,'#2f4a2a40');
+ const legs=[[-8,-46,-9+sw*6,-Math.max(0,sw)*5],[8,-46,9-sw*6+kk*4,-Math.max(0,-sw)*5-kk*30]];
+ for(const [hx,hy,fx,fy]of legs){parkStroke(c,[[hx,hy],[(hx+fx)/2,(hy+fy)/2+2],[fx,fy]],pants,11);ellipse(c,fx,fy+1,8-(fy<-20?3:0),5,'#2f3533');}
+ rr(c,-15,-56,30,14,5,pants);rr(c,-18,-96,36,46,11,shirt);text(c,'10',0,-66,15,'#fff8ec','800');
+ for(const [sx,dir]of [[-16,-1],[16,1]]){const swing=dir*sw*7,up=kk*(dir<0?22:-6);parkStroke(c,[[sx,-90],[sx+dir*9,-76+swing],[sx+dir*12-dir*up*.3,-62+swing-up]],skin,7);}
+ rr(c,-5,-104,10,10,3,skin);ellipse(c,-17,-112,3.5,5.5,skin);ellipse(c,17,-112,3.5,5.5,skin);
+ ellipse(c,0,-116,17,19,skin);ellipse(c,0,-119,18,18,hair);
+ if(a.hairstyle==='long')rr(c,-16,-118,32,34,11,hair);if(a.hairstyle==='curls')for(let i=0;i<7;i++)ellipse(c,-15+i*5,-128+Math.sin(i)*3,6,6,hair);
+ c.restore();}
+function drawShoot(c,g,me,sami,fans){
+ c.save();c.clearRect(0,0,760,560);if(g.shake>0)c.translate(Math.sin(g.time*70)*g.shake*8,Math.cos(g.time*55)*g.shake*5);
+ const sky=c.createLinearGradient(0,0,0,90);sky.addColorStop(0,'#cde5ec');sky.addColorStop(1,'#e9f1dc');c.fillStyle=sky;c.fillRect(-10,-10,780,110);
+ for(let i=0;i<10;i++)ellipse(c,20+i*82,62,52,36,['#86a86b','#7b9f62','#91b277'][i%3]);
+ rr(c,-10,70,780,22,0,'#6f9257');
+ // Mowed grass in perspective, then the box lines.
+ c.fillStyle='#86b765';c.fillRect(-10,90,780,480);
+ for(let i=0;i<12;i++){const z0=-.3+i*.15,a=shootP(-6,0,z0),b=shootP(-6,0,z0+.15);c.fillStyle=i%2?'#86b765':'#7cad5c';c.fillRect(-10,b.y,780,a.y-b.y+1);}
+ c.fillStyle='#86b765';c.fillRect(-10,90,780,shootP(0,0,1.75).y-90+2);
+ const line=(pts,w=3)=>{c.strokeStyle='#f4f7ecdd';c.lineWidth=w;c.beginPath();pts.forEach(([x,z],i)=>{const p=shootP(x,0,z);i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y);});c.stroke();};
+ line([[-3.4,1],[3.4,1]]);line([[-2.1,1],[-2.1,.45],[2.1,.45],[2.1,1]]);line([[-1.3,1],[-1.3,.82],[1.3,.82],[1.3,1]]);{const p=shootP(0,0,0);ellipse(c,p.x,p.y+2,9,4,'#f4f7ec');}
+ // Net: back, sides and roof, bulging where a goal hits it.
+ const nz=(x,y)=>{if(g.net<=0)return SHOOT.netZ;const d=Math.hypot(x-g.netAt.x,(y-g.netAt.y)*1.2);return SHOOT.netZ+Math.max(0,1-d/.6)*Math.sin(g.net*Math.PI)*.18;};
+ c.strokeStyle='#ffffffb0';c.lineWidth=1;
+ for(let i=0;i<=20;i++){const x=-1+i/10;c.beginPath();for(let j=0;j<=10;j++){const y=j/10,p=shootP(x,y,nz(x,y));j?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y);}c.stroke();}
+ for(let j=0;j<=10;j++){const y=j/10;c.beginPath();for(let i=0;i<=20;i++){const x=-1+i/10,p=shootP(x,y,nz(x,y));i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y);}c.stroke();}
+ for(const side of [-1,1])for(let k=0;k<=6;k++){const z=1+k*.05,a=shootP(side,0,z),b=shootP(side,1,z);c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}
+ for(let k=0;k<=6;k++){const z=1+k*.05,a=shootP(-1,1,z),b=shootP(1,1,z);c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}
+ const b=g.ball;
+ const drawBall=()=>{const sh=shootP(b.x,0,b.z),p=shootP(b.x,b.y,b.z),r=9*p.s;
+  if(!(g.result==='miss'&&b.z>1.2)){ellipse(c,sh.x,sh.y+1,r*1.05,r*.38,`rgba(30,60,30,${Math.max(.08,.35-b.y*.25)})`);}
+  g.trail.forEach((t,i)=>{const q=shootP(t.x,t.y,t.z);c.globalAlpha=(i+1)/g.trail.length*.25;ellipse(c,q.x,q.y,9*q.s*.8,9*q.s*.8,'#ffffff');});c.globalAlpha=g.result==='miss'?Math.max(0,1-(b.z-1)*2):1;
+  const grad=c.createRadialGradient(p.x-r*.35,p.y-r*.4,r*.15,p.x,p.y,r);grad.addColorStop(0,'#ffffff');grad.addColorStop(1,'#cfd3c8');c.beginPath();c.arc(p.x,p.y,r,0,Math.PI*2);c.fillStyle=grad;c.fill();
+  c.save();c.beginPath();c.arc(p.x,p.y,r,0,Math.PI*2);c.clip();c.fillStyle='#2f3533';for(let i=0;i<5;i++){const a=b.spin+i*Math.PI*2/5,d=r*.62;c.beginPath();c.arc(p.x+Math.cos(a)*d,p.y+Math.sin(a)*d*.85,r*.22,0,Math.PI*2);c.fill();}c.beginPath();c.arc(p.x+Math.cos(b.spin*.7)*r*.12,p.y,r*.26,0,Math.PI*2);c.fill();c.restore();c.globalAlpha=1;};
+ if(b.z>1.02)drawBall();
+ // Posts and crossbar.
+ const pl=shootP(-1,0,1),pr=shootP(1,0,1),tl=shootP(-1,1,1),tr=shootP(1,1,1);c.lineCap='round';c.strokeStyle='#d9dccf';c.lineWidth=11;c.beginPath();c.moveTo(pl.x+2,pl.y);c.lineTo(tl.x+2,tl.y+2);c.lineTo(tr.x-2,tr.y+2);c.lineTo(pr.x-2,pr.y);c.stroke();
+ c.strokeStyle='#fbfcf7';c.lineWidth=8;c.beginPath();c.moveTo(pl.x,pl.y);c.lineTo(tl.x,tl.y);c.lineTo(tr.x,tr.y);c.lineTo(pr.x,pr.y);c.stroke();
+ // Friends cheering on the side.
+ fans.forEach((f,i)=>{const side=i?1:-1,p=shootP(side*1.32,0,.62),cheer=g.cheer>0;ellipse(c,p.x,p.y+2,22,6,'#2f4a2a33');parkAvatar(c,p.x,p.y-38+(cheer?-Math.abs(Math.sin(g.time*9))*10:0),f,cheer?'hop-double':'stand',cheer?.9:0,.62,-side);});
+ // Sami: ready on his toes, then a real dive (take-off, stretched in the air, down on the grass), or a jump for a high central ball.
+ {const dir=g.kTarget>=g.kx?1:-1,d=g.state==='aim'||g.state==='runup'?0:Math.min(1,g.kdive),down=Math.max(0,Math.min(1,(g.kdive-1)/.6));
+  const straight=Math.abs(g.kTarget)<.2&&g.aim.gy>.6,lift=straight?Math.sin(d*Math.PI)*.35:Math.sin(Math.min(1,d)*Math.PI*.6)*.28*(1-down),pelvisY=.34+lift-(straight?0:d*.18),rot=straight?0:dir*(d*1.3+down*.2);
+  const p=shootP(g.kx,Math.max(.12,pelvisY),.97),bob=g.state==='aim'?Math.abs(Math.sin(g.time*5))*3:0;ellipse(c,shootP(g.kx,0,.97).x,shootP(0,0,.97).y+2,34,8,'#2f4a2a40');
+  c.save();c.translate(p.x,p.y-bob);c.rotate(rot);parkAvatar(c,0,0,sami,straight&&d>0?'wave':'hop-double',straight?g.time:.6+(g.state==='aim'?Math.sin(g.time*6)*.1:.4*d),1.1*p.s,1);c.restore();}
+ if(b.z<=1.02)drawBall();
+ // Aim preview while dragging: the real flight path and a target in the goal.
+ if(g.state==='aim'&&g.aiming){const a=g.aim,T=shootFlightTime(a.power),vx=a.gx/T,vz=1/T,vy=(a.gy-.06+SHOOT.G*T*T/2)/T,over=a.gy>1.04||Math.abs(a.gx)>1.05;c.fillStyle=over?'#ffb3a1':'#fff7d6';
+  for(let i=1;i<=16;i++){const t=T*i/16,p=shootP(vx*t,.06+vy*t-SHOOT.G*t*t/2,vz*t);c.globalAlpha=.3+.6*i/16;c.beginPath();c.arc(p.x,p.y,4*p.s/2.1+1,0,Math.PI*2);c.fill();}
+  const E=shootP(a.gx,a.gy,1);c.globalAlpha=1;c.strokeStyle=over?'#e0614a':'#ffd34d';c.lineWidth=3;c.beginPath();c.arc(E.x,E.y,14,0,Math.PI*2);c.moveTo(E.x-22,E.y);c.lineTo(E.x-8,E.y);c.moveTo(E.x+8,E.y);c.lineTo(E.x+22,E.y);c.moveTo(E.x,E.y-22);c.lineTo(E.x,E.y-8);c.moveTo(E.x,E.y+8);c.lineTo(E.x,E.y+22);c.stroke();
+  rr(c,20,524,200,14,7,'#00000030');rr(c,20,524,Math.min(1,a.power/1.45)*200,14,7,a.power>1.2?'#e0614a':a.power>.9?'#f0c85a':'#8fd17a');text(c,'Force',120,516,13,'#fff8e6','700');}
+ else if(g.state==='aim'){const p=shootP(0,.06,0),k=(Math.sin(g.time*4)+1)/2;c.globalAlpha=.55+.4*k;c.strokeStyle='#fff6c8';c.lineWidth=3;c.beginPath();c.arc(p.x,p.y-8,28+k*6,0,Math.PI*2);c.stroke();c.beginPath();c.moveTo(p.x,p.y-48);c.lineTo(p.x,p.y-96);c.moveTo(p.x-10,p.y-84);c.lineTo(p.x,p.y-98);c.lineTo(p.x+10,p.y-84);c.stroke();c.globalAlpha=1;}
+ // The shooter: run-up then kick.
+ {const runK=g.state==='runup'?g.run/SHOOT.runup:g.state==='aim'?0:1,x=-.55+.37*runK,z=-.42+.32*runK,p=shootP(x,0,z),step=g.state==='runup'?runK*Math.PI*3:0,kick=g.kick>0?1-g.kick/.3:g.state==='runup'&&runK>.8?(runK-.8)*1.2:0;drawBackKid(c,p.x,p.y,me,step,kick,.62*p.s);}
+ // Effects.
+ const pill=(str,x,y,size,color)=>{c.font=`800 ${size}px Segoe UI,Arial`;const w=c.measureText(str).width+28;rr(c,x-w/2,y-size-8,w,size+18,(size+18)/2,'#25352fcc');text(c,str,x,y,size,color,'800');};
+ for(const e of g.effects){const k=e.t/1.3,p=shootP(e.x,e.y,1);c.globalAlpha=Math.min(1,(1-k)*2);
+  if(e.type==='goal')pill('BUT !',380,330,40+Math.sin(Math.min(1,e.t*4)*Math.PI)*8,'#ffd34d');
+  else if(e.type==='post'){c.strokeStyle='#ffffff';c.lineWidth=3;for(let i=0;i<8;i++){const a=i*Math.PI/4;c.beginPath();c.moveTo(p.x+Math.cos(a)*10,p.y+Math.sin(a)*10);c.lineTo(p.x+Math.cos(a)*(18+k*34),p.y+Math.sin(a)*(18+k*34));c.stroke();}pill('Poteau !',380,330,26,'#ffffff');}
+  else if(e.type==='save')pill(g.caught?'Attrapé !':'Arrêt !',380,330,28,'#ffffff');else pill(e.y>1.04?'Au-dessus !':'À côté !',380,330,26,'#ffe1d6');}
  c.globalAlpha=1;
- for(const e of g.effects){const p=goalP(e.gx,e.gy),k=e.t/1.2;c.globalAlpha=1-k;
-  if(e.type==='goal'){text(c,'BUT !',380,200-k*40,46+k*20,'#ffd34d','800');}
-  else if(e.type==='post'){c.strokeStyle='#ffffff';c.lineWidth=3;for(let i=0;i<6;i++){const a=i*Math.PI/3;c.beginPath();c.moveTo(p.x+Math.cos(a)*10,p.y+Math.sin(a)*10);c.lineTo(p.x+Math.cos(a)*(18+k*30),p.y+Math.sin(a)*(18+k*30));c.stroke();}text(c,'Poteau !',p.x,p.y-30,22,'#ffffff','800');}
-  else if(e.type==='save')text(c,'Arrêt !',p.x,p.y-40-k*30,26,'#ffffff','800');}
- c.globalAlpha=1;
- if(g.state==='over'&&g.won)for(let i=0;i<46;i++){const x=(i*97+g.time*55*(1+i%3))%760,y=(i*53+g.time*110*(1+i%2))%560;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}
+ rr(c,14,12,150,34,10,'#25352fdd');text(c,'Tir '+Math.min(SHOOT.shots,g.shots.length+(g.state==='aim'||g.state==='runup'||g.state==='flight'?1:0))+' / '+SHOOT.shots,89,35,15,'#f7f4e6','700');
+ if(g.state==='over'&&g.won)for(let i=0;i<50;i++){const x=(i*97+g.time*55*(1+i%3))%760,y=(i*53+g.time*110*(1+i%2))%560;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}
  c.restore();}
 function shootSound(type){if(!sound)return;try{pingAudio=pingAudio||new(window.AudioContext||window.webkitAudioContext)();const a=pingAudio,t=a.currentTime;
- const notes={kick:[[180,.08]],goal:[[523,.12],[659,.12],[784,.22]],save:[[300,.12]],post:[[1400,.2]],miss:[[260,.16]],win:[[523,.12],[659,.12],[784,.12],[1046,.25]],defeat:[[392,.14],[330,.2]]}[type]||[];
- notes.forEach(([f,d],i)=>{const o=a.createOscillator(),gn=a.createGain();o.type=type==='post'?'triangle':'sine';o.frequency.value=f;o.connect(gn);gn.connect(a.destination);const s=t+i*.11;gn.gain.setValueAtTime(.0001,s);gn.gain.exponentialRampToValueAtTime(.13,s+.005);gn.gain.exponentialRampToValueAtTime(.0001,s+d);o.start(s);o.stop(s+d+.02);});}catch{}}
+ const notes={kick:[[150,.09]],net:[[220,.12]],goal:[[523,.12],[659,.12],[784,.22]],save:[[300,.12]],post:[[1400,.25]],miss:[[260,.16]],whistle:[[2100,.08],[2100,.12]],win:[[523,.12],[659,.12],[784,.12],[1046,.25]],defeat:[[392,.14],[330,.2]]}[type]||[];
+ notes.forEach(([f,d],i)=>{const o=a.createOscillator(),gn=a.createGain();o.type=type==='post'||type==='whistle'?'triangle':'sine';o.frequency.value=f;o.connect(gn);gn.connect(a.destination);const s=t+i*.11;gn.gain.setValueAtTime(.0001,s);gn.gain.exponentialRampToValueAtTime(.13,s+.005);gn.gain.exponentialRampToValueAtTime(.0001,s+d);o.start(s);o.stop(s+d+.02);});}catch{}}
 function ballGame(){
- discover('ball');const sami=outside.find(n=>n.id==='sami');let g=createShootGame(level());activeActivity={kind:'shoot',get game(){return g;}};
- let frame=0,last=null,closed=false,drag=null,shown='';const look={...profile,eyes:profile.eyes,pants:profile.pants};
- modal(activityHeader('Les tirs au but','Le terrain de jeux · avec Sami')+`<div class="shoot-board"><div class="shoot-face">${footballAvatar(profile,profile.name,'left')}</div><div class="shoot-dots" id="shootDots"></div><div class="shoot-face">${footballAvatar(sami,'Sami','right')}</div></div><canvas id="shootCanvas" class="ping-canvas" width="760" height="560" role="img" aria-label="Le but de Sami et ton ballon au point de penalty"></canvas><p id="shootFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Tirer :</b> pose le doigt sur le ballon, glisse vers le but puis lâche. La direction vise ; plus tu glisses loin, plus le tir est fort et haut. Trop fort, la balle passe au-dessus !<br><b>Clavier :</b> ← → pour viser, ↑ ↓ pour la force, Espace pour tirer. Marque ${SHOOT.goals} buts sur ${SHOOT.shots} tirs.</p><div class="actions"><button id="shootAgain" class="secondary">Nouvelle série</button><button id="activityClose" class="secondary">Retour au terrain</button></div>`,
+ discover('ball');const sami=outside.find(n=>n.id==='sami'),fans=[outside.find(n=>n.id==='lina'),outside.find(n=>n.id==='alma')].filter(Boolean);let g=createShootGame(level());activeActivity={kind:'shoot',get game(){return g;}};
+ let frame=0,last=null,closed=false,drag=null,shown='';const look={...profile};
+ modal(activityHeader('Les tirs au but','Le terrain de jeux · avec Sami')+`<div class="shoot-board"><div class="shoot-face">${footballAvatar(profile,profile.name,'left')}</div><div class="shoot-dots" id="shootDots"></div><div class="shoot-face">${footballAvatar(sami,'Sami','right')}</div></div><canvas id="shootCanvas" class="ping-canvas" width="760" height="560" role="img" aria-label="Penalty vu de derrière toi : Sami dans le but"></canvas><p id="shootFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Tirer :</b> pose le doigt sur le ballon, glisse vers le but puis lâche. La direction vise ; plus tu glisses loin, plus le tir est fort et haut. Trop fort, la balle passe au-dessus ! Sami devine un côté : vise les coins.<br><b>Clavier :</b> ← → pour viser, ↑ ↓ pour la force, Espace pour tirer. Marque ${SHOOT.goals} buts sur ${SHOOT.shots} tirs.</p><div class="actions"><button id="shootAgain" class="secondary">Nouvelle série</button><button id="activityClose" class="secondary">Retour au terrain</button></div>`,
   ()=>{closed=true;cancelAnimationFrame(frame);$('#modal').onkeydown=null;$('#modal').onkeyup=null;if(pingAudio){pingAudio.close().catch(()=>{});pingAudio=null;}});
  const cv=$('#shootCanvas'),c=cv.getContext('2d');
  const pos=e=>{const r=cv.getBoundingClientRect(),k=760/(r.width||760);return {x:(e.clientX-r.left)*k,y:(e.clientY-r.top)*k};};
@@ -1420,8 +1454,8 @@ function ballGame(){
   else if(e.key===' '&&!e.repeat){e.preventDefault();g.aiming=false;shootKick(g);sync();}};
  $('#shootAgain').onclick=()=>{g=createShootGame(level());shown='';sync();};bindActivityClose();
  const animate=now=>{if(closed)return;if(document.hidden){last=null;frame=requestAnimationFrame(animate);return;}const dt=last===null?0:Math.min(.05,(now-last)/1000);last=now;
-  shootStep(g,dt);g.events.splice(0).forEach(shootSound);drawShoot(c,g,look,sami);sync();frame=requestAnimationFrame(animate);};
- sync();drawShoot(c,g,look,sami);frame=requestAnimationFrame(animate);}
+  shootStep(g,dt);g.events.splice(0).forEach(shootSound);drawShoot(c,g,look,sami,fans);sync();frame=requestAnimationFrame(animate);};
+ sync();drawShoot(c,g,look,sami,fans);frame=requestAnimationFrame(animate);}
 
 const decorColors=['#8eaa88','#8bafc2','#c997ab','#d5b66f','#c28f6c','#b29ac8'];
 const decorTypes={bed:['Lit','🛏️'],desk:['Bureau','✏️'],shelf:['Bibliothèque','📚'],wardrobe:['Armoire','👕'],toybox:['Coffre à jouets','🧺'],teddy:['Peluche','🧸'],ball:['Ballon','⚽'],rug:['Tapis','🟠'],plant:['Plante','🪴']};
