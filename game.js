@@ -1461,45 +1461,71 @@ function ballGame(){
   shootStep(g,dt);g.events.splice(0).forEach(shootSound);drawShoot(c,g,look,sami,fans);sync();frame=requestAnimationFrame(animate);};
  sync();drawShoot(c,g,look,sami,fans);frame=requestAnimationFrame(animate);}
 
+// Hand-drawn waste pictures: each one shows the object itself (no food that looks edible, no dishes), the same on every device.
+// Drawn in a 100×100 box centred on (x,y), scaled to size s.
+function recycleIcon(c,art,x,y,s){c.save();c.translate(x,y);c.scale(s/100,s/100);c.lineJoin='round';c.lineCap='round';
+ const outline=(col,w=3)=>{c.strokeStyle=col;c.lineWidth=w;c.stroke();},path=pts=>{c.beginPath();pts.forEach(([px,py],i)=>i?c.lineTo(px,py):c.moveTo(px,py));c.closePath();};
+ const D={
+ pet(){rr(c,-8,-42,16,14,4,'#cfeaf5','#5d9bb8');rr(c,-11,-50,22,10,3,'#2f7fd1');path([[-8,-30],[8,-30],[18,-18],[18,40],[-18,40],[-18,-18]]);c.fillStyle='#d6eef7';c.fill();outline('#5d9bb8');rr(c,-18,-4,36,20,0,'#3f78c0');text(c,'PET',0,11,15,'#ffffff','800');rr(c,-13,-16,5,52,3,'#ffffffaa');},
+ glass(){rr(c,-7,-48,14,30,4,'#3f8a4e');rr(c,-9,-50,18,6,2,'#2f6b3c');path([[-7,-20],[7,-20],[18,-6],[18,44],[-18,44],[-18,-6]]);c.fillStyle='#3f8a4e';c.fill();outline('#2f6b3c');rr(c,-18,8,36,20,0,'#efe6c8');rr(c,-12,-4,5,44,3,'#ffffff55');},
+ newspaper(){rr(c,-38,-30,76,62,4,'#f6f3e8','#9a9a90');rr(c,-30,-22,60,9,1,'#3d4644');rr(c,-30,-6,28,22,1,'#b8c4cc');for(let i=0;i<4;i++)rr(c,4,-5+i*7,26,3,1,'#9aa0a0');for(let i=0;i<2;i++)rr(c,-30,22+i*0,60,3,1,'#9aa0a0');},
+ box(){path([[-38,-12],[16,-12],[16,34],[-38,34]]);c.fillStyle='#c8955a';c.fill();outline('#9c6f3e');path([[-38,-12],[-20,-30],[34,-30],[16,-12]]);c.fillStyle='#ddb07a';c.fill();outline('#9c6f3e');path([[16,-12],[34,-30],[34,16],[16,34]]);c.fillStyle='#b07d45';c.fill();outline('#9c6f3e');path([[-14,-12],[4,-30],[12,-30],[-6,-12]]);c.fillStyle='#efe0b6';c.fill();},
+ can(){rr(c,-24,-32,48,66,6,'#c9ced1','#8d9599');ellipse(c,0,-32,24,7,'#e6eaec');c.beginPath();c.ellipse(0,-32,24,7,0,0,Math.PI*2);outline('#8d9599',2);rr(c,-24,-16,48,30,0,'#e05a3a');ellipse(c,0,-1,9,9,'#f4d03f');for(const yy of [-24,22,28])rr(c,-24,yy,48,2,0,'#a7aeb2');},
+ bananaPeel(){for(const [a,col]of [[-.95,'#f2cf45'],[.95,'#ecc53a'],[0,'#f6d95a']]){c.save();c.translate(0,-6);c.rotate(a);c.beginPath();c.ellipse(0,26,9,26,0,0,Math.PI*2);c.fillStyle=col;c.fill();outline('#c79a1e',2);ellipse(c,0,48,4,3,'#6b4a1e');ellipse(c,-2,22,2,3,'#8a6a2e');c.restore();}rr(c,-5,-30,10,16,3,'#8a6a2e');rr(c,-12,-20,24,10,5,'#e9c23d');},
+ appleCore(){ellipse(c,0,-28,23,11,'#d9453a');ellipse(c,0,30,21,10,'#d9453a');c.beginPath();c.moveTo(-18,-24);c.bezierCurveTo(-4,-12,-4,12,-17,26);c.lineTo(17,26);c.bezierCurveTo(4,12,4,-12,18,-24);c.closePath();c.fillStyle='#f6edc9';c.fill();outline('#d8c99a',2);for(const [sx,sy]of [[-3,-4],[3,2],[-2,8]])ellipse(c,sx,sy,2.5,4,'#5a3a24');parkStroke(c,[[0,-36],[3,-46]],'#6b4a2e',4);c.beginPath();c.ellipse(10,-44,8,4,-.4,0,Math.PI*2);c.fillStyle='#6fa24a';c.fill();},
+ pasta(){ellipse(c,0,22,40,14,'#e9c66a');for(let i=0;i<9;i++){c.beginPath();const y0=-6+i*4;c.moveTo(-34+i*2,y0+14);for(let k=0;k<6;k++)c.quadraticCurveTo(-28+i*2+k*11,y0+(k%2?-10:10),-22+i*2+k*11,y0+6);outline(i%2?'#f0d27a':'#e3bd5e',4);}ellipse(c,-6,6,10,6,'#c8473a');ellipse(c,8,10,6,4,'#c8473a');},
+ tshirt(){path([[-14,-36],[14,-36],[38,-20],[28,-4],[18,-10],[18,38],[-18,38],[-18,-10],[-28,-4],[-38,-20]]);c.fillStyle='#6fb6d9';c.fill();outline('#4a8fb0');c.beginPath();c.arc(0,-36,9,0,Math.PI);outline('#4a8fb0');},
+ sneakers(){for(const [dx,dy,col]of [[-8,-10,'#d9534a'],[6,8,'#5d86b8']]){c.save();c.translate(dx,dy);path([[-34,6],[-30,-12],[-8,-14],[10,-4],[34,0],[36,12],[-34,12]]);c.fillStyle=col;c.fill();outline('#2f3533',2);rr(c,-36,10,74,9,4,'#ffffff','#9aa0a0');for(let i=0;i<3;i++)parkStroke(c,[[-16+i*7,-12],[-12+i*7,-4]],'#ffffff',2);c.restore();}},
+ tissue(){path([[-30,-10],[-18,-30],[2,-24],[22,-34],[34,-12],[26,8],[34,26],[10,34],[-6,26],[-28,32],[-36,12]]);c.fillStyle='#ffffff';c.fill();outline('#c9cbc4',2);c.strokeStyle='#d8dad3';c.lineWidth=2;for(const [a,b,d,e]of [[-20,-14,-4,2],[6,-18,16,0],[-14,14,4,20],[-2,-6,10,10]]){c.beginPath();c.moveTo(a,b);c.lineTo(d,e);c.stroke();}},
+ milkCarton(){path([[-20,-16],[10,-16],[10,42],[-20,42]]);c.fillStyle='#ffffff';c.fill();outline('#8fa4b8');path([[10,-16],[24,-26],[24,32],[10,42]]);c.fillStyle='#dfe7ef';c.fill();outline('#8fa4b8');path([[-20,-16],[-5,-40],[10,-16]]);c.fillStyle='#f3f6f9';c.fill();outline('#8fa4b8');path([[-5,-40],[9,-50],[24,-26],[10,-16]]);c.fillStyle='#e6edf3';c.fill();outline('#8fa4b8');rr(c,-20,4,30,22,0,'#3f78c0');text(c,'LAIT',-5,20,11,'#ffffff','800');ellipse(c,0,-24,5,4,'#3f78c0');},
+ pizzaBox(){rr(c,-42,-6,84,30,4,'#b98446','#8c5f2e');path([[-42,-6],[-30,-38],[42,-38],[42,-6]]);c.fillStyle='#d6a466';c.fill();outline('#8c5f2e');ellipse(c,-18,-18,9,5,'#8a5a2a66');ellipse(c,20,-28,6,4,'#8a5a2a66');ellipse(c,28,8,8,4,'#8a5a2a55');text(c,'PIZZA',4,-14,17,'#c8372d','800');},
+ chipsBag(){rr(c,-26,-36,52,74,8,'#e8b52c','#b98a1a');for(const yy of [-40,36]){c.beginPath();for(let i=0;i<=8;i++)c.lineTo(-26+i*6.5,yy+(i%2?4:0));c.lineTo(26,yy+4);outline('#b98a1a',3);}text(c,'CHIPS',0,-14,14,'#c8372d','800');ellipse(c,0,12,18,14,'#fff3c4');for(const [cx,cy]of [[-7,8],[6,14],[-2,20],[8,4]])ellipse(c,cx,cy,7,4,'#f2c95a');},
+ coffeeGrounds(){path([[-32,-20],[32,-20],[12,36],[-12,36]]);c.fillStyle='#f3ead8';c.fill();outline('#cdbf9e');for(let i=-24;i<=24;i+=8){c.beginPath();c.moveTo(i,-20);c.lineTo(i*.4,36);outline('#e2d6bc',1.5);}c.beginPath();c.ellipse(0,-20,32,10,0,Math.PI,0);c.fillStyle='#4a3020';c.fill();ellipse(c,0,-20,32,6,'#5a3a26');for(let i=0;i<14;i++)ellipse(c,-26+i*4,-21+(i%3)*2,1.5,1.5,'#2e1d12');},
+ brokenPlate(){for(const [dx,side]of [[-6,-1],[6,1]]){c.save();c.translate(dx,side*4);c.rotate(side*.12);c.beginPath();c.arc(0,0,36,side<0?Math.PI*.5:-Math.PI*.5,side<0?Math.PI*1.5:Math.PI*.5);const zig=[[0,-36],[5,-22],[-4,-10],[5,2],[-4,14],[4,26],[0,36]];(side<0?zig.slice().reverse():zig).forEach(([px,py])=>c.lineTo(px,py));c.closePath();c.fillStyle='#ffffff';c.fill();outline('#a9b2b8',2);c.beginPath();c.arc(0,0,24,side<0?Math.PI*.55:-Math.PI*.45,side<0?Math.PI*1.45:Math.PI*.45);outline('#d6dde2',2);c.restore();}},
+ foil(){path([[-30,-8],[-20,-30],[4,-26],[24,-34],[34,-8],[28,18],[8,32],[-18,28],[-34,14]]);c.fillStyle='#c4cad0';c.fill();outline('#8d969e',2);for(const [pts,col]of [[[[-20,-24],[2,-18],[-8,0]],'#eef1f3'],[[[6,-20],[26,-26],[22,0]],'#dfe4e8'],[[[-24,8],[-6,4],[-10,24]],'#a9b1b8'],[[[8,6],[26,12],[10,26]],'#eef1f3']]){path(pts);c.fillStyle=col;c.fill();}},
+ notebook(){rr(c,-26,-38,56,76,4,'#e07a5f','#a8523a');rr(c,-12,-18,34,16,2,'#ffffff');for(let i=0;i<7;i++){c.beginPath();c.arc(-26,-30+i*10,4,0,Math.PI*2);outline('#5a6668',2);}rr(c,-8,-13,26,3,1,'#9aa0a0');rr(c,-8,-8,18,3,1,'#9aa0a0');},
+ compost(){D.appleCore();c.save();c.translate(-26,24);c.rotate(-.6);c.beginPath();c.ellipse(0,0,14,7,0,0,Math.PI*2);c.fillStyle='#c97b2e';c.fill();c.restore();},
+ trash(){c.beginPath();c.moveTo(-30,38);c.quadraticCurveTo(-40,-6,-16,-22);c.lineTo(16,-22);c.quadraticCurveTo(40,-6,30,38);c.closePath();c.fillStyle='#2f3533';c.fill();outline('#1c2120',2);c.beginPath();c.moveTo(-14,-22);c.lineTo(-8,-36);c.lineTo(0,-28);c.lineTo(8,-36);c.lineTo(14,-22);c.fillStyle='#2f3533';c.fill();for(const [a,b,d,e]of [[-18,-4,-10,22],[4,-10,10,18]]){c.beginPath();c.moveTo(a,b);c.lineTo(d,e);outline('#505a58',2);}}};
+ (D[art]||D.trash)();c.restore();}
 // Sorting waste at the collection point next to the school, following the rules used in Geneva.
 const RECYCLE_BINS=[
- {id:'verre',name:'Verre',sub:'bouteilles et bocaux',icon:'🍾',color:'#4f8a5b',lid:'#3c7049'},
- {id:'pet',name:'PET',sub:'bouteilles de boisson',icon:'🧴',color:'#5d86b8',lid:'#45699a'},
- {id:'papier',name:'Papier · carton',sub:'propres et secs',icon:'📰',color:'#8d9aa6',lid:'#6f7d8a'},
- {id:'alu',name:'Alu · fer-blanc',sub:'boîtes, canettes',icon:'🥫',color:'#a9b0b3',lid:'#878f93'},
- {id:'cuisine',name:'Cuisine',sub:'P’tite poubelle verte',icon:'🍂',color:'#7aa25a',lid:'#5f8744'},
- {id:'textile',name:'Textiles',sub:'habits, chaussures',icon:'👕',color:'#e2b33c',lid:'#c69a2c'},
- {id:'ordures',name:'Ordures',sub:'ménagères : tout le reste',icon:'🗑️',color:'#4a5250',lid:'#353b3a'}];
+ {id:'verre',name:'Verre',sub:'bouteilles et bocaux',icon:'🍾',color:'#4f8a5b',lid:'#3c7049',art:'glass'},
+ {id:'pet',name:'PET',sub:'bouteilles de boisson',icon:'🧴',color:'#5d86b8',lid:'#45699a',art:'pet'},
+ {id:'papier',name:'Papier · carton',sub:'propres et secs',icon:'📰',color:'#8d9aa6',lid:'#6f7d8a',art:'newspaper'},
+ {id:'alu',name:'Alu · fer-blanc',sub:'boîtes, canettes',icon:'🥫',color:'#a9b0b3',lid:'#878f93',art:'can'},
+ {id:'cuisine',name:'Cuisine',sub:'P’tite poubelle verte',icon:'🍂',color:'#7aa25a',lid:'#5f8744',art:'compost'},
+ {id:'textile',name:'Textiles',sub:'habits, chaussures',icon:'👕',color:'#e2b33c',lid:'#c69a2c',art:'tshirt'},
+ {id:'ordures',name:'Ordures',sub:'ménagères : tout le reste',icon:'🗑️',color:'#4a5250',lid:'#353b3a',art:'trash'}];
 // level: from which age band the item appears (0 = everyone); trap: a classic mistake worth learning.
 const RECYCLE_ITEMS=[
- {name:'Bouteille d’eau en PET',icon:'🧴',bin:'pet',level:0,why:'Les bouteilles de boisson en PET vont dans la collecte PET.'},
- {name:'Bouteille en verre',icon:'🍾',bin:'verre',level:0,why:'Les bouteilles et les bocaux en verre vont au verre.'},
- {name:'Vieux journal',icon:'📰',bin:'papier',level:0,why:'Le papier propre et sec se recycle avec le papier et carton.'},
- {name:'Carton de livraison',icon:'📦',bin:'papier',level:0,why:'Un carton propre, aplati, va avec le papier et carton.'},
- {name:'Boîte de conserve vide',icon:'🥫',bin:'alu',level:0,why:'Les boîtes de conserve vont avec l’alu et le fer-blanc.'},
- {name:'Peau de banane',icon:'🍌',bin:'cuisine',level:0,why:'Les restes de fruits vont dans la P’tite poubelle verte : ils deviennent du compost et du biogaz.'},
- {name:'Trognon de pomme',icon:'🍎',bin:'cuisine',level:0,why:'Les restes de fruits vont dans la P’tite poubelle verte.'},
- {name:'Restes de pâtes',icon:'🍝',bin:'cuisine',level:0,why:'À Genève, les restes de repas vont aussi dans la P’tite poubelle verte.'},
- {name:'T-shirt trop petit',icon:'👕',bin:'textile',level:0,why:'Les habits encore utilisables vont dans la collecte des textiles.'},
- {name:'Baskets usées (en paire)',icon:'👟',bin:'textile',level:0,why:'Les chaussures, attachées par paire, vont avec les textiles.'},
- {name:'Mouchoir usagé',icon:'🤧',bin:'ordures',level:0,why:'Un mouchoir sale ne se recycle pas : ordures ménagères.'},
- {name:'Brique de lait',icon:'🥛',bin:'ordures',level:1,trap:true,why:'Piège ! La brique de lait mélange carton, plastique et alu : elle va aux ordures, pas au carton.'},
- {name:'Boîte à pizza grasse',icon:'🍕',bin:'ordures',level:1,trap:true,why:'Piège ! Un carton gras ou sale ne se recycle pas : ordures ménagères.'},
- {name:'Sachet de chips',icon:'🍟',bin:'ordures',level:1,trap:true,why:'Piège ! Ce n’est pas du PET ni de l’alu pur : ordures ménagères.'},
- {name:'Marc de café',icon:'☕',bin:'cuisine',level:1,why:'Le marc de café va dans la P’tite poubelle verte.'},
- {name:'Assiette cassée',icon:'🍽️',bin:'ordures',level:2,trap:true,why:'Piège ! La vaisselle n’est pas du verre de bouteille : elle va aux ordures.'},
- {name:'Papier alu propre',icon:'🍫',bin:'alu',level:2,why:'Le papier d’aluminium propre va avec l’alu et le fer-blanc.'},
- {name:'Cahier usé',icon:'📒',bin:'papier',level:2,why:'Les cahiers vont avec le papier et carton.'}];
+ {name:'Bouteille d’eau en PET',art:'pet',icon:'🧴',bin:'pet',level:0,why:'Les bouteilles de boisson en PET vont dans la collecte PET.'},
+ {name:'Bouteille en verre',art:'glass',icon:'🍾',bin:'verre',level:0,why:'Les bouteilles et les bocaux en verre vont au verre.'},
+ {name:'Vieux journal',art:'newspaper',icon:'📰',bin:'papier',level:0,why:'Le papier propre et sec se recycle avec le papier et carton.'},
+ {name:'Carton de livraison',art:'box',icon:'📦',bin:'papier',level:0,why:'Un carton propre, aplati, va avec le papier et carton.'},
+ {name:'Boîte de conserve vide',art:'can',icon:'🥫',bin:'alu',level:0,why:'Les boîtes de conserve vont avec l’alu et le fer-blanc.'},
+ {name:'Peau de banane',art:'bananaPeel',icon:'🍌',bin:'cuisine',level:0,why:'Les restes de fruits vont dans la P’tite poubelle verte : ils deviennent du compost et du biogaz.'},
+ {name:'Trognon de pomme',art:'appleCore',icon:'🍎',bin:'cuisine',level:0,why:'Les restes de fruits vont dans la P’tite poubelle verte.'},
+ {name:'Restes de pâtes',art:'pasta',icon:'🍝',bin:'cuisine',level:0,why:'À Genève, les restes de repas vont aussi dans la P’tite poubelle verte.'},
+ {name:'T-shirt trop petit',art:'tshirt',icon:'👕',bin:'textile',level:0,why:'Les habits encore utilisables vont dans la collecte des textiles.'},
+ {name:'Baskets usées (en paire)',art:'sneakers',icon:'👟',bin:'textile',level:0,why:'Les chaussures, attachées par paire, vont avec les textiles.'},
+ {name:'Mouchoir usagé',art:'tissue',icon:'🤧',bin:'ordures',level:0,why:'Un mouchoir sale ne se recycle pas : ordures ménagères.'},
+ {name:'Brique de lait',art:'milkCarton',icon:'🥛',bin:'ordures',level:1,trap:true,why:'Piège ! La brique de lait mélange carton, plastique et alu : elle va aux ordures, pas au carton.'},
+ {name:'Boîte à pizza grasse',art:'pizzaBox',icon:'🍕',bin:'ordures',level:1,trap:true,why:'Piège ! Un carton gras ou sale ne se recycle pas : ordures ménagères.'},
+ {name:'Sachet de chips',art:'chipsBag',icon:'🍟',bin:'ordures',level:1,trap:true,why:'Piège ! Ce n’est pas du PET ni de l’alu pur : ordures ménagères.'},
+ {name:'Marc de café',art:'coffeeGrounds',icon:'☕',bin:'cuisine',level:1,why:'Le marc de café va dans la P’tite poubelle verte.'},
+ {name:'Assiette cassée',art:'brokenPlate',icon:'🍽️',bin:'ordures',level:2,trap:true,why:'Piège ! La vaisselle n’est pas du verre de bouteille : elle va aux ordures.'},
+ {name:'Papier alu propre',art:'foil',icon:'🍫',bin:'alu',level:2,why:'Le papier d’aluminium propre va avec l’alu et le fer-blanc.'},
+ {name:'Cahier usé',art:'notebook',icon:'📒',bin:'papier',level:2,why:'Les cahiers vont avec le papier et carton.'}];
 function createRecycleGame(lv=level()){const pool=RECYCLE_ITEMS.filter(i=>i.level<=lv),traps=shuffle(pool.filter(i=>i.trap)).slice(0,[0,2,3][lv]),rest=shuffle(pool.filter(i=>!i.trap)).slice(0,(lv?10:8)-traps.length);
  return {level:lv,items:shuffle([...traps,...rest]),index:0,score:0,mistakes:0,state:'play',drag:null,anim:null,hint:null,fx:[],time:0,message:'Fais glisser le déchet dans la bonne poubelle (ou touche la poubelle).',firstTry:true,banner:null,binFx:{},parts:[],flash:0,pulse:0,streak:0};}
 function recycleItem(g){return g.items[g.index];}
 // Drop the current item on a bin: right first time scores; a mistake shows the right bin and why.
 function recycleDrop(g,binId){if(g.state!=='play')return null;const item=recycleItem(g),ok=item.bin===binId,bin=RECYCLE_BINS.find(b=>b.id===binId);
  if(ok){const first=g.firstTry;g.hint=null;if(first){g.score++;g.streak++;g.pulse=1;}g.anim={type:'in',bin:binId,t:0,from:g.drag?.pos||null};g.state='anim';g.message='Bravo ! '+item.why;g.fx.push({type:'stars',bin:binId,t:0,life:.9});
-  g.banner={type:'ok',t:0,icon:item.icon,why:item.why,title:!first?'C’est ça !':g.streak>=3?g.streak+' de suite !':['Bravo !','Bien joué !','Exact !','Parfait !'][g.index%4]};g.binFx[binId]={type:'ok',t:0};
+  g.banner={type:'ok',t:0,art:item.art,why:item.why,title:!first?'C’est ça !':g.streak>=3?g.streak+' de suite !':['Bravo !','Bien joué !','Exact !','Parfait !'][g.index%4]};g.binFx[binId]={type:'ok',t:0};
   const r=recycleBinRect(RECYCLE_BINS.findIndex(b=>b.id===binId));for(let i=0;i<26;i++){const a=-Math.PI*(.15+.7*Math.random());g.parts.push({x:r.x+52,y:r.y+40,vx:Math.cos(a)*(120+Math.random()*260),vy:Math.sin(a)*(240+Math.random()*260),t:0,color:['#ffd34d','#7fd88a','#7898d8','#f08a6a','#ffffff'][i%5]});}}
  else{g.mistakes++;g.firstTry=false;g.streak=0;g.hint={bin:item.bin,t:0};g.anim={type:'back',t:0,from:g.drag?.pos||null};g.message='Pas dans « '+(bin?.name||'?')+' ». '+item.why;g.fx.push({type:'cross',bin:binId,t:0,life:.8});
-  g.banner={type:'no',t:0,icon:item.icon,why:item.why,title:'Oups ! Pas dans « '+(bin?.name||'?')+' »'};g.binFx[binId]={type:'no',t:0};g.flash=.35;}
+  g.banner={type:'no',t:0,art:item.art,why:item.why,title:'Oups ! Pas dans « '+(bin?.name||'?')+' »'};g.binFx[binId]={type:'no',t:0};g.flash=.35;}
  g.drag=null;return ok;}
 const RECYCLE_OK_WAIT=1.7,RECYCLE_NO_WAIT=2.6;
 function recycleNext(g){if(g.banner?.type==='ok')g.banner.t=Math.max(g.banner.t,RECYCLE_OK_WAIT);}
@@ -1534,7 +1560,7 @@ function drawRecycle(c,g){const H=RECYCLE_H;c.save();c.clearRect(0,0,760,H);
   if(hot)rr(c,r.x-5,r.y-5,r.w+10,r.h+10,14,'#ffffff88');
   rr(c,r.x,r.y+16,r.w,r.h-16,12,b.color);rr(c,r.x+8,r.y+22,r.w-16,6,3,'#ffffff22');
   c.save();c.translate(r.x+8,r.y+16-open*10);c.rotate(-open*.12);rr(c,-8,-16,r.w,20,8,b.lid);rr(c,r.w/2-38,-10,60,7,3,'#00000040');c.restore();
-  ellipse(c,r.x+52,r.y+74,38,38,'#ffffff2a');c.font='54px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#ffffff';c.fillText(b.icon,r.x+52,r.y+76);c.textBaseline='alphabetic';
+  ellipse(c,r.x+52,r.y+74,40,40,'#ffffffd9');recycleIcon(c,b.art,r.x+52,r.y+74,62);
   fitTextLeft(c,b.name,r.x+102,r.y+74,40,r.w-112,'#ffffff');fitTextLeft(c,b.sub,r.x+102,r.y+108,25,r.w-112,'#ffffffe6','700');
   if(hint){const by=Math.sin(g.hint.t*7)*6;rr(c,r.x+r.w-112,r.y-22+by,100,40,20,'#25352fee');text(c,'ici ! ▼',r.x+r.w-62,r.y+6+by,24,'#ffd34d','800');}c.restore();});
  for(const f of g.fx){const i=RECYCLE_BINS.findIndex(b=>b.id===f.bin),r=recycleBinRect(i),k=f.t/f.life,cx=r.x+52,cy=r.y+40;c.globalAlpha=1-k;
@@ -1542,14 +1568,14 @@ function drawRecycle(c,g){const H=RECYCLE_H;c.save();c.clearRect(0,0,760,H);
   else{const z=1+.3*Math.sin(Math.min(1,k*3)*Math.PI);c.strokeStyle='#e0614a';c.lineWidth=10;c.lineCap='round';c.beginPath();c.moveTo(cx-24*z,cy+10-24*z+24);c.lineTo(cx+24*z,cy+10+24*z+24);c.moveTo(cx+24*z,cy+10-24*z+24);c.lineTo(cx-24*z,cy+10+24*z+24);c.stroke();}}
  c.globalAlpha=1;
  if(item&&g.state!=='over'){const p=recycleItemPos(g),sc=p.scale||1;if(!g.drag&&!g.anim){rr(c,RECYCLE_HOME.x-250,RECYCLE_HOME.y-96,500,212,20,'#fffdf2ee');}
-  if(sc<=.02){}else{ellipse(c,p.x,p.y+58*sc,42*sc,9*sc,'#00000025');}c.save();c.translate(p.x,p.y);c.rotate(g.drag?Math.sin(g.time*12)*.06:(p.spin||0)+(g.anim?.type==='back'?Math.sin(g.anim.t*50)*.25:0));c.scale(sc,sc);c.font='112px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#3d4644';c.fillText(item.icon,0,0);c.restore();c.textBaseline='alphabetic';
+  if(sc<=.02){}else{ellipse(c,p.x,p.y+58*sc,42*sc,9*sc,'#00000025');}c.save();c.translate(p.x,p.y);c.rotate(g.drag?Math.sin(g.time*12)*.06:(p.spin||0)+(g.anim?.type==='back'?Math.sin(g.anim.t*50)*.25:0));c.scale(sc,sc);recycleIcon(c,item.art,0,0,138);c.restore();
   if(!g.drag&&!g.anim){fitText(c,item.name,RECYCLE_HOME.x,RECYCLE_HOME.y+94,38,470,'#2f4a3c');if(g.index===0&&!g.hint){const y=RECYCLE_HOME.y+138+Math.sin(g.time*4)*3;rr(c,RECYCLE_HOME.x-220,y-26,440,36,18,'#25352fdd');text(c,'↓ glisse-moi dans la bonne poubelle',RECYCLE_HOME.x,y,22,'#fff6e0','800');}}}
  for(const p of g.parts){c.globalAlpha=Math.max(0,1-p.t/1.2);c.save();c.translate(p.x,p.y);c.rotate(p.t*9);rr(c,-4,-6,8,12,2,p.color);c.restore();}c.globalAlpha=1;
  if(g.banner){const bn=g.banner,ok=bn.type==='ok',life=ok?RECYCLE_OK_WAIT:RECYCLE_NO_WAIT,pop=Math.min(1,bn.t/.22),fade=Math.min(1,(life-bn.t)/.3),sc=.6+.4*pop+.06*Math.sin(Math.min(1,bn.t/.4)*Math.PI);
   c.save();c.globalAlpha=Math.max(0,fade);c.translate(380,172);c.scale(sc,sc);c.translate(-380,-172);
   rr(c,26,66,708,214,24,ok?'#2f8a4e':'#c0483a');rr(c,26,66,708,214,24,null,'#ffffff55');ellipse(c,124,172,66,66,'#ffffff');
   c.lineCap='round';c.lineJoin='round';c.lineWidth=16;c.strokeStyle=ok?'#2f8a4e':'#c0483a';c.beginPath();if(ok){const k=Math.min(1,bn.t/.35);c.moveTo(94,172);c.lineTo(94+22*Math.min(1,k*2),172+24*Math.min(1,k*2));if(k>.5)c.lineTo(116+40*(k-.5)*2,196-60*(k-.5)*2);}else{c.moveTo(100,148);c.lineTo(148,196);c.moveTo(148,148);c.lineTo(100,196);}c.stroke();
-  c.font='48px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#ffffff';c.fillText(bn.icon,174,222);c.textBaseline='alphabetic';
+  ellipse(c,176,226,34,34,'#ffffff');recycleIcon(c,bn.art,176,226,52);
   fitTextLeft(c,bn.title,214,124,40,500,'#ffffff');
   c.font='700 25px Segoe UI,Arial';const words=bn.why.split(' '),lines=[];let line='';for(const w of words){const t=line?line+' '+w:w;if(c.measureText(t).width>496&&line){lines.push(line);line=w;}else line=t;}lines.push(line);
   lines.slice(0,4).forEach((l,i)=>{c.fillStyle='#ffffffee';c.textAlign='left';c.fillText(l,214,164+i*30);});c.textAlign='center';
