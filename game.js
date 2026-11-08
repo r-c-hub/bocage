@@ -1330,18 +1330,19 @@ function pingpongGame(){
 
 // Penalties against Sami, seen from behind the shooter. World units: x across (posts at ±1), y height (crossbar at 1),
 // z from the penalty spot (0) to the goal line (1); the back of the net is at z=1.3.
-const SHOOT={shots:5,goals:3,react:[.32,.26,.2],dive:[1.5,1.85,2.2],guess:[.3,.4,.5],reach:.26,G:2.4,runup:.4,netZ:1.3};
+const SHOOT={shots:5,goals:3,react:[.3,.24,.18],dive:[1.75,2.15,2.55],guess:[.36,.5,.62],reach:.24,G:2.4,runup:.4,netZ:1.3,spread:[.07,.12,.16]};
 const shootS=z=>2.1/(1+1.1*z);
 const shootP=(x,y,z)=>{const s=shootS(z);return {x:380+x*200*s,y:50+200*s-y*150*s,s};};
 function createShootGame(lv=level()){return {level:lv,aim:{gx:0,gy:.45,power:.6},aiming:false,state:'aim',shots:[],kx:0,kdive:0,kTarget:0,kClock:0,ball:{x:0,y:.06,z:0,vx:0,vy:0,vz:0,spin:0},trail:[],result:null,caught:false,timer:0,effects:[],events:[],net:0,netAt:{x:0,y:0},message:'Pose le doigt sur le ballon, glisse vers le but, puis lâche.',time:0,run:0,kick:0,shake:0,slow:1,cheer:0};}
 // Aim from a drag: sideways movement aims, the length of the swipe sets the power (and the height).
 function shootAim(g,dx,dy){const power=pingClamp(Math.hypot(dx,dy)/230,0,1.45),gx=pingClamp(dx/170,-1.5,1.5);g.aim={gx,gy:pingClamp(.08+power*.8,0,1.35),power};return g.aim;}
 function shootFlightTime(power){return .78-Math.min(1,power)*.3;}
-function shootKick(g){if(g.state!=='aim'||g.aim.power<.12)return false;const a=g.aim;
+function shootKick(g){if(g.state!=='aim'||g.aim.power<.12)return false;const a=g.aim,sp=SHOOT.spread[g.level]+Math.max(0,a.power-.95)*.45;
+ g.shot={gx:a.gx+(Math.random()-.5)*2*sp,gy:pingClamp(a.gy+(Math.random()-.5)*sp,.06,1.5),power:a.power};
  g.state='runup';g.run=0;g.result=null;g.caught=false;g.events.push('run');
  // Sami guesses a side: a good guess dives towards the ball, a wrong one to the other side.
  const good=Math.random()<SHOOT.guess[g.level]||Math.abs(a.gx)<.25;g.kTarget=good?pingClamp(a.gx+(Math.random()-.5)*.25,-1,1):(a.gx>0?-1:1)*(.45+Math.random()*.5);g.kdive=0;g.kClock=0;return true;}
-function shootLaunch(g){const a=g.aim,b=g.ball,T=shootFlightTime(a.power);Object.assign(b,{x:0,y:.06,z:0,vz:1/T,vx:a.gx/T,vy:(a.gy-.06+SHOOT.G*T*T/2)/T,spin:0});g.trail=[];g.state='flight';g.kick=.3;g.kClock=0;g.events.push('kick');}
+function shootLaunch(g){const a=g.shot||g.aim,b=g.ball,T=shootFlightTime(a.power);Object.assign(b,{x:0,y:.06,z:0,vz:1/T,vx:a.gx/T,vy:(a.gy-.06+SHOOT.G*T*T/2)/T,spin:0});g.trail=[];g.state='flight';g.kick=.3;g.kClock=0;g.events.push('kick');}
 function shootBallPhysics(g,dt){const b=g.ball;b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;b.vy-=SHOOT.G*dt;b.spin+=dt*(6+Math.hypot(b.vx,b.vz)*4);
  if(b.y<.06){b.y=.06;b.vy=Math.abs(b.vy)>.3?Math.abs(b.vy)*.45:0;b.vx*=.85;b.vz*=.85;}
  if(g.result==='goal'){if(b.z>SHOOT.netZ-.03){b.z=SHOOT.netZ-.03;if(b.vz>0){g.net=1;g.netAt={x:b.x,y:b.y};g.events.push('net');}b.vz=-Math.abs(b.vz)*.08;b.vx*=.4;}if(Math.abs(b.x)>.96){b.x=Math.sign(b.x)*.96;b.vx*=-.3;}if(b.y>.95){b.y=.95;b.vy=-Math.abs(b.vy)*.3;}}
@@ -1355,7 +1356,7 @@ function shootStep(g,dt){dt=Math.max(0,Math.min(dt,.05));g.time+=dt;g.kick=Math.
   g.slow=b.z>.8&&b.z<1&&Math.abs(b.x-g.kx)<.65?.4:1;
   if(b.z>=1){const ax=Math.abs(b.x);let r;
    if(b.y>1.04||ax>1.05)r='miss';else if(ax>.975||b.y>.98)r='post';
-   else if(Math.abs(b.x-g.kx)<SHOOT.reach+(g.kdive>.5?.06:0)&&b.y<(g.kdive>.5?.95:.72))r='save';else r='goal';
+   else if(Math.abs(b.x-g.kx)<SHOOT.reach+(g.kdive>.5?.08:0)&&b.y<(g.kdive>.5?.82:.66))r='save';else r='goal';
    g.result=r;g.shots.push(r==='goal');g.state='result';g.timer=2;g.slow=1;g.events.push(r);g.effects.push({type:r,x:b.x,y:b.y,t:0});
    if(r==='save'){g.caught=g.aim.power<.62;if(!g.caught){b.vz=-Math.abs(b.vz)*.45;b.vy=.9;b.vx=(b.x>=g.kx?1:-1)*.7;}}
    else if(r==='post'){b.vz=-Math.abs(b.vz)*.4;b.vx=-Math.sign(b.x||1)*.8;b.vy=.5;}
@@ -1411,14 +1412,14 @@ function drawShoot(c,g,me,sami,fans){
  fans.forEach((f,i)=>{const side=i?1:-1,p=shootP(side*1.32,0,.62),cheer=g.cheer>0;ellipse(c,p.x,p.y+2,22,6,'#2f4a2a33');parkAvatar(c,p.x,p.y-38+(cheer?-Math.abs(Math.sin(g.time*9))*10:0),f,cheer?'hop-double':'stand',cheer?.9:0,.62,-side);});
  // Sami: ready on his toes, then a real dive (take-off, stretched in the air, down on the grass), or a jump for a high central ball.
  {const dir=g.kTarget>=g.kx?1:-1,d=g.state==='aim'||g.state==='runup'?0:Math.min(1,g.kdive),down=Math.max(0,Math.min(1,(g.kdive-1)/.6));
-  const straight=Math.abs(g.kTarget)<.2&&g.aim.gy>.6,lift=straight?Math.sin(d*Math.PI)*.35:Math.sin(Math.min(1,d)*Math.PI*.6)*.28*(1-down),pelvisY=.34+lift-(straight?0:d*.18),rot=straight?0:dir*(d*1.3+down*.2);
-  const p=shootP(g.kx,Math.max(.12,pelvisY),.97),bob=g.state==='aim'?Math.abs(Math.sin(g.time*5))*3:0;ellipse(c,shootP(g.kx,0,.97).x,shootP(0,0,.97).y+2,34,8,'#2f4a2a40');
-  c.save();c.translate(p.x,p.y-bob);c.rotate(rot);parkAvatar(c,0,0,sami,straight&&d>0?'wave':'hop-double',straight?g.time:.6+(g.state==='aim'?Math.sin(g.time*6)*.1:.4*d),1.1*p.s,1);c.restore();}
+  const straight=Math.abs(g.kTarget)<.2&&g.aim.gy>.6,lift=straight?Math.sin(d*Math.PI)*.35:Math.sin(Math.min(1,d)*Math.PI*.6)*.28*(1-down),pelvisY=.23+lift-(straight?0:d*.12),rot=straight?0:dir*(d*1.3+down*.2);
+  const p=shootP(g.kx,Math.max(.08,pelvisY),.97),bob=g.state==='aim'?Math.abs(Math.sin(g.time*5))*3:0;ellipse(c,shootP(g.kx,0,.97).x,shootP(0,0,.97).y+2,34,8,'#2f4a2a40');
+  c.save();c.translate(p.x,p.y-bob);c.rotate(rot);parkAvatar(c,0,0,sami,straight&&d>0?'wave':'hop-double',straight?g.time:.6+(g.state==='aim'?Math.sin(g.time*6)*.1:.4*d),.78*p.s,1);c.restore();}
  if(b.z<=1.02)drawBall();
  // Aim preview while dragging: the real flight path and a target in the goal.
  if(g.state==='aim'&&g.aiming){const a=g.aim,T=shootFlightTime(a.power),vx=a.gx/T,vz=1/T,vy=(a.gy-.06+SHOOT.G*T*T/2)/T,over=a.gy>1.04||Math.abs(a.gx)>1.05;c.fillStyle=over?'#ffb3a1':'#fff7d6';
-  for(let i=1;i<=16;i++){const t=T*i/16,p=shootP(vx*t,.06+vy*t-SHOOT.G*t*t/2,vz*t);c.globalAlpha=.3+.6*i/16;c.beginPath();c.arc(p.x,p.y,4*p.s/2.1+1,0,Math.PI*2);c.fill();}
-  const E=shootP(a.gx,a.gy,1);c.globalAlpha=1;c.strokeStyle=over?'#e0614a':'#ffd34d';c.lineWidth=3;c.beginPath();c.arc(E.x,E.y,14,0,Math.PI*2);c.moveTo(E.x-22,E.y);c.lineTo(E.x-8,E.y);c.moveTo(E.x+8,E.y);c.lineTo(E.x+22,E.y);c.moveTo(E.x,E.y-22);c.lineTo(E.x,E.y-8);c.moveTo(E.x,E.y+8);c.lineTo(E.x,E.y+22);c.stroke();
+  const shown=[.6,.42,.32][g.level];for(let i=1;i<=12;i++){const t=T*shown*i/12,p=shootP(vx*t,.06+vy*t-SHOOT.G*t*t/2,vz*t);c.globalAlpha=.85-.6*i/12;c.beginPath();c.arc(p.x,p.y,4*p.s/2.1+1,0,Math.PI*2);c.fill();}
+  const E=shootP(a.gx,a.gy,1);c.globalAlpha=g.level===0?.75:0;c.strokeStyle=over?'#e0614a':'#ffd34d';c.lineWidth=3;c.beginPath();c.arc(E.x,E.y,14,0,Math.PI*2);c.moveTo(E.x-22,E.y);c.lineTo(E.x-8,E.y);c.moveTo(E.x+8,E.y);c.lineTo(E.x+22,E.y);c.moveTo(E.x,E.y-22);c.lineTo(E.x,E.y-8);c.moveTo(E.x,E.y+8);c.lineTo(E.x,E.y+22);c.stroke();c.globalAlpha=1;
   rr(c,20,524,200,14,7,'#00000030');rr(c,20,524,Math.min(1,a.power/1.45)*200,14,7,a.power>1.2?'#e0614a':a.power>.9?'#f0c85a':'#8fd17a');text(c,'Force',120,516,13,'#fff8e6','700');}
  else if(g.state==='aim'){const p=shootP(0,.06,0),k=(Math.sin(g.time*4)+1)/2;c.globalAlpha=.55+.4*k;c.strokeStyle='#fff6c8';c.lineWidth=3;c.beginPath();c.arc(p.x,p.y-8,28+k*6,0,Math.PI*2);c.stroke();c.beginPath();c.moveTo(p.x,p.y-48);c.lineTo(p.x,p.y-96);c.moveTo(p.x-10,p.y-84);c.lineTo(p.x,p.y-98);c.lineTo(p.x+10,p.y-84);c.stroke();c.globalAlpha=1;}
  // The shooter: run-up then kick.
@@ -1439,7 +1440,7 @@ function shootSound(type){if(!sound)return;try{pingAudio=pingAudio||new(window.A
 function ballGame(){
  discover('ball');const sami=outside.find(n=>n.id==='sami'),fans=[outside.find(n=>n.id==='lina'),outside.find(n=>n.id==='alma')].filter(Boolean);let g=createShootGame(level());activeActivity={kind:'shoot',get game(){return g;}};
  let frame=0,last=null,closed=false,drag=null,shown='';const look={...profile};
- modal(activityHeader('Les tirs au but','Le terrain de jeux · avec Sami')+`<div class="shoot-board"><div class="shoot-face">${footballAvatar(profile,profile.name,'left')}</div><div class="shoot-dots" id="shootDots"></div><div class="shoot-face">${footballAvatar(sami,'Sami','right')}</div></div><canvas id="shootCanvas" class="ping-canvas" width="760" height="560" role="img" aria-label="Penalty vu de derrière toi : Sami dans le but"></canvas><p id="shootFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Tirer :</b> pose le doigt sur le ballon, glisse vers le but puis lâche. La direction vise ; plus tu glisses loin, plus le tir est fort et haut. Trop fort, la balle passe au-dessus ! Sami devine un côté : vise les coins.<br><b>Clavier :</b> ← → pour viser, ↑ ↓ pour la force, Espace pour tirer. Marque ${SHOOT.goals} buts sur ${SHOOT.shots} tirs.</p><div class="actions"><button id="shootAgain" class="secondary">Nouvelle série</button><button id="activityClose" class="secondary">Retour au terrain</button></div>`,
+ modal(activityHeader('Les tirs au but','Le terrain de jeux · avec Sami')+`<div class="shoot-board"><div class="shoot-face">${footballAvatar(profile,profile.name,'left')}</div><div class="shoot-dots" id="shootDots"></div><div class="shoot-face">${footballAvatar(sami,'Sami','right')}</div></div><canvas id="shootCanvas" class="ping-canvas" width="760" height="560" role="img" aria-label="Penalty vu de derrière toi : Sami dans le but"></canvas><p id="shootFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Tirer :</b> pose le doigt sur le ballon, glisse vers le but puis lâche. La direction vise ; plus tu glisses loin, plus le tir est fort et haut. Un tir n’est jamais parfaitement précis, et trop fort il part n’importe où (ou au-dessus) : dose ta force ! Sami devine un côté : vise les coins, sans trop t’approcher des poteaux.<br><b>Clavier :</b> ← → pour viser, ↑ ↓ pour la force, Espace pour tirer. Marque ${SHOOT.goals} buts sur ${SHOOT.shots} tirs.</p><div class="actions"><button id="shootAgain" class="secondary">Nouvelle série</button><button id="activityClose" class="secondary">Retour au terrain</button></div>`,
   ()=>{closed=true;cancelAnimationFrame(frame);$('#modal').onkeydown=null;$('#modal').onkeyup=null;if(pingAudio){pingAudio.close().catch(()=>{});pingAudio=null;}});
  const cv=$('#shootCanvas'),c=cv.getContext('2d');
  const pos=e=>{const r=cv.getBoundingClientRect(),k=760/(r.width||760);return {x:(e.clientX-r.left)*k,y:(e.clientY-r.top)*k};};

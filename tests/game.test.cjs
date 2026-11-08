@@ -137,10 +137,11 @@ ok('Lina invites to ping-pong by the table; serves, rallies, misses, a win and a
 ok('Penalties: aiming by drag, corner goals, saves, over the bar, a winning series and a clean close',()=>{t.closeModal();
  const run=g=>{for(let i=0;i<300&&(g.state==='runup'||g.state==='flight');i++)t.shootStep(g,1/60);return g.result;};
  let g=t.createShootGame(1);t.shootAim(g,0,-10);assert(!t.shootKick(g),'a tiny swipe does not shoot');
- const a=t.shootAim(g,-150,-140);assert(a.gx<-.8&&a.gy>.5&&a.gy<1);g.kTarget=1;assert(t.shootKick(g));g.kTarget=1;assert.equal(run(g),'goal');
+ const a=t.shootAim(g,-120,-140);assert(a.gx<-.6&&a.gy>.5&&a.gy<1);g.kTarget=1;assert(t.shootKick(g));g.kTarget=1;assert.equal(run(g),'goal');
  g=t.createShootGame(1);g.aim={gx:0,gy:.4,power:.4};t.shootKick(g);assert.equal(run(g),'save');assert(g.message.includes('coin'));
  g=t.createShootGame(1);g.aim={gx:.3,gy:1.3,power:1.4};t.shootKick(g);assert.equal(run(g),'miss');assert(g.message.includes('barre'));
- g=t.createShootGame(2);for(let k=0;k<5;k++){while(g.state!=='aim')t.shootStep(g,1/30);g.aim={gx:k%2?.85:-.85,gy:.6,power:.65};t.shootKick(g);g.kTarget=-g.aim.gx;run(g);}
+ let spread=0;for(let k=0;k<40;k++){const h=t.createShootGame(2);h.aim={gx:.5,gy:.5,power:.6};t.shootKick(h);spread=Math.max(spread,Math.abs(h.shot.gx-.5));}assert(spread>.05&&spread<=.17,'shots stray a little from the aim');
+ g=t.createShootGame(2);for(let k=0;k<5;k++){while(g.state!=='aim')t.shootStep(g,1/30);g.aim={gx:k%2?.7:-.7,gy:.6,power:.65};t.shootKick(g);g.kTarget=-g.aim.gx;run(g);}
  assert.equal(g.state,'over');assert(g.won);assert.equal(g.shots.length,5);
  rafTasks.clear();t.ballGame();assert(get('#modalContent').innerHTML.includes('shootCanvas'));Object.assign(t.activity.game,{state:'over',won:true,shots:[true,true,true,false,false]});frameAt(1000);frameAt(1016);assert(t.completed.has('ball'));
  get('#shootAgain').onclick();assert.equal(t.activity.game.shots.length,0);get('#activityClose').onclick();frameAt(2000);assert.equal(rafTasks.size,0);});
