@@ -12,7 +12,7 @@ const cleanProfile = p => {
  if(!['girl','boy'].includes(a.gender)) a.gender='girl'; if(!['long','short','curls'].includes(a.hairstyle)) a.hairstyle='long'; return a;
 };
 let profile=cleanProfile(saved.profile), created=!!saved.profile;
-const known=['cat','clock','duration','math','en','de','it','ball','puzzle','mystery','story','coloring','revision-fr','revision-de','revision-math','basket','movements','melody','rhythm','hopscotch','pingpong','swing','roundabout'];
+const known=['cat','clock','duration','math','en','de','it','ball','puzzle','mystery','story','coloring','revision-fr','revision-de','revision-math','basket','movements','melody','rhythm','hopscotch','pingpong','swing','roundabout','recycle'];
 let completed=new Set(Array.isArray(saved.completed)?saved.completed.filter(k=>known.includes(k)):[]);
 let catStage=['search','found','done'].includes(saved.catStage)?saved.catStage:'new';
 let discovered=new Set(Array.isArray(saved.discovered)?saved.discovered.filter(k=>known.includes(k)):[...completed]);
@@ -79,6 +79,7 @@ const outside=[
  {id:'sami',x:530,y:1112,name:'Sami',icon:'⚽',task:'ball',shirt:'#71a282',skin:'#bc875f',hair:'#3c302b',hairstyle:'short'},
  ...buildings.filter(b=>b.type!=='decor').map(b=>({id:b.type,x:b.x+b.w*.5,y:b.y+b.h+24,name:b.name,icon:b.type==='school'?'🏫':'🔔',task:'enter',destination:b.type})),
  {id:'schoolPreau',x:685,y:445,name:'Entrée de l’école par le préau',icon:'🚪',task:'enter',destination:'school'},
+ {id:'recycle',x:505,y:430,name:'Trier les déchets',icon:'♻️',task:'recycle'},
  {id:'hopscotch',x:699,y:590,name:'Jouer à la marelle',icon:'🔢',task:'hopscotch'},
  {id:'lina',x:600,y:652,name:'Lina',icon:'🏓',task:'pingpong',shirt:'#e07a5f',skin:'#c68a62',hair:'#2f2724',hairstyle:'long'},
  {id:'cat',x:730,y:149,name:'Moka',icon:'🐾',task:'findCat'}
@@ -344,7 +345,7 @@ function enterPrompt(destination){
 function interact(n){
  if(!n)return;
  if(Math.hypot(player.x-n.x,player.y-n.y)>=82){toast('Approche-toi pour parler ou entrer. '+moveHint());return;}
- if(n.task==='crossing')requestCrossing();else if(n.task==='park')parkActivity(n.id);else if(n.task==='decorate')editRoom();else if(n.task==='pet')careForCat();else if(n.task==='cat')catDialog();else if(n.task==='clock')watchQuiz();else if(n.task==='duration')durationQuiz();else if(n.task==='language')languageMenu();else if(n.task==='ball')ballGame();else if(n.task==='findCat')findCat();else if(n.task==='enter')enterPrompt(n.destination);else if(n.task==='math')mathQuiz();else if(n.task==='puzzle')puzzleGame();else if(n.task==='mystery')mysteryQuiz();else if(n.task==='room')enterRoom(n.destination);else if(n.task==='exit')exitRoom();else if(n.task==='wardrobe')profileEditor();else if(n.task==='journal')showMemories();else if(n.task==='stories')storyShelf();else if(n.task==='coloring')coloringShelf();else if(n.task==='library-puzzle')libraryPuzzle();else if(n.task==='revision-fr')revisionShelf('fr');else if(n.task==='revision-de')revisionShelf('de');else if(n.task==='revision-math')revisionShelf('math');else if(n.task==='basket')basketballGame();else if(n.task==='movements')movementGame();else if(n.task==='melody')melodyGame();else if(n.task==='rhythm')rhythmGame();else if(n.task==='hopscotch')hopscotchGame();else if(n.task==='pingpong')pingDialog();
+ if(n.task==='crossing')requestCrossing();else if(n.task==='park')parkActivity(n.id);else if(n.task==='decorate')editRoom();else if(n.task==='pet')careForCat();else if(n.task==='cat')catDialog();else if(n.task==='clock')watchQuiz();else if(n.task==='duration')durationQuiz();else if(n.task==='language')languageMenu();else if(n.task==='ball')ballGame();else if(n.task==='findCat')findCat();else if(n.task==='enter')enterPrompt(n.destination);else if(n.task==='math')mathQuiz();else if(n.task==='puzzle')puzzleGame();else if(n.task==='mystery')mysteryQuiz();else if(n.task==='room')enterRoom(n.destination);else if(n.task==='exit')exitRoom();else if(n.task==='wardrobe')profileEditor();else if(n.task==='journal')showMemories();else if(n.task==='stories')storyShelf();else if(n.task==='coloring')coloringShelf();else if(n.task==='library-puzzle')libraryPuzzle();else if(n.task==='revision-fr')revisionShelf('fr');else if(n.task==='revision-de')revisionShelf('de');else if(n.task==='revision-math')revisionShelf('math');else if(n.task==='basket')basketballGame();else if(n.task==='movements')movementGame();else if(n.task==='melody')melodyGame();else if(n.task==='rhythm')rhythmGame();else if(n.task==='hopscotch')hopscotchGame();else if(n.task==='pingpong')pingDialog();else if(n.task==='recycle')recycleGame();
 }
 let outsideReturn={x:1045,y:705};
 function enterRoom(s){
@@ -923,6 +924,7 @@ function drawSchoolHall(){const c=ctx;rr(c,370,310,770,65,5,'#d9dfc2');text(c,'B
 
 missions.push(...[{"id":"story","icon":"📖","title":"Les petites histoires","skill":"Lire et comprendre","who":"school"},{"id":"coloring","icon":"🎨","title":"Les cahiers de couleurs","skill":"Créer et colorier","who":"school"},{"id":"revision-fr","icon":"📕","title":"Mon livre de français","skill":"Français · réviser","who":"school"},{"id":"revision-de","icon":"📗","title":"Mon livre d’allemand","skill":"Allemand · réviser","who":"school"},{"id":"revision-math","icon":"📘","title":"Mon livre de maths","skill":"Maths · réviser","who":"school"},{"id":"basket","icon":"🏀","title":"Trois paniers pour l’équipe","skill":"Sport · précision","who":"school"},{"id":"movements","icon":"🤸","title":"Le circuit des mouvements","skill":"Sport · coordination","who":"school"},{"id":"melody","icon":"🎹","title":"La petite mélodie","skill":"Musique · mémoire","who":"school"},{"id":"rhythm","icon":"🥁","title":"Le jeu des rythmes","skill":"Musique · durées","who":"school"},{"id":"hopscotch","icon":"🔢","title":"À toi la marelle","skill":"Cour · nombres et ordre","who":"school"}]);
 missions.push({id:'swing',icon:'🌿',title:'Les étoiles de la balançoire',skill:'Rythme · l’élan au bon moment',who:'park'},{id:'roundabout',icon:'🎠',title:'Le tourniquet bien réglé',skill:'Contrôle · garder la bonne vitesse',who:'park'});
+missions.push({id:'recycle',icon:'♻️',title:'Le tri des déchets',skill:'Environnement · trier à Genève',who:'school'});
 missions.push({id:'pingpong',icon:'🏓',title:'Une partie de ping-pong',skill:'Sport · réflexes et coordination',who:'lina'});
 // Road coordinates: s runs along Grand-Lancy, d runs across it toward the school.
 // The Grand-Lancy road runs about 20 degrees from vertical, as on the satellite view; its centre line is x = 480 - 0.364 y.
@@ -1458,6 +1460,96 @@ function ballGame(){
  const animate=now=>{if(closed)return;if(document.hidden){last=null;frame=requestAnimationFrame(animate);return;}const dt=last===null?0:Math.min(.05,(now-last)/1000);last=now;
   shootStep(g,dt);g.events.splice(0).forEach(shootSound);drawShoot(c,g,look,sami,fans);sync();frame=requestAnimationFrame(animate);};
  sync();drawShoot(c,g,look,sami,fans);frame=requestAnimationFrame(animate);}
+
+// Sorting waste at the collection point next to the school, following the rules used in Geneva.
+const RECYCLE_BINS=[
+ {id:'verre',name:'Verre',sub:'bouteilles, bocaux',icon:'🍾',color:'#4f8a5b',lid:'#3c7049'},
+ {id:'pet',name:'PET',sub:'bouteilles de boisson',icon:'🧴',color:'#5d86b8',lid:'#45699a'},
+ {id:'papier',name:'Papier et carton',sub:'propres et secs',icon:'📰',color:'#8d9aa6',lid:'#6f7d8a'},
+ {id:'alu',name:'Alu et fer-blanc',sub:'boîtes, canettes',icon:'🥫',color:'#a9b0b3',lid:'#878f93'},
+ {id:'cuisine',name:'Déchets de cuisine',sub:'P’tite poubelle verte',icon:'🍂',color:'#7aa25a',lid:'#5f8744'},
+ {id:'textile',name:'Textiles',sub:'habits, chaussures',icon:'👕',color:'#e2b33c',lid:'#c69a2c'},
+ {id:'ordures',name:'Ordures ménagères',sub:'tout le reste',icon:'🗑️',color:'#4a5250',lid:'#353b3a'}];
+// level: from which age band the item appears (0 = everyone); trap: a classic mistake worth learning.
+const RECYCLE_ITEMS=[
+ {name:'Bouteille d’eau en PET',icon:'🧴',bin:'pet',level:0,why:'Les bouteilles de boisson en PET vont dans la collecte PET.'},
+ {name:'Bouteille en verre',icon:'🍾',bin:'verre',level:0,why:'Les bouteilles et les bocaux en verre vont au verre.'},
+ {name:'Vieux journal',icon:'📰',bin:'papier',level:0,why:'Le papier propre et sec se recycle avec le papier et carton.'},
+ {name:'Carton de livraison',icon:'📦',bin:'papier',level:0,why:'Un carton propre, aplati, va avec le papier et carton.'},
+ {name:'Boîte de conserve vide',icon:'🥫',bin:'alu',level:0,why:'Les boîtes de conserve vont avec l’alu et le fer-blanc.'},
+ {name:'Peau de banane',icon:'🍌',bin:'cuisine',level:0,why:'Les restes de fruits vont dans la P’tite poubelle verte : ils deviennent du compost et du biogaz.'},
+ {name:'Trognon de pomme',icon:'🍎',bin:'cuisine',level:0,why:'Les restes de fruits vont dans la P’tite poubelle verte.'},
+ {name:'Restes de pâtes',icon:'🍝',bin:'cuisine',level:0,why:'À Genève, les restes de repas vont aussi dans la P’tite poubelle verte.'},
+ {name:'T-shirt trop petit',icon:'👕',bin:'textile',level:0,why:'Les habits encore utilisables vont dans la collecte des textiles.'},
+ {name:'Baskets usées (en paire)',icon:'👟',bin:'textile',level:0,why:'Les chaussures, attachées par paire, vont avec les textiles.'},
+ {name:'Mouchoir usagé',icon:'🤧',bin:'ordures',level:0,why:'Un mouchoir sale ne se recycle pas : ordures ménagères.'},
+ {name:'Brique de lait',icon:'🥛',bin:'ordures',level:1,trap:true,why:'Piège ! La brique de lait mélange carton, plastique et alu : elle va aux ordures, pas au carton.'},
+ {name:'Boîte à pizza grasse',icon:'🍕',bin:'ordures',level:1,trap:true,why:'Piège ! Un carton gras ou sale ne se recycle pas : ordures ménagères.'},
+ {name:'Sachet de chips',icon:'🍟',bin:'ordures',level:1,trap:true,why:'Piège ! Ce n’est pas du PET ni de l’alu pur : ordures ménagères.'},
+ {name:'Marc de café',icon:'☕',bin:'cuisine',level:1,why:'Le marc de café va dans la P’tite poubelle verte.'},
+ {name:'Assiette cassée',icon:'🍽️',bin:'ordures',level:2,trap:true,why:'Piège ! La vaisselle n’est pas du verre de bouteille : elle va aux ordures.'},
+ {name:'Papier alu propre',icon:'🍫',bin:'alu',level:2,why:'Le papier d’aluminium propre va avec l’alu et le fer-blanc.'},
+ {name:'Cahier usé',icon:'📒',bin:'papier',level:2,why:'Les cahiers vont avec le papier et carton.'}];
+function createRecycleGame(lv=level()){const pool=RECYCLE_ITEMS.filter(i=>i.level<=lv),traps=shuffle(pool.filter(i=>i.trap)).slice(0,[0,2,3][lv]),rest=shuffle(pool.filter(i=>!i.trap)).slice(0,(lv?10:8)-traps.length);
+ return {level:lv,items:shuffle([...traps,...rest]),index:0,score:0,mistakes:0,state:'play',drag:null,anim:null,hint:null,fx:[],time:0,message:'Fais glisser le déchet dans la bonne poubelle (ou touche la poubelle).',firstTry:true};}
+function recycleItem(g){return g.items[g.index];}
+// Drop the current item on a bin: right first time scores; a mistake shows the right bin and why.
+function recycleDrop(g,binId){if(g.state!=='play')return null;const item=recycleItem(g),ok=item.bin===binId,bin=RECYCLE_BINS.find(b=>b.id===binId);
+ if(ok){if(g.firstTry)g.score++;g.anim={type:'in',bin:binId,t:0,from:g.drag?.pos||null};g.state='anim';g.message='Bravo ! '+item.why;g.fx.push({type:'stars',bin:binId,t:0,life:.9});}
+ else{g.mistakes++;g.firstTry=false;g.hint={bin:item.bin,t:0};g.anim={type:'back',t:0,from:g.drag?.pos||null};g.message='Pas dans « '+(bin?.name||'?')+' ». '+item.why;g.fx.push({type:'cross',bin:binId,t:0,life:.8});}
+ g.drag=null;return ok;}
+function recycleStep(g,dt){g.time+=dt;g.fx=g.fx.filter(f=>(f.t+=dt)<f.life);if(g.hint)g.hint.t+=dt;
+ if(g.anim){g.anim.t+=dt;if(g.anim.type==='in'&&g.anim.t>=.5){g.anim=null;g.hint=null;g.index++;g.firstTry=true;
+   if(g.index>=g.items.length){g.state='over';g.won=g.score>=Math.ceil(g.items.length*.8);g.message=(g.won?'Bravo ! ':'')+`${g.score} déchet${g.score>1?'s':''} bien trié${g.score>1?'s':''} du premier coup sur ${g.items.length}.`+(g.won?' Tu connais le tri genevois !':' Il en faut '+Math.ceil(g.items.length*.8)+' : une nouvelle partie ?');}
+   else g.state='play';}
+  else if(g.anim.type==='back'&&g.anim.t>=.4)g.anim=null;}
+ return g;}
+const recycleBinRect=i=>{const row=i<4?0:1,col=row?i-4:i,w=162,gap=18,x0=row?(760-(3*w+2*gap))/2:(760-(4*w+3*gap))/2;return {x:x0+col*(w+gap),y:row?420:290,w,h:118};};
+const RECYCLE_HOME={x:380,y:150};
+function recycleItemPos(g){if(g.drag)return g.drag.pos;const a=g.anim;if(a?.type==='in'){const r=recycleBinRect(RECYCLE_BINS.findIndex(b=>b.id===a.bin)),from=a.from||RECYCLE_HOME,k=Math.min(1,a.t/.5),e=k*k;return {x:from.x+(r.x+r.w/2-from.x)*e,y:from.y+(r.y+10-from.y)*e-Math.sin(Math.PI*k)*60,scale:1-.6*k};}
+ if(a?.type==='back'){const from=a.from||RECYCLE_HOME,k=Math.min(1,a.t/.4),e=1-(1-k)*(1-k);return {x:from.x+(RECYCLE_HOME.x-from.x)*e+Math.sin(k*Math.PI*6)*8*(1-k),y:from.y+(RECYCLE_HOME.y-from.y)*e,scale:1};}
+ return {x:RECYCLE_HOME.x,y:RECYCLE_HOME.y+Math.sin(g.time*2.4)*5,scale:1};}
+function drawRecycle(c,g){c.save();c.clearRect(0,0,760,560);
+ const wall=c.createLinearGradient(0,0,0,270);wall.addColorStop(0,'#b48759');wall.addColorStop(1,'#a77b4f');c.fillStyle=wall;c.fillRect(0,0,760,270);for(let x=0;x<760;x+=6){c.fillStyle=x%12?'#ad8054':'#b98d60';c.fillRect(x,0,3,270);}rr(c,0,150,760,12,0,'#e4bf4f');
+ const ground=c.createLinearGradient(0,270,0,560);ground.addColorStop(0,'#c3c6bb');ground.addColorStop(1,'#aeb1a6');c.fillStyle=ground;c.fillRect(0,262,760,298);
+ rr(c,14,12,240,36,10,'#25352fdd');text(c,'POINT DE COLLECTE · BELLE-COUR',134,35,12,'#f7f4e6','800');
+ const item=recycleItem(g);rr(c,500,12,246,36,10,'#25352fdd');text(c,g.state==='over'?'Partie terminée':'Déchet '+(g.index+1)+' / '+g.items.length+'  ·  ✓ '+g.score,623,35,14,'#f7f4e6','700');
+ RECYCLE_BINS.forEach((b,i)=>{const r=recycleBinRect(i),hint=g.hint&&g.hint.bin===b.id,hot=g.drag&&g.drag.over===b.id,open=g.anim?.type==='in'&&g.anim.bin===b.id?Math.sin(Math.min(1,g.anim.t/.5)*Math.PI):0;
+  ellipse(c,r.x+r.w/2,r.y+r.h+4,r.w*.48,8,'#00000022');
+  if(hint){c.globalAlpha=.5+.4*Math.sin(g.hint.t*8);rr(c,r.x-7,r.y-7,r.w+14,r.h+14,16,'#ffd34d');c.globalAlpha=1;}
+  if(hot)rr(c,r.x-5,r.y-5,r.w+10,r.h+10,14,'#ffffff88');
+  rr(c,r.x,r.y+18,r.w,r.h-18,10,b.color);rr(c,r.x+6,r.y+24,r.w-12,6,3,'#ffffff22');
+  c.save();c.translate(r.x+8,r.y+18);c.rotate(-open*.5);rr(c,-8,-18,r.w,20,8,b.lid);rr(c,r.w/2-30,-12,44,7,3,'#00000040');c.restore();
+  c.font='30px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.fillStyle='#ffffff';c.fillText(b.icon,r.x+r.w/2,r.y+66);
+  text(c,b.name,r.x+r.w/2,r.y+90,14,'#ffffff','800');text(c,b.sub,r.x+r.w/2,r.y+108,11,'#ffffffcc','600');
+  if(hint)text(c,'ici !',r.x+r.w/2,r.y-14,16,'#fff2b3','800');});
+ for(const f of g.fx){const i=RECYCLE_BINS.findIndex(b=>b.id===f.bin),r=recycleBinRect(i),k=f.t/f.life,cx=r.x+r.w/2,cy=r.y+10;c.globalAlpha=1-k;
+  if(f.type==='stars')for(let s=0;s<8;s++){const a=s*Math.PI/4;text(c,'✦',cx+Math.cos(a)*(10+k*60),cy+Math.sin(a)*(10+k*40)-k*20,18,'#ffd34d','800');}
+  else{c.strokeStyle='#e0614a';c.lineWidth=6;c.beginPath();c.moveTo(cx-18,cy+30);c.lineTo(cx+18,cy+66);c.moveTo(cx+18,cy+30);c.lineTo(cx-18,cy+66);c.stroke();}}
+ c.globalAlpha=1;
+ if(item&&g.state!=='over'){const p=recycleItemPos(g),sc=p.scale||1;if(!g.drag&&!g.anim){rr(c,RECYCLE_HOME.x-120,RECYCLE_HOME.y-82,240,170,18,'#fffdf2ee');}
+  ellipse(c,p.x,p.y+46*sc,34*sc,8*sc,'#00000025');c.save();c.translate(p.x,p.y);c.rotate(g.drag?Math.sin(g.time*12)*.06:0);c.scale(sc,sc);c.font='76px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#3d4644';c.fillText(item.icon,0,0);c.restore();c.textBaseline='alphabetic';
+  if(!g.drag&&!g.anim){text(c,item.name,RECYCLE_HOME.x,RECYCLE_HOME.y+72,17,'#2f4a3c','800');if(g.index===0&&!g.hint)text(c,'↓ glisse-moi dans la bonne poubelle',RECYCLE_HOME.x,RECYCLE_HOME.y+122+Math.sin(g.time*4)*3,14,'#fff6e0','800');}}
+ if(g.state==='over'){rr(c,180,90,400,120,18,'#fffdf2ee');text(c,g.won?'Super tri !':'Encore un essai ?',380,140,28,'#2f5a45','800');text(c,g.score+' / '+g.items.length+' du premier coup',380,180,18,'#4f5d4f','700');
+  if(g.won)for(let i=0;i<46;i++){const x=(i*97+g.time*55*(1+i%3))%760,y=(i*53+g.time*110*(1+i%2))%560;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}}
+ c.restore();}
+function recycleGame(){
+ discover('recycle');let g=createRecycleGame(level());activeActivity={kind:'recycle',get game(){return g;}};let frame=0,last=null,closed=false,shown='';
+ modal(activityHeader('Le tri des déchets','Le point de collecte · à Genève')+`<canvas id="recycleCanvas" class="ping-canvas" width="760" height="560" role="img" aria-label="Un déchet à trier et sept poubelles de tri"></canvas><p id="recycleFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Trier :</b> fais glisser le déchet sur la bonne poubelle, ou touche directement la poubelle. Si tu te trompes, la bonne poubelle s’allume et tu apprends pourquoi. Attention aux pièges !</p><div class="actions"><button id="recycleAgain" class="secondary">Nouvelle partie</button><button id="activityClose" class="secondary">Retour</button></div>`,
+  ()=>{closed=true;cancelAnimationFrame(frame);});
+ const cv=$('#recycleCanvas'),c=cv.getContext('2d');
+ const pos=e=>{const r=cv.getBoundingClientRect(),k=760/(r.width||760);return {x:(e.clientX-r.left)*k,y:(e.clientY-r.top)*k};};
+ const binAt=p=>{const i=RECYCLE_BINS.findIndex((b,j)=>{const r=recycleBinRect(j);return p.x>=r.x-8&&p.x<=r.x+r.w+8&&p.y>=r.y-10&&p.y<=r.y+r.h+8;});return i<0?null:RECYCLE_BINS[i].id;};
+ const sync=()=>{const key=g.state+g.index+g.message;if(key===shown)return;shown=key;$('#recycleFeedback').textContent=g.message;$('#recycleFeedback').className='feedback'+(g.state==='over'&&g.won?' success':'');if(g.state==='over'&&g.won&&!g.awarded){g.awarded=true;award('recycle');}};
+ cv.onpointerdown=e=>{e.preventDefault?.();if(g.state!=='play'||g.anim)return;const p=pos(e),bin=binAt(p);if(bin){recycleDrop(g,bin);recycleSound(g.anim?.type==='in'?'ok':'no');sync();return;}
+  if(Math.hypot(p.x-RECYCLE_HOME.x,p.y-RECYCLE_HOME.y)<110){cv.setPointerCapture?.(e.pointerId);g.drag={id:e.pointerId,pos:p,over:null};}};
+ cv.onpointermove=e=>{if(!g.drag||e.pointerId!==g.drag.id)return;const p=pos(e);g.drag.pos=p;g.drag.over=binAt(p);};
+ cv.onpointerup=cv.onpointercancel=e=>{if(!g.drag)return;const over=e.type==='pointercancel'?null:binAt(g.drag.pos);if(over){recycleDrop(g,over);recycleSound(g.anim?.type==='in'?'ok':'no');}else{g.anim={type:'back',t:0,from:g.drag.pos};g.drag=null;}sync();};
+ $('#recycleAgain').onclick=()=>{g=createRecycleGame(level());shown='';sync();};bindActivityClose();
+ const animate=now=>{if(closed)return;const dt=last===null?0:Math.min(.05,(now-last)/1000);last=now;const before=g.state;recycleStep(g,dt);if(before!=='over'&&g.state==='over')recycleSound(g.won?'win':'no');drawRecycle(c,g);sync();frame=requestAnimationFrame(animate);};
+ sync();drawRecycle(c,g);frame=requestAnimationFrame(animate);}
+function recycleSound(type){if(!sound)return;try{parkAudio=parkAudio||new(window.AudioContext||window.webkitAudioContext)();const a=parkAudio,t=a.currentTime;const notes={ok:[[660,.08],[880,.12]],no:[[260,.16]],win:[[523,.12],[659,.12],[784,.12],[1046,.25]]}[type]||[];
+ notes.forEach(([f,d],i)=>{const o=a.createOscillator(),gn=a.createGain();o.type='sine';o.frequency.value=f;o.connect(gn);gn.connect(a.destination);const s0=t+i*.09;gn.gain.setValueAtTime(.0001,s0);gn.gain.exponentialRampToValueAtTime(.11,s0+.005);gn.gain.exponentialRampToValueAtTime(.0001,s0+d);o.start(s0);o.stop(s0+d+.02);});}catch{}}
 
 const decorColors=['#8eaa88','#8bafc2','#c997ab','#d5b66f','#c28f6c','#b29ac8'];
 const decorTypes={bed:['Lit','🛏️'],desk:['Bureau','✏️'],shelf:['Bibliothèque','📚'],wardrobe:['Armoire','👕'],toybox:['Coffre à jouets','🧺'],teddy:['Peluche','🧸'],ball:['Ballon','⚽'],rug:['Tapis','🟠'],plant:['Plante','🪴']};
