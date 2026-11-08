@@ -101,7 +101,7 @@ for(let i=0;i<200;i++){
  if(x>545&&x<785&&y>790&&y<1010)continue;
  if(Math.abs(x-laneXEarly(y))<58)continue;
  if(y>880&&y<1020)continue;
- if(x>410&&x<625&&y>1030&&y<1225)continue; // Sami's little football pitch
+ if(x>410&&x<625&&y>1030&&y<1225)continue; // open lawn where Sami plays football
  if(x<620&&y>=1020&&y<1050)continue;
  if(x<300&&y>690&&y<960)continue;
  if(x>garageAccess.x-35&&x<garageAccess.x+garageAccess.w+35&&y>garageAccess.y-20)continue;
@@ -556,10 +556,6 @@ function outdoorGround(){const c=ctx;
  for(const l of lanes.filter(l=>!l.paved)){rr(c,l.x-3,l.y+3,l.w+6,l.h,5,'#c5c6b4');rr(c,l.x,l.y,l.w,l.h,4,'#ded9c6');}
  for(const [i,x]of [818,858,910,950].entries()){c.save();c.translate(x,163);c.rotate(Math.PI/2);parkedCar(-10,-18,['#c9c9c4','#b5574b','#c9c9c4','#7f9a8c'][i]);c.restore();}
  rr(c,1000,176,9,13,2,'#5c84b8');rr(c,1003,179,3,7,1,'#f4f1e6');rr(c,1003,189,2,10,0,'#7d8a85');
- // Sami's little football pitch on the lawn south of the Pampres street, with a mini goal.
- rr(c,428,1046,186,158,10,'#cbdcae');c.strokeStyle='#f6f8ee';c.lineWidth=2.5;c.strokeRect(436,1054,170,142);c.beginPath();c.moveTo(521,1054);c.lineTo(521,1196);c.stroke();c.beginPath();c.arc(521,1125,20,0,Math.PI*2);c.stroke();
- c.strokeRect(436,1100,22,50);c.strokeStyle='#ffffff';c.lineWidth=4;c.beginPath();c.moveTo(440,1104);c.lineTo(440,1086);c.lineTo(440,1146);c.stroke();rr(c,426,1100,14,46,2,'#ffffff66');c.strokeStyle='#ffffffaa';c.lineWidth=1;for(let y=1102;y<1146;y+=6){c.beginPath();c.moveTo(427,y);c.lineTo(440,y);c.stroke();}
- ellipse(c,566,1150,6,6,'#ffffff');ellipse(c,565,1149,2.5,2.5,'#2f3533');
  // In front of the school: bike racks and a large boulder at the corner of the play area (photo).
  c.strokeStyle='#8e9c98';c.lineWidth=2;for(let i=0;i<4;i++){c.beginPath();c.arc(380+i*14,632,5,Math.PI,0);c.lineTo(385+i*14,640);c.moveTo(375+i*14,632);c.lineTo(375+i*14,640);c.stroke();}
  ellipse(c,445,652,15,8,'#9c9a8f55');ellipse(c,442,647,13,9,'#ddd7c9');ellipse(c,439,644,6,4,'#f1ede3');
@@ -651,7 +647,7 @@ function render(){
  if(scene==='outside'){outdoorGround();drawTraffic();drawPark();}else indoorGround();
  const es=entities();let objects=[];
  if(scene==='outside')objects=[...trees.map(t=>({y:t.y,draw:()=>tree(t)})),...fixtures.map(f=>({y:f.y+f.h,draw:()=>drawFixture(f)})),...buildings.map(b=>({y:b.y+b.h,draw:()=>{ctx.save();if(player.x>b.x-8&&player.x<b.x+b.w+20&&player.y>b.y-b.height-30&&player.y<b.y)ctx.globalAlpha=.42;building(b);ctx.restore();}}))];
- for(const n of es){if(n.id==='cat')objects.push({y:n.y,draw:()=>catDraw(n)});else if(n.shirt)objects.push({y:n.y,draw:()=>character(ctx,n.x,n.y,n,false)});}
+ for(const n of es){if(n.id==='cat')objects.push({y:n.y,draw:()=>catDraw(n)});else if(n.shirt)objects.push({y:n.y,draw:()=>{character(ctx,n.x,n.y,n,false);if(n.id==='sami'){ellipse(ctx,n.x+15,n.y+3,6,2.5,'#49653c30');ellipse(ctx,n.x+14,n.y-2,5,5,'#ffffff');ellipse(ctx,n.x+14,n.y-2,1.8,1.8,'#2f3533');for(const [dx,dy]of [[-3,-3],[3,-3],[-3,2],[3,2]])ellipse(ctx,n.x+14+dx,n.y-2+dy,1,1,'#2f3533');}}});}
  objects.push({y:player.y,draw:()=>{
  ellipse(ctx,player.x,player.y+3,24,10,'#f9f2c371');ctx.strokeStyle='#ffffdf';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(player.x,player.y+3,22,9,0,0,Math.PI*2);ctx.stroke();character(ctx,player.x,player.y,{...profile,isPlayer:true},keys.size>0||!!stick?.active);
  if(catStage==='found'){ctx.save();ctx.translate(player.x,player.y-24);ctx.scale(.65,.65);catDraw({x:0,y:0},ctx);ctx.restore();ctx.strokeStyle=profile.skin;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(player.x-12,player.y-31);ctx.quadraticCurveTo(player.x,player.y-16,player.x+13,player.y-29);ctx.stroke();}
@@ -1445,7 +1441,7 @@ function shootSound(type){if(!sound)return;try{pingAudio=pingAudio||new(window.A
 function ballGame(){
  discover('ball');const sami=outside.find(n=>n.id==='sami'),fans=[outside.find(n=>n.id==='lina'),outside.find(n=>n.id==='alma')].filter(Boolean);let g=createShootGame(level());activeActivity={kind:'shoot',get game(){return g;}};
  let frame=0,last=null,closed=false,drag=null,shown='';const look={...profile};
- modal(activityHeader('Les tirs au but','Le petit terrain de foot · avec Sami')+`<div class="shoot-board"><div class="shoot-face">${footballAvatar(profile,profile.name,'left')}</div><div class="shoot-dots" id="shootDots"></div><div class="shoot-face">${footballAvatar(sami,'Sami','right')}</div></div><canvas id="shootCanvas" class="ping-canvas" width="760" height="560" role="img" aria-label="Penalty vu de derrière toi : Sami dans le but"></canvas><p id="shootFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Tirer :</b> pose le doigt sur le ballon, glisse vers le but puis lâche. La direction vise ; plus tu glisses loin, plus le tir est fort et haut. Un tir n’est jamais parfaitement précis, et trop fort il part n’importe où (ou au-dessus) : dose ta force ! Sami devine un côté : vise les coins, sans trop t’approcher des poteaux.<br><b>Clavier :</b> ← → pour viser, ↑ ↓ pour la force, Espace pour tirer. Marque ${SHOOT.goals} buts sur ${SHOOT.shots} tirs.</p><div class="actions"><button id="shootAgain" class="secondary">Nouvelle série</button><button id="activityClose" class="secondary">Retour au terrain</button></div>`,
+ modal(activityHeader('Les tirs au but','Sur la pelouse · avec Sami')+`<div class="shoot-board"><div class="shoot-face">${footballAvatar(profile,profile.name,'left')}</div><div class="shoot-dots" id="shootDots"></div><div class="shoot-face">${footballAvatar(sami,'Sami','right')}</div></div><canvas id="shootCanvas" class="ping-canvas" width="760" height="560" role="img" aria-label="Penalty vu de derrière toi : Sami dans le but"></canvas><p id="shootFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Tirer :</b> pose le doigt sur le ballon, glisse vers le but puis lâche. La direction vise ; plus tu glisses loin, plus le tir est fort et haut. Un tir n’est jamais parfaitement précis, et trop fort il part n’importe où (ou au-dessus) : dose ta force ! Sami devine un côté : vise les coins, sans trop t’approcher des poteaux.<br><b>Clavier :</b> ← → pour viser, ↑ ↓ pour la force, Espace pour tirer. Marque ${SHOOT.goals} buts sur ${SHOOT.shots} tirs.</p><div class="actions"><button id="shootAgain" class="secondary">Nouvelle série</button><button id="activityClose" class="secondary">Retour au terrain</button></div>`,
   ()=>{closed=true;cancelAnimationFrame(frame);$('#modal').onkeydown=null;$('#modal').onkeyup=null;if(pingAudio){pingAudio.close().catch(()=>{});pingAudio=null;}});
  const cv=$('#shootCanvas'),c=cv.getContext('2d');
  const pos=e=>{const r=cv.getBoundingClientRect(),k=760/(r.width||760);return {x:(e.clientX-r.left)*k,y:(e.clientY-r.top)*k};};
