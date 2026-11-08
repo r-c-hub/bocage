@@ -36,3 +36,6 @@ body.touch.immersive .transport button{padding:9px 12px;font-size:20px}
 /* Ping-pong with Lina */
 .ping-canvas{display:block;width:100%;height:auto;aspect-ratio:760/560;border-radius:16px;margin-top:14px;touch-action:none;user-select:none;cursor:none;background:#c98f78}
 @media(max-width:500px){.ping-canvas{border-radius:10px;margin-left:-6px;width:calc(100% + 12px)}}
+/* Penalties with Sami */
+.shoot-board{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}.shoot-face .football-player{position:static;display:block;width:52px;height:70px}
+.shoot-dots{display:flex;gap:8px}.shoot-dots span{width:18px;height:18px;border-radius:50%;border:2px solid #9bb08f;background:#f4f6ee}.shoot-dots .goal{background:#4f9a5f;border-color:#3d7d4b}.shoot-dots .miss{background:#d8d2c3;border-color:#b9b2a2}
