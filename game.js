@@ -1504,7 +1504,9 @@ function recycleStep(g,dt){g.time+=dt;g.fx=g.fx.filter(f=>(f.t+=dt)<f.life);if(g
    else g.state='play';}
   else if(g.anim.type==='back'&&g.anim.t>=.4)g.anim=null;}
  return g;}
-const recycleBinRect=i=>{const row=i<4?0:1,col=row?i-4:i,w=162,gap=18,x0=row?(760-(3*w+2*gap))/2:(760-(4*w+3*gap))/2;return {x:x0+col*(w+gap),y:row?420:290,w,h:118};};
+const recycleBinRect=i=>{const row=i<4?0:1,col=row?i-4:i,w=178,gap=10,x0=row?(760-(3*w+2*gap))/2:(760-(4*w+3*gap))/2;return {x:x0+col*(w+gap),y:row?418:280,w,h:130};};
+// Large text that shrinks only if it would not fit.
+function fitText(c,str,x,y,size,max,color,weight='800'){c.font=`${weight} ${size}px Segoe UI,Arial`;while(size>10&&c.measureText(str).width>max){size--;c.font=`${weight} ${size}px Segoe UI,Arial`;}text(c,str,x,y,size,color,weight);}
 const RECYCLE_HOME={x:380,y:150};
 function recycleItemPos(g){if(g.drag)return g.drag.pos;const a=g.anim;if(a?.type==='in'){const r=recycleBinRect(RECYCLE_BINS.findIndex(b=>b.id===a.bin)),from=a.from||RECYCLE_HOME,k=Math.min(1,a.t/.5),e=k*k;return {x:from.x+(r.x+r.w/2-from.x)*e,y:from.y+(r.y+10-from.y)*e-Math.sin(Math.PI*k)*60,scale:1-.6*k};}
  if(a?.type==='back'){const from=a.from||RECYCLE_HOME,k=Math.min(1,a.t/.4),e=1-(1-k)*(1-k);return {x:from.x+(RECYCLE_HOME.x-from.x)*e+Math.sin(k*Math.PI*6)*8*(1-k),y:from.y+(RECYCLE_HOME.y-from.y)*e,scale:1};}
@@ -1513,23 +1515,23 @@ function drawRecycle(c,g){c.save();c.clearRect(0,0,760,560);
  const wall=c.createLinearGradient(0,0,0,270);wall.addColorStop(0,'#b48759');wall.addColorStop(1,'#a77b4f');c.fillStyle=wall;c.fillRect(0,0,760,270);for(let x=0;x<760;x+=6){c.fillStyle=x%12?'#ad8054':'#b98d60';c.fillRect(x,0,3,270);}rr(c,0,150,760,12,0,'#e4bf4f');
  const ground=c.createLinearGradient(0,270,0,560);ground.addColorStop(0,'#c3c6bb');ground.addColorStop(1,'#aeb1a6');c.fillStyle=ground;c.fillRect(0,262,760,298);
  rr(c,14,12,240,36,10,'#25352fdd');text(c,'POINT DE COLLECTE · BELLE-COUR',134,35,12,'#f7f4e6','800');
- const item=recycleItem(g);rr(c,500,12,246,36,10,'#25352fdd');text(c,g.state==='over'?'Partie terminée':'Déchet '+(g.index+1)+' / '+g.items.length+'  ·  ✓ '+g.score,623,35,14,'#f7f4e6','700');
+ const item=recycleItem(g);rr(c,500,12,246,36,10,'#25352fdd');text(c,g.state==='over'?'Partie terminée':'Déchet '+(g.index+1)+' / '+g.items.length+'  ·  ✓ '+g.score,623,36,17,'#f7f4e6','800');
  RECYCLE_BINS.forEach((b,i)=>{const r=recycleBinRect(i),hint=g.hint&&g.hint.bin===b.id,hot=g.drag&&g.drag.over===b.id,open=g.anim?.type==='in'&&g.anim.bin===b.id?Math.sin(Math.min(1,g.anim.t/.5)*Math.PI):0;
   ellipse(c,r.x+r.w/2,r.y+r.h+4,r.w*.48,8,'#00000022');
   if(hint){c.globalAlpha=.5+.4*Math.sin(g.hint.t*8);rr(c,r.x-7,r.y-7,r.w+14,r.h+14,16,'#ffd34d');c.globalAlpha=1;}
   if(hot)rr(c,r.x-5,r.y-5,r.w+10,r.h+10,14,'#ffffff88');
   rr(c,r.x,r.y+18,r.w,r.h-18,10,b.color);rr(c,r.x+6,r.y+24,r.w-12,6,3,'#ffffff22');
   c.save();c.translate(r.x+8,r.y+18);c.rotate(-open*.5);rr(c,-8,-18,r.w,20,8,b.lid);rr(c,r.w/2-30,-12,44,7,3,'#00000040');c.restore();
-  c.font='30px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.fillStyle='#ffffff';c.fillText(b.icon,r.x+r.w/2,r.y+66);
-  text(c,b.name,r.x+r.w/2,r.y+90,14,'#ffffff','800');text(c,b.sub,r.x+r.w/2,r.y+108,11,'#ffffffcc','600');
-  if(hint)text(c,'ici !',r.x+r.w/2,r.y-14,16,'#fff2b3','800');});
+  c.font='40px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.fillStyle='#ffffff';c.fillText(b.icon,r.x+r.w/2,r.y+68);
+  fitText(c,b.name,r.x+r.w/2,r.y+98,20,r.w-10,'#ffffff');fitText(c,b.sub,r.x+r.w/2,r.y+120,15,r.w-10,'#ffffffdd','700');
+  if(hint)text(c,'ici !',r.x+r.w/2,r.y-12,20,'#fff2b3','800');});
  for(const f of g.fx){const i=RECYCLE_BINS.findIndex(b=>b.id===f.bin),r=recycleBinRect(i),k=f.t/f.life,cx=r.x+r.w/2,cy=r.y+10;c.globalAlpha=1-k;
   if(f.type==='stars')for(let s=0;s<8;s++){const a=s*Math.PI/4;text(c,'✦',cx+Math.cos(a)*(10+k*60),cy+Math.sin(a)*(10+k*40)-k*20,18,'#ffd34d','800');}
   else{c.strokeStyle='#e0614a';c.lineWidth=6;c.beginPath();c.moveTo(cx-18,cy+30);c.lineTo(cx+18,cy+66);c.moveTo(cx+18,cy+30);c.lineTo(cx-18,cy+66);c.stroke();}}
  c.globalAlpha=1;
- if(item&&g.state!=='over'){const p=recycleItemPos(g),sc=p.scale||1;if(!g.drag&&!g.anim){rr(c,RECYCLE_HOME.x-120,RECYCLE_HOME.y-82,240,170,18,'#fffdf2ee');}
-  ellipse(c,p.x,p.y+46*sc,34*sc,8*sc,'#00000025');c.save();c.translate(p.x,p.y);c.rotate(g.drag?Math.sin(g.time*12)*.06:0);c.scale(sc,sc);c.font='76px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#3d4644';c.fillText(item.icon,0,0);c.restore();c.textBaseline='alphabetic';
-  if(!g.drag&&!g.anim){text(c,item.name,RECYCLE_HOME.x,RECYCLE_HOME.y+72,17,'#2f4a3c','800');if(g.index===0&&!g.hint)text(c,'↓ glisse-moi dans la bonne poubelle',RECYCLE_HOME.x,RECYCLE_HOME.y+122+Math.sin(g.time*4)*3,14,'#fff6e0','800');}}
+ if(item&&g.state!=='over'){const p=recycleItemPos(g),sc=p.scale||1;if(!g.drag&&!g.anim){rr(c,RECYCLE_HOME.x-170,RECYCLE_HOME.y-92,340,184,18,'#fffdf2ee');}
+  ellipse(c,p.x,p.y+46*sc,34*sc,8*sc,'#00000025');c.save();c.translate(p.x,p.y);c.rotate(g.drag?Math.sin(g.time*12)*.06:0);c.scale(sc,sc);c.font='92px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#3d4644';c.fillText(item.icon,0,0);c.restore();c.textBaseline='alphabetic';
+  if(!g.drag&&!g.anim){fitText(c,item.name,RECYCLE_HOME.x,RECYCLE_HOME.y+78,25,320,'#2f4a3c');if(g.index===0&&!g.hint){const y=RECYCLE_HOME.y+118+Math.sin(g.time*4)*3;rr(c,RECYCLE_HOME.x-160,y-19,320,26,13,'#25352fcc');text(c,'↓ glisse-moi dans la bonne poubelle',RECYCLE_HOME.x,y,16,'#fff6e0','800');}}}
  if(g.state==='over'){rr(c,180,90,400,120,18,'#fffdf2ee');text(c,g.won?'Super tri !':'Encore un essai ?',380,140,28,'#2f5a45','800');text(c,g.score+' / '+g.items.length+' du premier coup',380,180,18,'#4f5d4f','700');
   if(g.won)for(let i=0;i<46;i++){const x=(i*97+g.time*55*(1+i%3))%760,y=(i*53+g.time*110*(1+i%2))%560;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}}
  c.restore();}
