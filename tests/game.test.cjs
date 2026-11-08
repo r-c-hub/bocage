@@ -135,7 +135,7 @@ ok('Lina invites to ping-pong by the table; serves, rallies, misses, a win and a
  for(let i=1;i<=40&&t.activity.game.state!=='over';i++)frameAt(1000+i*16);frameAt(2000);assert.equal(t.activity.game.winner,'me');assert(t.completed.has('pingpong'));assert.equal(rafTasks.size,1);
  get('#pingRestart').onclick();assert.equal(t.activity.game.score.me,0);get('#activityClose').onclick();frameAt(3000);assert.equal(rafTasks.size,0);});
 ok('Penalties: aiming by drag, corner goals, saves, over the bar, a winning series and a clean close',()=>{t.closeModal();
- const run=g=>{for(let i=0;i<200&&g.state==='flight';i++)t.shootStep(g,1/60);return g.result;};
+ const run=g=>{for(let i=0;i<300&&(g.state==='runup'||g.state==='flight');i++)t.shootStep(g,1/60);return g.result;};
  let g=t.createShootGame(1);t.shootAim(g,0,-10);assert(!t.shootKick(g),'a tiny swipe does not shoot');
  const a=t.shootAim(g,-150,-140);assert(a.gx<-.8&&a.gy>.5&&a.gy<1);g.kTarget=1;assert(t.shootKick(g));g.kTarget=1;assert.equal(run(g),'goal');
  g=t.createShootGame(1);g.aim={gx:0,gy:.4,power:.4};t.shootKick(g);assert.equal(run(g),'save');assert(g.message.includes('coin'));
