@@ -75,7 +75,7 @@ const outside=[
  {id:'mia',x:1005,y:625,name:'Mia',icon:'🐈',task:'cat',shirt:'#b18cb2',skin:'#e3b38d',hair:'#5d4032',hairstyle:'long'},
  {id:'noe',x:1025,y:440,name:'Noé',icon:'⌚',task:'clock',shirt:'#d5ae5e',skin:'#b77e56',hair:'#3f3029',hairstyle:'curls'},
  {id:'leo',x:1035,y:875,name:'Léo',icon:'⏳',task:'duration',shirt:'#7f9bbb',skin:'#f1caa5',hair:'#ad7346',hairstyle:'short'},
- {id:'alma',x:755,y:625,name:'Alma',icon:'💬',task:'language',shirt:'#cb7957',skin:'#a97552',hair:'#302b28',hairstyle:'curls'},
+ {id:'alma',x:1258,y:890,name:'Alma',icon:'💬',task:'language',shirt:'#cb7957',skin:'#a97552',hair:'#302b28',hairstyle:'curls'},
  {id:'sami',x:530,y:1112,name:'Sami',icon:'⚽',task:'ball',shirt:'#71a282',skin:'#bc875f',hair:'#3c302b',hairstyle:'short'},
  ...buildings.filter(b=>b.type!=='decor').map(b=>({id:b.type,x:b.x+b.w*.5,y:b.y+b.h+24,name:b.name,icon:b.type==='school'?'🏫':'🔔',task:'enter',destination:b.type})),
  {id:'schoolPreau',x:685,y:445,name:'Entrée de l’école par le préau',icon:'🚪',task:'enter',destination:'school'},
