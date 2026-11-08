@@ -34,5 +34,5 @@ body.touch.immersive .transport button{padding:9px 12px;font-size:20px}
 @media(prefers-reduced-motion:reduce){body.touch .touch-pad button#touchInteract.ready{animation:none}}
 
 /* Ping-pong with Lina */
-.ping-canvas{display:block;width:100%;height:auto;aspect-ratio:760/460;border-radius:16px;margin-top:14px;touch-action:none;user-select:none;cursor:none;background:#c98f78}
+.ping-canvas{display:block;width:100%;height:auto;aspect-ratio:760/560;border-radius:16px;margin-top:14px;touch-action:none;user-select:none;cursor:none;background:#c98f78}
 @media(max-width:500px){.ping-canvas{border-radius:10px;margin-left:-6px;width:calc(100% + 12px)}}
