@@ -85,6 +85,7 @@ Les étapes suivantes les plus utiles sont la cartographie réelle du quartier, 
 - Boutons piétons des deux côtés : E ou Entrée à proximité, attente de l’arrêt des voitures, puis dix secondes de vert. Hors du passage, la chaussée est bloquée avec un avertissement. Une traversée déjà engagée peut se terminer ; les voitures restent arrêtées jusqu’à sa fin. Le temps de jeu est suspendu dans les dialogues.
 - Parc de l’autre côté : balançoire, cabane avec toboggan, tourniquet, de droite à gauche. Chaque jeu propose une petite animation avec le personnage.
 - Ping-pong avec Lina, près de la table de la cour de l’école : glissez le doigt ou la souris (ou ← → / Q D) pour placer la raquette sous la balle ; le bord de la raquette vise sur le côté, bouger en frappant tape plus fort. Premier à 7 points ; Lina s’adapte à l’âge. Une étoile à la première victoire.
+- Tirs au but avec Sami, au terrain de jeux : posez le doigt sur le ballon, glissez vers le but et lâchez. La direction vise, la longueur du geste règle la force (trop fort, la balle passe au-dessus). Sami plonge en devinant un côté, plus ou moins bien selon l’âge : visez les coins. 3 buts sur 5 tirs rapportent une étoile.
 - Chez soi : approchez-vous de « Décorer ta chambre ». Ajoutez des meubles et jouets, choisissez leur couleur et placez-les sur les cases libres ; les couloirs restent dégagés. La décoration se sauvegarde automatiquement.
 - Moustache vit chez soi : approchez-vous du chat pour servir des croquettes ou remplir sa gamelle d’eau. Les gamelles et la décoration sont incluses dans l’export/import.
 - Zoom borné entre la vue globale et la vue proche centrée sur le personnage.
@@ -97,3 +98,5 @@ Les trois jeux ont des scènes animées dessinées : balançoire avec chaînes f
 
 
 La balançoire et le tourniquet se pilotent en continu : cliquez pour donner une impulsion, ou maintenez le bouton ↑ pour prendre de l’élan / accélérer. Le bouton ↓ freine. Les touches ↑ et ↓ fonctionnent aussi. Sans action, le mouvement ralentit naturellement ; la jauge indique l’élan / la hauteur ou la vitesse. Pause conserve la position ; Recommencer remet le jeu au départ.
+
+Chacun a aussi un défi joué directement sur la scène. **Balançoire :** touchez la scène pour prendre de l’élan ; tout en haut du balancement, quand le cercle doré « Maintenant ! » apparaît, l’élan compte double. Attrapez les 5 étoiles placées de plus en plus haut. **Tourniquet :** glissez le doigt vers la gauche sur le tourniquet pour le pousser, vers la droite pour freiner, et gardez l’aiguille du compteur dans la zone verte pendant 3 secondes, pour trois vitesses différentes. Chaque défi réussi rapporte une étoile.
