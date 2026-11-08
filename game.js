@@ -1144,7 +1144,7 @@ function parkActivity(id){
 // z is the height above the table. Physics, rules and the opponent are pure functions; drawing is separate.
 const PING={G:2.6,netH:.085,win:7,paddleW:[.3,.25,.21],follow:[5,4.6,4.2],aiSpeed:[.85,1.15,1.45],aiReach:[.24,.27,.3],aiReact:[.34,.24,.16],aiErr:[.09,.07,.05],aiShot:[1.15,1.45,1.75],myShot:[1.3,1.5,1.7]};
 const pingClamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function createPingGame(lv=level()){return {level:lv,px:0,pvx:0,ox:0,ball:{x:0,y:-.04,z:.22,vx:0,vy:0,vz:0},state:'serve',server:'player',score:{me:0,ai:0},bounced:null,lastHit:null,missed:false,aiMissed:false,timer:0,aiClock:0,trail:[],effects:[],events:[],message:'À toi de servir ! Touche la table ou appuie sur Espace.',rally:0,winner:null,swing:0,time:0};}
+function createPingGame(lv=level()){return {level:lv,px:0,pvx:0,ox:0,ball:{x:0,y:-.04,z:.22,vx:0,vy:0,vz:0},state:'serve',server:'player',score:{me:0,ai:0},bounced:null,lastHit:null,missed:false,aiMissed:false,timer:0,aiClock:0,trail:[],effects:[],events:[],message:'À toi de servir ! Touche la table ou appuie sur Espace.',rally:0,winner:null,swing:0,swingReady:0,smash:0,time:0};}
 function pingFx(g,type){const b=g.ball;g.effects.push({type,x:b.x,y:b.y,z:Math.max(0,b.z),t:0});g.events.push(type);}
 // Aim at (tx,ty) on the table; a shot that would hit the net is slowed down until it clears it, unless it is a deliberate mistake.
 function pingLaunch(g,tx,ty,speed,mistake=false){const b=g.ball;let T=Math.max(.25,Math.abs(ty-b.y)/speed);
@@ -1159,7 +1159,8 @@ function pingPoint(g,who,reason){g.score[who]++;g.events.push(who==='me'?'scored
  if(g.score[who]>=PING.win){g.state='over';g.winner=who;g.timer=0;g.events.push(who==='me'?'win':'defeat');g.message=who==='me'?'Victoire ! Tu as gagné '+g.score.me+' à '+g.score.ai+'. Bravo !':'Lina gagne '+g.score.ai+' à '+g.score.me+'. Une revanche ?';return g;}
  const total=g.score.me+g.score.ai;g.server=Math.floor(total/2)%2===0?'player':'ai';g.state='point';g.timer=1.1;return g;}
 function pingStep(g,dt,input={}){
- dt=Math.max(0,Math.min(dt,.05));g.time+=dt;g.swing=Math.max(0,g.swing-dt);g.effects=g.effects.filter(e=>(e.t+=dt)<.55);
+ dt=Math.max(0,Math.min(dt,.05));g.time+=dt;g.swing=Math.max(0,g.swing-dt);g.smash=Math.max(0,g.smash-dt);
+ if(input.swing)g.swingReady=.38;else g.swingReady=Math.max(0,g.swingReady-dt);g.effects=g.effects.filter(e=>(e.t+=dt)<.55);
  const prev=g.px;if(input.targetX!=null)g.px+=pingClamp(input.targetX-g.px,-PING.follow[g.level]*dt,PING.follow[g.level]*dt);else if(input.dir)g.px+=input.dir*2.4*dt;
  g.px=pingClamp(g.px,-1.35,1.35);if(dt>0)g.pvx=g.pvx*.7+((g.px-prev)/dt)*.3;
  const b=g.ball;g.aiClock+=dt;let target=0;
@@ -1179,14 +1180,16 @@ function pingStep(g,dt,input={}){
   else if(b.z<-.45)return pingPoint(g,g.bounced?hitter:other,g.bounced?'long':'out');}
  // Your paddle: position under the ball is enough; the edge of the paddle aims, moving while hitting adds power.
  if(b.vy<0&&g.bounced==='player'&&!g.missed&&b.y<=.02){const W=PING.paddleW[g.level];
-  if(Math.abs(b.x-g.px)<=W+.03&&b.z<.85){const off=pingClamp((b.x-g.px)/W,-1,1);g.lastHit='player';g.rally++;b.y=.02;b.z=Math.max(b.z,.08);
-   pingLaunch(g,pingClamp(off*.95+g.pvx*.1+b.x*.15,-.94,.94),.74+Math.min(.18,Math.abs(g.pvx)*.06),PING.myShot[g.level]+Math.abs(off)*.3+Math.min(.55,Math.abs(g.pvx)*.12)+g.rally*.01);
-   g.aiClock=0;g.swing=.25;pingFx(g,'hit');g.message=Math.abs(off)>.6?'Joli coup en diagonale !':Math.abs(g.pvx)>2?'Smash !':g.rally>=6?'Quel échange : '+g.rally+' coups !':'';}
+  if(Math.abs(b.x-g.px)<=W+.03&&b.z<.85){const off=pingClamp((b.x-g.px)/W,-1,1),smash=g.swingReady>0;g.lastHit='player';g.rally++;b.y=.02;b.z=Math.max(b.z,.08);
+   pingLaunch(g,pingClamp(off*.95+g.pvx*.1+b.x*.15,-.94,.94),smash?.88:.74+Math.min(.18,Math.abs(g.pvx)*.06),PING.myShot[g.level]+Math.abs(off)*.3+Math.min(.3,Math.abs(g.pvx)*.08)+g.rally*.01+(smash?.75:0));
+   g.aiClock=0;g.swing=smash?.35:.25;g.swingReady=0;g.smashed=smash;if(smash){g.smash=.7;pingFx(g,'smash');}else pingFx(g,'hit');g.message=smash?'Smash !':Math.abs(off)>.6?'Joli coup en diagonale !':g.rally>=6?'Quel échange : '+g.rally+' coups !':'';}
   else g.missed=true;}
  if(b.vy>0&&g.bounced==='ai'&&!g.aiMissed&&b.y>=.98){
-  if(Math.abs(b.x-g.ox)<=PING.aiReach[g.level]&&b.z<.85){g.lastHit='ai';b.y=.98;b.z=Math.max(b.z,.08);
-   if(Math.random()<PING.aiErr[g.level]+g.rally*.008)pingLaunch(g,(Math.random()-.5)*1.2,Math.random()<.5?.47:-.18,PING.aiShot[g.level],true);
-   else{const away=g.px>0?-1:1,wide=[.55,.8,.9][g.level];pingLaunch(g,pingClamp(away*(.3+Math.random()*.6)*wide+(Math.random()-.5)*.3,-.9,.9),.1+Math.random()*.22,PING.aiShot[g.level]+Math.min(.6,g.rally*.045));}
+  // Against a smash Lina can only block: shorter reach, more mistakes, a slower return.
+  const vsSmash=g.smashed?1:0;
+  if(Math.abs(b.x-g.ox)<=PING.aiReach[g.level]-vsSmash*.06&&b.z<.85){g.lastHit='ai';b.y=.98;b.z=Math.max(b.z,.08);g.smashed=false;
+   if(Math.random()<PING.aiErr[g.level]+g.rally*.008+vsSmash*.15)pingLaunch(g,(Math.random()-.5)*1.2,Math.random()<.5?.47:-.18,PING.aiShot[g.level],true);
+   else{const away=g.px>0?-1:1,wide=[.55,.8,.9][g.level];pingLaunch(g,pingClamp(away*(.3+Math.random()*.6)*wide+(Math.random()-.5)*.3,-.9,.9),.1+Math.random()*.22,PING.aiShot[g.level]+Math.min(.6,g.rally*.045)-vsSmash*.4);}
    pingFx(g,'hit');}
   else g.aiMissed=true;}
  if(b.y<-.4)return pingPoint(g,g.bounced==='player'?'ai':'me',g.bounced==='player'?'long':'out');
@@ -1196,13 +1199,14 @@ function pingStep(g,dt,input={}){
 const pingK=y=>1/(1+.733*y);
 const pingP=(x,y,z=0)=>{const k=pingK(y);return {x:380+x*260*k,y:-191+591*k-z*260*k,k};};
 function drawPing(c,g,npc){
- c.save();c.clearRect(0,0,760,460);
+ c.save();c.clearRect(0,0,760,560);
  const sky=c.createLinearGradient(0,0,0,170);sky.addColorStop(0,'#cfe6ec');sky.addColorStop(1,'#eef3dd');c.fillStyle=sky;c.fillRect(0,0,760,170);
  // The school wall behind Lina, with its yellow band, and the red play surface.
  rr(c,0,62,760,92,0,'#b98d63');for(let x=0;x<760;x+=6){c.fillStyle=x%12?'#b48759':'#be9366';c.fillRect(x,62,3,92);}rr(c,0,96,760,10,0,'#e4bf4f');
  for(let i=0;i<6;i++){rr(c,40+i*130,72,60,20,2,'#566965');rr(c,44+i*130,75,22,14,0,'#a7bbb0');}
- const ground=c.createLinearGradient(0,150,0,460);ground.addColorStop(0,'#c98f78');ground.addColorStop(1,'#b76f57');c.fillStyle=ground;c.fillRect(0,150,760,310);
- c.strokeStyle='#ffffff22';c.lineWidth=1;for(let i=0;i<14;i++){c.beginPath();c.moveTo(380+(i-7)*90,460);c.lineTo(380+(i-7)*25,150);c.stroke();}
+ const ground=c.createLinearGradient(0,150,0,460);ground.addColorStop(0,'#c98f78');ground.addColorStop(1,'#b76f57');c.fillStyle=ground;c.fillRect(0,150,760,410);
+ c.strokeStyle='#ffffff22';c.lineWidth=1;for(let i=0;i<14;i++){c.beginPath();c.moveTo(380+(i-7)*120,560);c.lineTo(380+(i-7)*25,150);c.stroke();}
+ rr(c,40,474,680,64,32,'#ffffff1f');c.strokeStyle='#ffffff40';c.lineWidth=2;c.setLineDash([8,8]);c.beginPath();c.roundRect(40,474,680,64,32);c.stroke();c.setLineDash([]);text(c,'←   glisse ton doigt ici   →',380,513,17,'#fff6ea','600');
  const b=g.ball,over=Math.abs(b.x)<=1&&b.y>=0&&b.y<=1;
  // Lina behind the table, following her paddle.
  const op=pingP(g.ox,1.05,.24),edge=pingP(0,1).y;
@@ -1223,41 +1227,45 @@ function drawPing(c,g,npc){
   poly(c,[[n0.x,n0.y],[n1.x,n1.y],[t1.x,t1.y],[t0.x,t0.y]],'#1d2a2799');c.strokeStyle='#ffffff33';c.lineWidth=1;for(let i=1;i<24;i++){const a=pingP(-1.1+i*2.2/24,.5,0),z=pingP(-1.1+i*2.2/24,.5,PING.netH);c.beginPath();c.moveTo(a.x,a.y);c.lineTo(z.x,z.y);c.stroke();}
   c.strokeStyle='#f7f7ef';c.lineWidth=3;c.beginPath();c.moveTo(t0.x,t0.y);c.lineTo(t1.x,t1.y);c.stroke();rr(c,n0.x-3,t0.y-2,5,n0.y-t0.y+6,1,'#2f3a37');rr(c,n1.x-2,t1.y-2,5,n1.y-t1.y+6,1,'#2f3a37');};
  if(b.y>.5){shadow();if(g.state!=='serve'||g.server==='ai')ballDraw();net();}else{net();shadow();ballDraw();}
- for(const e of g.effects){const p=pingP(e.x,e.y,e.z);c.globalAlpha=1-e.t/.55;c.strokeStyle=e.type==='hit'?'#fff2c2':'#ffffff';c.lineWidth=2;c.beginPath();c.arc(p.x,p.y,(8+e.t*60)*p.k,0,Math.PI*2);c.stroke();}c.globalAlpha=1;
+ for(const e of g.effects){const p=pingP(e.x,e.y,e.z);c.globalAlpha=1-e.t/.55;if(e.type==='smash'){text(c,'SMASH !',p.x,p.y-30-e.t*80,26+e.t*20,'#ffd34d','800');c.strokeStyle='#ffd34d';c.lineWidth=4;c.beginPath();c.arc(p.x,p.y,(12+e.t*120)*p.k,0,Math.PI*2);c.stroke();continue;}c.strokeStyle=e.type==='hit'?'#fff2c2':'#ffffff';c.lineWidth=2;c.beginPath();c.arc(p.x,p.y,(8+e.t*60)*p.k,0,Math.PI*2);c.stroke();}c.globalAlpha=1;
+ // Timing ring: it closes on your paddle as the ball arrives. Tap at that moment for a smash.
+ if(g.state==='play'&&g.bounced==='player'&&b.vy<0&&!g.missed){const t=(b.y-.02)/-b.vy;if(t>=0&&t<.6){const p=pingP(g.px,-.07,.2);c.globalAlpha=.3+.6*(1-t/.6);c.strokeStyle=t<.38?'#ffd34d':'#fff3c4';c.lineWidth=t<.38?5:3;c.beginPath();c.arc(p.x,p.y,40+t*110,0,Math.PI*2);c.stroke();c.globalAlpha=1;if(t<.38)text(c,'Tape !',p.x,p.y-58-t*40,16,'#fff2b3','800');}}
+ if(g.swingReady>0){const p=pingP(g.px,-.07,.2);ellipse(c,p.x,p.y,52,46,'#ffd34d33');}
  // Your paddle in front, tilting with your movement and swinging when you hit.
  const me=pingP(g.px,-.07,.2),tilt=pingClamp(g.pvx*.08,-.45,.45)-(g.swing>0?Math.sin(g.swing/.25*Math.PI)*.5*Math.sign(g.pvx||1):0);
- c.save();c.translate(me.x,me.y);c.rotate(tilt);rr(c,-7,18,14,40,6,'#a8744a');rr(c,-7,18,14,7,3,'#8a5c38');ellipse(c,3,4,40,36,'#00000022');ellipse(c,0,0,40,36,'#252c2b');ellipse(c,0,-1,36,32,'#c8372d');ellipse(c,-10,-11,10,6,'#ffffff22');c.restore();
+ c.save();c.translate(me.x,me.y);c.rotate(tilt);if(g.smash>0){ellipse(c,0,0,52,48,'#ffd34d55');}rr(c,-7,18,14,40,6,'#a8744a');rr(c,-7,18,14,7,3,'#8a5c38');ellipse(c,3,4,40,36,'#00000022');ellipse(c,0,0,40,36,'#252c2b');ellipse(c,0,-1,36,32,'#c8372d');ellipse(c,-10,-11,10,6,'#ffffff22');c.restore();
  // Score and messages.
  rr(c,14,12,188,38,10,'#25352ff0');text(c,'Toi  '+g.score.me+'  ·  '+g.score.ai+'  Lina',112,38,17,'#f7f4e6','700');
  ellipse(c,g.server==='player'?27:197,31,4,4,'#f0c85a');
  if(g.state==='point'||g.state==='over'||(g.state==='serve'&&g.message)){const msg=g.state==='serve'?g.message:typeof g.message==='string'?g.message:'';if(msg){c.font='700 18px Segoe UI,Arial';const w=Math.min(700,c.measureText(msg).width+40);rr(c,380-w/2,214,w,40,12,'#fffdf2ee');text(c,msg,380,240,18,'#2f5a45','700');}}
- if(g.state==='over'&&g.winner==='me')for(let i=0;i<40;i++){const x=(i*97+g.time*60*(1+i%3))%760,y=(i*53+g.time*120*(1+i%2))%460;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}
+ if(g.state==='over'&&g.winner==='me')for(let i=0;i<40;i++){const x=(i*97+g.time*60*(1+i%3))%760,y=(i*53+g.time*120*(1+i%2))%560;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}
  c.restore();}
 let pingAudio=null;
 function pingSound(type){if(!sound)return;try{pingAudio=pingAudio||new(window.AudioContext||window.webkitAudioContext)();const a=pingAudio,t=a.currentTime;
- const notes={hit:[[1250,.05]],bounce:[[820,.04]],scored:[[660,.1],[880,.12]],lost:[[330,.14]],win:[[523,.12],[659,.12],[784,.2]],defeat:[[392,.14],[330,.2]]}[type]||[];
+ const notes={hit:[[1250,.05]],smash:[[1500,.06],[900,.08]],bounce:[[820,.04]],scored:[[660,.1],[880,.12]],lost:[[330,.14]],win:[[523,.12],[659,.12],[784,.2]],defeat:[[392,.14],[330,.2]]}[type]||[];
  notes.forEach(([f,d],i)=>{const o=a.createOscillator(),gn=a.createGain();o.type=type==='hit'||type==='bounce'?'triangle':'sine';o.frequency.value=f;o.connect(gn);gn.connect(a.destination);const s=t+i*.11;gn.gain.setValueAtTime(.0001,s);gn.gain.exponentialRampToValueAtTime(.12,s+.005);gn.gain.exponentialRampToValueAtTime(.0001,s+d);o.start(s);o.stop(s+d+.02);});}catch{}}
 function pingDialog(){discover('pingpong');modal(`<div class="modal-eyebrow">Le terrain de jeux · sport</div>${speaker('Lina','🏓')}<div class="speech">Salut ${esc(profile.name)} ! Tu fais une partie de ping-pong avec moi ? Le premier à ${PING.win} points gagne.</div><div class="actions"><button id="pingYes" class="primary">Jouer avec Lina 🏓</button><button id="pingLater" class="secondary">Plus tard</button></div>`);$('#pingYes').onclick=pingpongGame;$('#pingLater').onclick=closeModal;}
 function pingpongGame(){
  discover('pingpong');const npc=outside.find(n=>n.id==='lina');let g=createPingGame(level());activeActivity={kind:'pingpong',get game(){return g;}};
- let frame=0,last=null,closed=false,pointerX=null,shown='';const held=new Set();
- modal(activityHeader('Une partie de ping-pong','Le terrain de jeux · avec Lina')+`<canvas id="pingCanvas" class="ping-canvas" width="760" height="460" role="img" aria-label="Table de ping-pong : ta raquette en bas, Lina en face"></canvas><p id="pingFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint">Glisse le doigt ou la souris sur la table pour placer ta raquette sous la balle · touches ← → (ou Q D) · Espace pour servir.<br>Frappe avec le bord de la raquette pour viser sur le côté ; bouge en frappant pour taper plus fort.</p><div class="actions"><button id="pingServe" class="primary">Servir</button><button id="pingRestart" class="secondary">Nouvelle partie</button><button id="activityClose" class="secondary">Retour au terrain</button></div>`,
+ let frame=0,last=null,closed=false,pointerX=null,shown='',swingPulse=false;const held=new Set();
+ modal(activityHeader('Une partie de ping-pong','Le terrain de jeux · avec Lina')+`<canvas id="pingCanvas" class="ping-canvas" width="760" height="560" role="img" aria-label="Table de ping-pong : ta raquette en bas, Lina en face"></canvas><p id="pingFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Bouger :</b> glisse le doigt dans la bande sous la table (ou la souris, ou ← → / Q D) pour mettre ta raquette sous la balle.<br><b>Smash :</b> quand le cercle doré se resserre sur ta raquette, tape l’écran (ou Espace / ↑) : la balle part beaucoup plus vite.<br><b>Viser :</b> touche la balle avec le bord de la raquette pour l’envoyer sur le côté.</p><div class="actions"><button id="pingServe" class="primary">Servir</button><button id="pingRestart" class="secondary">Nouvelle partie</button><button id="activityClose" class="secondary">Retour au terrain</button></div>`,
   ()=>{closed=true;cancelAnimationFrame(frame);$('#modal').onkeydown=null;$('#modal').onkeyup=null;if(pingAudio){pingAudio.close().catch(()=>{});pingAudio=null;}});
  const cv=$('#pingCanvas'),c=cv.getContext('2d');
  const toTable=e=>{const r=cv.getBoundingClientRect();return ((e.clientX-r.left)*760/(r.width||760)-380)/(260*pingK(-.07));};
- const serve=()=>{if(g.state==='serve'&&g.server==='player'){pingServe(g);sync();}};
+ const serve=()=>{if(g.state==='serve'&&g.server==='player'){pingServe(g);sync();return true;}return false;};
+ const hit=()=>{if(!serve()&&g.state==='play')swingPulse=true;};
  const sync=()=>{const key=g.state+g.server+g.score.me+'-'+g.score.ai+(typeof g.message==='string'?g.message:'');if(key===shown)return;shown=key;
   $('#pingServe').disabled=!(g.state==='serve'&&g.server==='player');$('#pingFeedback').textContent=typeof g.message==='string'?g.message:'';
   $('#pingFeedback').className='feedback'+(g.state==='over'&&g.winner==='me'?' success':'');
   if(g.state==='over'&&g.winner==='me'&&!g.awarded){g.awarded=true;award('pingpong');}};
- cv.onpointerdown=e=>{e.preventDefault?.();cv.setPointerCapture?.(e.pointerId);pointerX=toTable(e);held.clear();serve();};
+ cv.onpointerdown=e=>{e.preventDefault?.();cv.setPointerCapture?.(e.pointerId);pointerX=toTable(e);held.clear();hit();};
  cv.onpointermove=e=>{if(e.pointerType==='mouse'||e.buttons||e.pressure)pointerX=toTable(e);};
  $('#pingServe').onclick=serve;$('#pingRestart').onclick=()=>{g=createPingGame(level());shown='';sync();};bindActivityClose();
- $('#modal').onkeydown=e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowLeft','q','a'].includes(k)){held.add('L');pointerX=null;e.preventDefault();}else if(['ArrowRight','d'].includes(k)){held.add('R');pointerX=null;e.preventDefault();}else if(k===' '&&!e.repeat){e.preventDefault();serve();}};
+ $('#modal').onkeydown=e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowLeft','q','a'].includes(k)){held.add('L');pointerX=null;e.preventDefault();}else if(['ArrowRight','d'].includes(k)){held.add('R');pointerX=null;e.preventDefault();}else if((k===' '||k==='ArrowUp')&&!e.repeat){e.preventDefault();hit();}};
  $('#modal').onkeyup=e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowLeft','q','a'].includes(k))held.delete('L');if(['ArrowRight','d'].includes(k))held.delete('R');};
  const animate=now=>{if(closed)return;if(document.hidden){last=null;held.clear();frame=requestAnimationFrame(animate);return;}
   const dt=last===null?0:Math.min(.05,(now-last)/1000);last=now;const dir=(held.has('R')?1:0)-(held.has('L')?1:0);
-  pingStep(g,dt,{targetX:dir?null:pointerX,dir});g.events.splice(0).forEach(pingSound);drawPing(c,g,npc);sync();frame=requestAnimationFrame(animate);};
+  pingStep(g,dt,{targetX:dir?null:pointerX,dir,swing:swingPulse});swingPulse=false;g.events.splice(0).forEach(pingSound);drawPing(c,g,npc);sync();frame=requestAnimationFrame(animate);};
  sync();drawPing(c,g,npc);frame=requestAnimationFrame(animate);}
 
 const decorColors=['#8eaa88','#8bafc2','#c997ab','#d5b66f','#c28f6c','#b29ac8'];
