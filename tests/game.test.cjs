@@ -163,10 +163,10 @@ ok('Waste sorting (Geneva rules): traps by age, right and wrong bins, explanatio
  assert(t.RECYCLE_ITEMS.every(i=>t.RECYCLE_BINS.some(b=>b.id===i.bin)&&i.why.length>20));
  const young=t.createRecycleGame(0),old=t.createRecycleGame(2);assert.equal(young.items.length,8);assert(!young.items.some(i=>i.trap));assert.equal(old.items.length,10);assert(old.items.filter(i=>i.trap).length>=3);
  const milk=t.RECYCLE_ITEMS.find(i=>i.name==='Brique de lait');assert.equal(milk.bin,'ordures');assert.equal(t.RECYCLE_ITEMS.find(i=>i.name.startsWith('Boîte à pizza')).bin,'ordures');
- let g=t.createRecycleGame(1);const first=g.items[0],wrong=t.RECYCLE_BINS.find(b=>b.id!==first.bin).id;assert.equal(t.recycleDrop(g,wrong),false);assert.equal(g.hint.bin,first.bin);assert(g.message.includes(first.why));for(let i=0;i<30;i++)t.recycleStep(g,1/30);
- assert.equal(t.recycleDrop(g,first.bin),true);for(let i=0;i<30;i++)t.recycleStep(g,1/30);assert.equal(g.index,1);assert.equal(g.score,0,'a corrected mistake does not score');
- for(const item of g.items.slice(1)){assert.equal(t.recycleDrop(g,item.bin),true);for(let i=0;i<30;i++)t.recycleStep(g,1/30);}assert.equal(g.state,'over');assert(g.won);assert.equal(g.score,g.items.length-1);
- rafTasks.clear();t.recycleGame();assert(get('#modalContent').innerHTML.includes('recycleCanvas'));const a=t.activity.game;for(const item of a.items){t.recycleDrop(a,item.bin);for(let i=0;i<20;i++)t.recycleStep(a,1/30);}frameAt(1000);frameAt(1016);assert(t.completed.has('recycle'));
+ let g=t.createRecycleGame(1);const first=g.items[0],wrong=t.RECYCLE_BINS.find(b=>b.id!==first.bin).id;assert.equal(t.recycleDrop(g,wrong),false);assert.equal(g.hint.bin,first.bin);assert.equal(g.banner.type,'no');assert(g.flash>0);assert(g.message.includes(first.why));for(let i=0;i<30;i++)t.recycleStep(g,1/30);
+ assert.equal(t.recycleDrop(g,first.bin),true);assert.equal(g.banner.type,'ok');for(let i=0;i<70;i++)t.recycleStep(g,1/30);assert.equal(g.index,1);assert.equal(g.score,0,'a corrected mistake does not score');
+ for(const item of g.items.slice(1)){assert.equal(t.recycleDrop(g,item.bin),true);for(let i=0;i<70;i++)t.recycleStep(g,1/30);}assert.equal(g.state,'over');assert(g.won);assert.equal(g.score,g.items.length-1);
+ rafTasks.clear();t.recycleGame();assert(get('#modalContent').innerHTML.includes('recycleCanvas'));const a=t.activity.game;for(const item of a.items){t.recycleDrop(a,item.bin);for(let i=0;i<70;i++)t.recycleStep(a,1/30);}frameAt(1000);frameAt(1016);assert(t.completed.has('recycle'));
  const spot=t.entities().find(n=>n.id==='recycle');assert(spot&&t.walkable(spot.x,spot.y));get('#recycleAgain').onclick();assert.equal(t.activity.game.index,0);get('#activityClose').onclick();frameAt(2000);assert.equal(rafTasks.size,0);});
 console.log(count+' checks passed. Canvas rendered natively; browser layout and touch still require on-device verification.');
 
