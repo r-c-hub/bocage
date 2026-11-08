@@ -12,7 +12,7 @@ const cleanProfile = p => {
  if(!['girl','boy'].includes(a.gender)) a.gender='girl'; if(!['long','short','curls'].includes(a.hairstyle)) a.hairstyle='long'; return a;
 };
 let profile=cleanProfile(saved.profile), created=!!saved.profile;
-const known=['cat','clock','duration','math','en','de','it','ball','puzzle','mystery','story','coloring','revision-fr','revision-de','revision-math','basket','movements','melody','rhythm','hopscotch','pingpong','swing','roundabout'];
+const known=['cat','clock','duration','math','en','de','it','ball','puzzle','mystery','story','coloring','revision-fr','revision-de','revision-math','basket','movements','melody','rhythm','hopscotch','pingpong','swing','roundabout','recycle'];
 let completed=new Set(Array.isArray(saved.completed)?saved.completed.filter(k=>known.includes(k)):[]);
 let catStage=['search','found','done'].includes(saved.catStage)?saved.catStage:'new';
 let discovered=new Set(Array.isArray(saved.discovered)?saved.discovered.filter(k=>known.includes(k)):[...completed]);
@@ -75,10 +75,11 @@ const outside=[
  {id:'mia',x:1005,y:625,name:'Mia',icon:'🐈',task:'cat',shirt:'#b18cb2',skin:'#e3b38d',hair:'#5d4032',hairstyle:'long'},
  {id:'noe',x:1025,y:440,name:'Noé',icon:'⌚',task:'clock',shirt:'#d5ae5e',skin:'#b77e56',hair:'#3f3029',hairstyle:'curls'},
  {id:'leo',x:1035,y:875,name:'Léo',icon:'⏳',task:'duration',shirt:'#7f9bbb',skin:'#f1caa5',hair:'#ad7346',hairstyle:'short'},
- {id:'alma',x:755,y:625,name:'Alma',icon:'💬',task:'language',shirt:'#cb7957',skin:'#a97552',hair:'#302b28',hairstyle:'curls'},
+ {id:'alma',x:1258,y:890,name:'Alma',icon:'💬',task:'language',shirt:'#cb7957',skin:'#a97552',hair:'#302b28',hairstyle:'curls'},
  {id:'sami',x:530,y:1112,name:'Sami',icon:'⚽',task:'ball',shirt:'#71a282',skin:'#bc875f',hair:'#3c302b',hairstyle:'short'},
  ...buildings.filter(b=>b.type!=='decor').map(b=>({id:b.type,x:b.x+b.w*.5,y:b.y+b.h+24,name:b.name,icon:b.type==='school'?'🏫':'🔔',task:'enter',destination:b.type})),
  {id:'schoolPreau',x:685,y:445,name:'Entrée de l’école par le préau',icon:'🚪',task:'enter',destination:'school'},
+ {id:'recycle',x:505,y:430,name:'Trier les déchets',icon:'♻️',task:'recycle'},
  {id:'hopscotch',x:699,y:590,name:'Jouer à la marelle',icon:'🔢',task:'hopscotch'},
  {id:'lina',x:600,y:652,name:'Lina',icon:'🏓',task:'pingpong',shirt:'#e07a5f',skin:'#c68a62',hair:'#2f2724',hairstyle:'long'},
  {id:'cat',x:730,y:149,name:'Moka',icon:'🐾',task:'findCat'}
@@ -344,7 +345,7 @@ function enterPrompt(destination){
 function interact(n){
  if(!n)return;
  if(Math.hypot(player.x-n.x,player.y-n.y)>=82){toast('Approche-toi pour parler ou entrer. '+moveHint());return;}
- if(n.task==='crossing')requestCrossing();else if(n.task==='park')parkActivity(n.id);else if(n.task==='decorate')editRoom();else if(n.task==='pet')careForCat();else if(n.task==='cat')catDialog();else if(n.task==='clock')watchQuiz();else if(n.task==='duration')durationQuiz();else if(n.task==='language')languageMenu();else if(n.task==='ball')ballGame();else if(n.task==='findCat')findCat();else if(n.task==='enter')enterPrompt(n.destination);else if(n.task==='math')mathQuiz();else if(n.task==='puzzle')puzzleGame();else if(n.task==='mystery')mysteryQuiz();else if(n.task==='room')enterRoom(n.destination);else if(n.task==='exit')exitRoom();else if(n.task==='wardrobe')profileEditor();else if(n.task==='journal')showMemories();else if(n.task==='stories')storyShelf();else if(n.task==='coloring')coloringShelf();else if(n.task==='library-puzzle')libraryPuzzle();else if(n.task==='revision-fr')revisionShelf('fr');else if(n.task==='revision-de')revisionShelf('de');else if(n.task==='revision-math')revisionShelf('math');else if(n.task==='basket')basketballGame();else if(n.task==='movements')movementGame();else if(n.task==='melody')melodyGame();else if(n.task==='rhythm')rhythmGame();else if(n.task==='hopscotch')hopscotchGame();else if(n.task==='pingpong')pingDialog();
+ if(n.task==='crossing')requestCrossing();else if(n.task==='park')parkActivity(n.id);else if(n.task==='decorate')editRoom();else if(n.task==='pet')careForCat();else if(n.task==='cat')catDialog();else if(n.task==='clock')watchQuiz();else if(n.task==='duration')durationQuiz();else if(n.task==='language')languageMenu();else if(n.task==='ball')ballGame();else if(n.task==='findCat')findCat();else if(n.task==='enter')enterPrompt(n.destination);else if(n.task==='math')mathQuiz();else if(n.task==='puzzle')puzzleGame();else if(n.task==='mystery')mysteryQuiz();else if(n.task==='room')enterRoom(n.destination);else if(n.task==='exit')exitRoom();else if(n.task==='wardrobe')profileEditor();else if(n.task==='journal')showMemories();else if(n.task==='stories')storyShelf();else if(n.task==='coloring')coloringShelf();else if(n.task==='library-puzzle')libraryPuzzle();else if(n.task==='revision-fr')revisionShelf('fr');else if(n.task==='revision-de')revisionShelf('de');else if(n.task==='revision-math')revisionShelf('math');else if(n.task==='basket')basketballGame();else if(n.task==='movements')movementGame();else if(n.task==='melody')melodyGame();else if(n.task==='rhythm')rhythmGame();else if(n.task==='hopscotch')hopscotchGame();else if(n.task==='pingpong')pingDialog();else if(n.task==='recycle')recycleGame();
 }
 let outsideReturn={x:1045,y:705};
 function enterRoom(s){
@@ -923,6 +924,7 @@ function drawSchoolHall(){const c=ctx;rr(c,370,310,770,65,5,'#d9dfc2');text(c,'B
 
 missions.push(...[{"id":"story","icon":"📖","title":"Les petites histoires","skill":"Lire et comprendre","who":"school"},{"id":"coloring","icon":"🎨","title":"Les cahiers de couleurs","skill":"Créer et colorier","who":"school"},{"id":"revision-fr","icon":"📕","title":"Mon livre de français","skill":"Français · réviser","who":"school"},{"id":"revision-de","icon":"📗","title":"Mon livre d’allemand","skill":"Allemand · réviser","who":"school"},{"id":"revision-math","icon":"📘","title":"Mon livre de maths","skill":"Maths · réviser","who":"school"},{"id":"basket","icon":"🏀","title":"Trois paniers pour l’équipe","skill":"Sport · précision","who":"school"},{"id":"movements","icon":"🤸","title":"Le circuit des mouvements","skill":"Sport · coordination","who":"school"},{"id":"melody","icon":"🎹","title":"La petite mélodie","skill":"Musique · mémoire","who":"school"},{"id":"rhythm","icon":"🥁","title":"Le jeu des rythmes","skill":"Musique · durées","who":"school"},{"id":"hopscotch","icon":"🔢","title":"À toi la marelle","skill":"Cour · nombres et ordre","who":"school"}]);
 missions.push({id:'swing',icon:'🌿',title:'Les étoiles de la balançoire',skill:'Rythme · l’élan au bon moment',who:'park'},{id:'roundabout',icon:'🎠',title:'Le tourniquet bien réglé',skill:'Contrôle · garder la bonne vitesse',who:'park'});
+missions.push({id:'recycle',icon:'♻️',title:'Le tri des déchets',skill:'Environnement · trier à Genève',who:'school'});
 missions.push({id:'pingpong',icon:'🏓',title:'Une partie de ping-pong',skill:'Sport · réflexes et coordination',who:'lina'});
 // Road coordinates: s runs along Grand-Lancy, d runs across it toward the school.
 // The Grand-Lancy road runs about 20 degrees from vertical, as on the satellite view; its centre line is x = 480 - 0.364 y.
@@ -1458,6 +1460,147 @@ function ballGame(){
  const animate=now=>{if(closed)return;if(document.hidden){last=null;frame=requestAnimationFrame(animate);return;}const dt=last===null?0:Math.min(.05,(now-last)/1000);last=now;
   shootStep(g,dt);g.events.splice(0).forEach(shootSound);drawShoot(c,g,look,sami,fans);sync();frame=requestAnimationFrame(animate);};
  sync();drawShoot(c,g,look,sami,fans);frame=requestAnimationFrame(animate);}
+
+// Hand-drawn waste pictures: each one shows the object itself (no food that looks edible, no dishes), the same on every device.
+// Drawn in a 100×100 box centred on (x,y), scaled to size s.
+function recycleIcon(c,art,x,y,s){c.save();c.translate(x,y);c.scale(s/100,s/100);c.lineJoin='round';c.lineCap='round';
+ const outline=(col,w=3)=>{c.strokeStyle=col;c.lineWidth=w;c.stroke();},path=pts=>{c.beginPath();pts.forEach(([px,py],i)=>i?c.lineTo(px,py):c.moveTo(px,py));c.closePath();};
+ const D={
+ pet(){rr(c,-8,-42,16,14,4,'#cfeaf5','#5d9bb8');rr(c,-11,-50,22,10,3,'#2f7fd1');path([[-8,-30],[8,-30],[18,-18],[18,40],[-18,40],[-18,-18]]);c.fillStyle='#d6eef7';c.fill();outline('#5d9bb8');rr(c,-18,-4,36,20,0,'#3f78c0');text(c,'PET',0,11,15,'#ffffff','800');rr(c,-13,-16,5,52,3,'#ffffffaa');},
+ glass(){rr(c,-7,-48,14,30,4,'#3f8a4e');rr(c,-9,-50,18,6,2,'#2f6b3c');path([[-7,-20],[7,-20],[18,-6],[18,44],[-18,44],[-18,-6]]);c.fillStyle='#3f8a4e';c.fill();outline('#2f6b3c');rr(c,-18,8,36,20,0,'#efe6c8');rr(c,-12,-4,5,44,3,'#ffffff55');},
+ newspaper(){rr(c,-38,-30,76,62,4,'#f6f3e8','#9a9a90');rr(c,-30,-22,60,9,1,'#3d4644');rr(c,-30,-6,28,22,1,'#b8c4cc');for(let i=0;i<4;i++)rr(c,4,-5+i*7,26,3,1,'#9aa0a0');for(let i=0;i<2;i++)rr(c,-30,22+i*0,60,3,1,'#9aa0a0');},
+ box(){path([[-38,-12],[16,-12],[16,34],[-38,34]]);c.fillStyle='#c8955a';c.fill();outline('#9c6f3e');path([[-38,-12],[-20,-30],[34,-30],[16,-12]]);c.fillStyle='#ddb07a';c.fill();outline('#9c6f3e');path([[16,-12],[34,-30],[34,16],[16,34]]);c.fillStyle='#b07d45';c.fill();outline('#9c6f3e');path([[-14,-12],[4,-30],[12,-30],[-6,-12]]);c.fillStyle='#efe0b6';c.fill();},
+ can(){rr(c,-24,-32,48,66,6,'#c9ced1','#8d9599');ellipse(c,0,-32,24,7,'#e6eaec');c.beginPath();c.ellipse(0,-32,24,7,0,0,Math.PI*2);outline('#8d9599',2);rr(c,-24,-16,48,30,0,'#e05a3a');ellipse(c,0,-1,9,9,'#f4d03f');for(const yy of [-24,22,28])rr(c,-24,yy,48,2,0,'#a7aeb2');},
+ bananaPeel(){for(const [a,col]of [[-.95,'#f2cf45'],[.95,'#ecc53a'],[0,'#f6d95a']]){c.save();c.translate(0,-6);c.rotate(a);c.beginPath();c.ellipse(0,26,9,26,0,0,Math.PI*2);c.fillStyle=col;c.fill();outline('#c79a1e',2);ellipse(c,0,48,4,3,'#6b4a1e');ellipse(c,-2,22,2,3,'#8a6a2e');c.restore();}rr(c,-5,-30,10,16,3,'#8a6a2e');rr(c,-12,-20,24,10,5,'#e9c23d');},
+ appleCore(){ellipse(c,0,-28,23,11,'#d9453a');ellipse(c,0,30,21,10,'#d9453a');c.beginPath();c.moveTo(-18,-24);c.bezierCurveTo(-4,-12,-4,12,-17,26);c.lineTo(17,26);c.bezierCurveTo(4,12,4,-12,18,-24);c.closePath();c.fillStyle='#f6edc9';c.fill();outline('#d8c99a',2);for(const [sx,sy]of [[-3,-4],[3,2],[-2,8]])ellipse(c,sx,sy,2.5,4,'#5a3a24');parkStroke(c,[[0,-36],[3,-46]],'#6b4a2e',4);c.beginPath();c.ellipse(10,-44,8,4,-.4,0,Math.PI*2);c.fillStyle='#6fa24a';c.fill();},
+ pasta(){ellipse(c,0,22,40,14,'#e9c66a');for(let i=0;i<9;i++){c.beginPath();const y0=-6+i*4;c.moveTo(-34+i*2,y0+14);for(let k=0;k<6;k++)c.quadraticCurveTo(-28+i*2+k*11,y0+(k%2?-10:10),-22+i*2+k*11,y0+6);outline(i%2?'#f0d27a':'#e3bd5e',4);}ellipse(c,-6,6,10,6,'#c8473a');ellipse(c,8,10,6,4,'#c8473a');},
+ tshirt(){path([[-14,-36],[14,-36],[38,-20],[28,-4],[18,-10],[18,38],[-18,38],[-18,-10],[-28,-4],[-38,-20]]);c.fillStyle='#6fb6d9';c.fill();outline('#4a8fb0');c.beginPath();c.arc(0,-36,9,0,Math.PI);outline('#4a8fb0');},
+ sneakers(){for(const [dx,dy,col]of [[-8,-10,'#d9534a'],[6,8,'#5d86b8']]){c.save();c.translate(dx,dy);path([[-34,6],[-30,-12],[-8,-14],[10,-4],[34,0],[36,12],[-34,12]]);c.fillStyle=col;c.fill();outline('#2f3533',2);rr(c,-36,10,74,9,4,'#ffffff','#9aa0a0');for(let i=0;i<3;i++)parkStroke(c,[[-16+i*7,-12],[-12+i*7,-4]],'#ffffff',2);c.restore();}},
+ tissue(){path([[-30,-10],[-18,-30],[2,-24],[22,-34],[34,-12],[26,8],[34,26],[10,34],[-6,26],[-28,32],[-36,12]]);c.fillStyle='#ffffff';c.fill();outline('#c9cbc4',2);c.strokeStyle='#d8dad3';c.lineWidth=2;for(const [a,b,d,e]of [[-20,-14,-4,2],[6,-18,16,0],[-14,14,4,20],[-2,-6,10,10]]){c.beginPath();c.moveTo(a,b);c.lineTo(d,e);c.stroke();}},
+ milkCarton(){path([[-20,-16],[10,-16],[10,42],[-20,42]]);c.fillStyle='#ffffff';c.fill();outline('#8fa4b8');path([[10,-16],[24,-26],[24,32],[10,42]]);c.fillStyle='#dfe7ef';c.fill();outline('#8fa4b8');path([[-20,-16],[-5,-40],[10,-16]]);c.fillStyle='#f3f6f9';c.fill();outline('#8fa4b8');path([[-5,-40],[9,-50],[24,-26],[10,-16]]);c.fillStyle='#e6edf3';c.fill();outline('#8fa4b8');rr(c,-20,4,30,22,0,'#3f78c0');text(c,'LAIT',-5,20,11,'#ffffff','800');ellipse(c,0,-24,5,4,'#3f78c0');},
+ pizzaBox(){rr(c,-42,-6,84,30,4,'#b98446','#8c5f2e');path([[-42,-6],[-30,-38],[42,-38],[42,-6]]);c.fillStyle='#d6a466';c.fill();outline('#8c5f2e');ellipse(c,-18,-18,9,5,'#8a5a2a66');ellipse(c,20,-28,6,4,'#8a5a2a66');ellipse(c,28,8,8,4,'#8a5a2a55');text(c,'PIZZA',4,-14,17,'#c8372d','800');},
+ chipsBag(){rr(c,-26,-36,52,74,8,'#e8b52c','#b98a1a');for(const yy of [-40,36]){c.beginPath();for(let i=0;i<=8;i++)c.lineTo(-26+i*6.5,yy+(i%2?4:0));c.lineTo(26,yy+4);outline('#b98a1a',3);}text(c,'CHIPS',0,-14,14,'#c8372d','800');ellipse(c,0,12,18,14,'#fff3c4');for(const [cx,cy]of [[-7,8],[6,14],[-2,20],[8,4]])ellipse(c,cx,cy,7,4,'#f2c95a');},
+ coffeeGrounds(){path([[-32,-20],[32,-20],[12,36],[-12,36]]);c.fillStyle='#f3ead8';c.fill();outline('#cdbf9e');for(let i=-24;i<=24;i+=8){c.beginPath();c.moveTo(i,-20);c.lineTo(i*.4,36);outline('#e2d6bc',1.5);}c.beginPath();c.ellipse(0,-20,32,10,0,Math.PI,0);c.fillStyle='#4a3020';c.fill();ellipse(c,0,-20,32,6,'#5a3a26');for(let i=0;i<14;i++)ellipse(c,-26+i*4,-21+(i%3)*2,1.5,1.5,'#2e1d12');},
+ brokenPlate(){for(const [dx,side]of [[-6,-1],[6,1]]){c.save();c.translate(dx,side*4);c.rotate(side*.12);c.beginPath();c.arc(0,0,36,side<0?Math.PI*.5:-Math.PI*.5,side<0?Math.PI*1.5:Math.PI*.5);const zig=[[0,-36],[5,-22],[-4,-10],[5,2],[-4,14],[4,26],[0,36]];(side<0?zig.slice().reverse():zig).forEach(([px,py])=>c.lineTo(px,py));c.closePath();c.fillStyle='#ffffff';c.fill();outline('#a9b2b8',2);c.beginPath();c.arc(0,0,24,side<0?Math.PI*.55:-Math.PI*.45,side<0?Math.PI*1.45:Math.PI*.45);outline('#d6dde2',2);c.restore();}},
+ foil(){path([[-30,-8],[-20,-30],[4,-26],[24,-34],[34,-8],[28,18],[8,32],[-18,28],[-34,14]]);c.fillStyle='#c4cad0';c.fill();outline('#8d969e',2);for(const [pts,col]of [[[[-20,-24],[2,-18],[-8,0]],'#eef1f3'],[[[6,-20],[26,-26],[22,0]],'#dfe4e8'],[[[-24,8],[-6,4],[-10,24]],'#a9b1b8'],[[[8,6],[26,12],[10,26]],'#eef1f3']]){path(pts);c.fillStyle=col;c.fill();}},
+ notebook(){rr(c,-26,-38,56,76,4,'#e07a5f','#a8523a');rr(c,-12,-18,34,16,2,'#ffffff');for(let i=0;i<7;i++){c.beginPath();c.arc(-26,-30+i*10,4,0,Math.PI*2);outline('#5a6668',2);}rr(c,-8,-13,26,3,1,'#9aa0a0');rr(c,-8,-8,18,3,1,'#9aa0a0');},
+ compost(){D.appleCore();c.save();c.translate(-26,24);c.rotate(-.6);c.beginPath();c.ellipse(0,0,14,7,0,0,Math.PI*2);c.fillStyle='#c97b2e';c.fill();c.restore();},
+ trash(){c.beginPath();c.moveTo(-30,38);c.quadraticCurveTo(-40,-6,-16,-22);c.lineTo(16,-22);c.quadraticCurveTo(40,-6,30,38);c.closePath();c.fillStyle='#2f3533';c.fill();outline('#1c2120',2);c.beginPath();c.moveTo(-14,-22);c.lineTo(-8,-36);c.lineTo(0,-28);c.lineTo(8,-36);c.lineTo(14,-22);c.fillStyle='#2f3533';c.fill();for(const [a,b,d,e]of [[-18,-4,-10,22],[4,-10,10,18]]){c.beginPath();c.moveTo(a,b);c.lineTo(d,e);outline('#505a58',2);}}};
+ (D[art]||D.trash)();c.restore();}
+// Sorting waste at the collection point next to the school, following the rules used in Geneva.
+const RECYCLE_BINS=[
+ {id:'verre',name:'Verre',sub:'bouteilles et bocaux',icon:'🍾',color:'#4f8a5b',lid:'#3c7049',art:'glass'},
+ {id:'pet',name:'PET',sub:'bouteilles de boisson',icon:'🧴',color:'#5d86b8',lid:'#45699a',art:'pet'},
+ {id:'papier',name:'Papier · carton',sub:'propres et secs',icon:'📰',color:'#8d9aa6',lid:'#6f7d8a',art:'newspaper'},
+ {id:'alu',name:'Alu · fer-blanc',sub:'boîtes, canettes',icon:'🥫',color:'#a9b0b3',lid:'#878f93',art:'can'},
+ {id:'cuisine',name:'Cuisine',sub:'P’tite poubelle verte',icon:'🍂',color:'#7aa25a',lid:'#5f8744',art:'compost'},
+ {id:'textile',name:'Textiles',sub:'habits, chaussures',icon:'👕',color:'#e2b33c',lid:'#c69a2c',art:'tshirt'},
+ {id:'ordures',name:'Ordures',sub:'ménagères : tout le reste',icon:'🗑️',color:'#4a5250',lid:'#353b3a',art:'trash'}];
+// level: from which age band the item appears (0 = everyone); trap: a classic mistake worth learning.
+const RECYCLE_ITEMS=[
+ {name:'Bouteille d’eau en PET',art:'pet',icon:'🧴',bin:'pet',level:0,why:'Les bouteilles de boisson en PET vont dans la collecte PET.'},
+ {name:'Bouteille en verre',art:'glass',icon:'🍾',bin:'verre',level:0,why:'Les bouteilles et les bocaux en verre vont au verre.'},
+ {name:'Vieux journal',art:'newspaper',icon:'📰',bin:'papier',level:0,why:'Le papier propre et sec se recycle avec le papier et carton.'},
+ {name:'Carton de livraison',art:'box',icon:'📦',bin:'papier',level:0,why:'Un carton propre, aplati, va avec le papier et carton.'},
+ {name:'Boîte de conserve vide',art:'can',icon:'🥫',bin:'alu',level:0,why:'Les boîtes de conserve vont avec l’alu et le fer-blanc.'},
+ {name:'Peau de banane',art:'bananaPeel',icon:'🍌',bin:'cuisine',level:0,why:'Les restes de fruits vont dans la P’tite poubelle verte : ils deviennent du compost et du biogaz.'},
+ {name:'Trognon de pomme',art:'appleCore',icon:'🍎',bin:'cuisine',level:0,why:'Les restes de fruits vont dans la P’tite poubelle verte.'},
+ {name:'Restes de pâtes',art:'pasta',icon:'🍝',bin:'cuisine',level:0,why:'À Genève, les restes de repas vont aussi dans la P’tite poubelle verte.'},
+ {name:'T-shirt trop petit',art:'tshirt',icon:'👕',bin:'textile',level:0,why:'Les habits encore utilisables vont dans la collecte des textiles.'},
+ {name:'Baskets usées (en paire)',art:'sneakers',icon:'👟',bin:'textile',level:0,why:'Les chaussures, attachées par paire, vont avec les textiles.'},
+ {name:'Mouchoir usagé',art:'tissue',icon:'🤧',bin:'ordures',level:0,why:'Un mouchoir sale ne se recycle pas : ordures ménagères.'},
+ {name:'Brique de lait',art:'milkCarton',icon:'🥛',bin:'ordures',level:1,trap:true,why:'Piège ! La brique de lait mélange carton, plastique et alu : elle va aux ordures, pas au carton.'},
+ {name:'Boîte à pizza grasse',art:'pizzaBox',icon:'🍕',bin:'ordures',level:1,trap:true,why:'Piège ! Un carton gras ou sale ne se recycle pas : ordures ménagères.'},
+ {name:'Sachet de chips',art:'chipsBag',icon:'🍟',bin:'ordures',level:1,trap:true,why:'Piège ! Ce n’est pas du PET ni de l’alu pur : ordures ménagères.'},
+ {name:'Marc de café',art:'coffeeGrounds',icon:'☕',bin:'cuisine',level:1,why:'Le marc de café va dans la P’tite poubelle verte.'},
+ {name:'Assiette cassée',art:'brokenPlate',icon:'🍽️',bin:'ordures',level:2,trap:true,why:'Piège ! La vaisselle n’est pas du verre de bouteille : elle va aux ordures.'},
+ {name:'Papier alu propre',art:'foil',icon:'🍫',bin:'alu',level:2,why:'Le papier d’aluminium propre va avec l’alu et le fer-blanc.'},
+ {name:'Cahier usé',art:'notebook',icon:'📒',bin:'papier',level:2,why:'Les cahiers vont avec le papier et carton.'}];
+function createRecycleGame(lv=level()){const pool=RECYCLE_ITEMS.filter(i=>i.level<=lv),traps=shuffle(pool.filter(i=>i.trap)).slice(0,[0,2,3][lv]),rest=shuffle(pool.filter(i=>!i.trap)).slice(0,(lv?10:8)-traps.length);
+ return {level:lv,items:shuffle([...traps,...rest]),index:0,score:0,mistakes:0,state:'play',drag:null,anim:null,hint:null,fx:[],time:0,message:'Fais glisser le déchet dans la bonne poubelle (ou touche la poubelle).',firstTry:true,banner:null,binFx:{},parts:[],flash:0,pulse:0,streak:0};}
+function recycleItem(g){return g.items[g.index];}
+// Drop the current item on a bin: right first time scores; a mistake shows the right bin and why.
+function recycleDrop(g,binId){if(g.state!=='play')return null;const item=recycleItem(g),ok=item.bin===binId,bin=RECYCLE_BINS.find(b=>b.id===binId);
+ if(ok){const first=g.firstTry;g.hint=null;if(first){g.score++;g.streak++;g.pulse=1;}g.anim={type:'in',bin:binId,t:0,from:g.drag?.pos||null};g.state='anim';g.message='Bravo ! '+item.why;g.fx.push({type:'stars',bin:binId,t:0,life:.9});
+  g.banner={type:'ok',t:0,art:item.art,why:item.why,title:!first?'C’est ça !':g.streak>=3?g.streak+' de suite !':['Bravo !','Bien joué !','Exact !','Parfait !'][g.index%4]};g.binFx[binId]={type:'ok',t:0};
+  const r=recycleBinRect(RECYCLE_BINS.findIndex(b=>b.id===binId));for(let i=0;i<26;i++){const a=-Math.PI*(.15+.7*Math.random());g.parts.push({x:r.x+52,y:r.y+40,vx:Math.cos(a)*(120+Math.random()*260),vy:Math.sin(a)*(240+Math.random()*260),t:0,color:['#ffd34d','#7fd88a','#7898d8','#f08a6a','#ffffff'][i%5]});}}
+ else{g.mistakes++;g.firstTry=false;g.streak=0;g.hint={bin:item.bin,t:0};g.anim={type:'back',t:0,from:g.drag?.pos||null};g.message='Pas dans « '+(bin?.name||'?')+' ». '+item.why;g.fx.push({type:'cross',bin:binId,t:0,life:.8});
+  g.banner={type:'no',t:0,art:item.art,why:item.why,title:'Oups ! Pas dans « '+(bin?.name||'?')+' »'};g.binFx[binId]={type:'no',t:0};g.flash=.35;}
+ g.drag=null;return ok;}
+const RECYCLE_OK_WAIT=1.7,RECYCLE_NO_WAIT=2.6;
+function recycleNext(g){if(g.banner?.type==='ok')g.banner.t=Math.max(g.banner.t,RECYCLE_OK_WAIT);}
+function recycleStep(g,dt){g.time+=dt;g.fx=g.fx.filter(f=>(f.t+=dt)<f.life);if(g.hint)g.hint.t+=dt;g.flash=Math.max(0,g.flash-dt);g.pulse=Math.max(0,g.pulse-dt*2);
+ for(const k in g.binFx){g.binFx[k].t+=dt;if(g.binFx[k].t>.7)delete g.binFx[k];}
+ g.parts=g.parts.filter(p=>{p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=700*dt;return p.t<1.2;});
+ if(g.banner){g.banner.t+=dt;if(g.banner.type==='no'&&g.banner.t>=RECYCLE_NO_WAIT)g.banner=null;}
+ if(g.anim?.type==='in'&&g.anim.t>=.5&&!(g.banner?.type==='ok'&&g.banner.t<RECYCLE_OK_WAIT)){g.anim.t=.5;g.anim.done=true;}
+ if(g.anim){g.anim.t+=dt;if(g.anim.type==='in'&&g.anim.done){g.anim=null;g.hint=null;g.banner=null;g.index++;g.firstTry=true;
+   if(g.index>=g.items.length){g.state='over';g.won=g.score>=Math.ceil(g.items.length*.8);g.message=(g.won?'Bravo ! ':'')+`${g.score} déchet${g.score>1?'s':''} bien trié${g.score>1?'s':''} du premier coup sur ${g.items.length}.`+(g.won?' Tu connais le tri genevois !':' Il en faut '+Math.ceil(g.items.length*.8)+' : une nouvelle partie ?');}
+   else g.state='play';}
+  else if(g.anim.type==='back'&&g.anim.t>=.4)g.anim=null;}
+ return g;}
+const RECYCLE_H=880;
+const recycleBinRect=i=>{const row=Math.floor(i/2),col=i%2,w=364,last=i===RECYCLE_BINS.length-1&&i%2===0;return {x:last?(760-w)/2:12+col*(w+8),y:312+row*140,w,h:128};};
+// Large text that shrinks only if it would not fit.
+function fitTextLeft(c,str,x,y,size,max,color,weight='800'){c.font=`${weight} ${size}px Segoe UI,Arial`;while(size>12&&c.measureText(str).width>max){size--;c.font=`${weight} ${size}px Segoe UI,Arial`;}c.fillStyle=color;c.textAlign='left';c.fillText(str,x,y);c.textAlign='center';}
+function fitText(c,str,x,y,size,max,color,weight='800'){c.font=`${weight} ${size}px Segoe UI,Arial`;while(size>10&&c.measureText(str).width>max){size--;c.font=`${weight} ${size}px Segoe UI,Arial`;}text(c,str,x,y,size,color,weight);}
+const RECYCLE_HOME={x:380,y:162};
+function recycleItemPos(g){if(g.drag)return g.drag.pos;const a=g.anim;if(a?.type==='in'){const r=recycleBinRect(RECYCLE_BINS.findIndex(b=>b.id===a.bin)),from=a.from||RECYCLE_HOME,k=Math.min(1,a.t/.5),e=k*k;return {x:from.x+(r.x+52-from.x)*e,y:from.y+(r.y+30-from.y)*e-Math.sin(Math.PI*k)*90,scale:Math.max(0,1-k),spin:k*Math.PI*2};}
+ if(a?.type==='back'){const from=a.from||RECYCLE_HOME,k=Math.min(1,a.t/.4),e=1-(1-k)*(1-k);return {x:from.x+(RECYCLE_HOME.x-from.x)*e+Math.sin(k*Math.PI*6)*8*(1-k),y:from.y+(RECYCLE_HOME.y-from.y)*e,scale:1};}
+ return {x:RECYCLE_HOME.x,y:RECYCLE_HOME.y+Math.sin(g.time*2.4)*5,scale:1};}
+function drawRecycle(c,g){const H=RECYCLE_H;c.save();c.clearRect(0,0,760,H);
+ const wall=c.createLinearGradient(0,0,0,300);wall.addColorStop(0,'#b48759');wall.addColorStop(1,'#a77b4f');c.fillStyle=wall;c.fillRect(0,0,760,300);for(let x=0;x<760;x+=6){c.fillStyle=x%12?'#ad8054':'#b98d60';c.fillRect(x,0,3,300);}rr(c,0,170,760,12,0,'#e4bf4f');
+ const ground=c.createLinearGradient(0,290,0,H);ground.addColorStop(0,'#c3c6bb');ground.addColorStop(1,'#aeb1a6');c.fillStyle=ground;c.fillRect(0,290,760,H-290);
+ rr(c,12,12,300,44,12,'#25352fdd');text(c,'Point de collecte',162,41,20,'#f7f4e6','800');
+ const item=recycleItem(g);rr(c,448,12,300,44,12,g.pulse>0?`rgba(79,154,95,${.6+.4*g.pulse})`:'#25352fdd');text(c,g.state==='over'?'Partie terminée':'Déchet '+(g.index+1)+' / '+g.items.length+'  ·  ✓ '+g.score,598,42,22,'#f7f4e6','800');
+ RECYCLE_BINS.forEach((b,i)=>{const r=recycleBinRect(i),hint=g.hint&&g.hint.bin===b.id,hot=g.drag&&g.drag.over===b.id,open=g.anim?.type==='in'&&g.anim.bin===b.id?Math.sin(Math.min(1,g.anim.t/.5)*Math.PI):0;
+  const bf=g.binFx[b.id];c.save();if(bf?.type==='no')c.translate(Math.sin(bf.t*55)*10*(1-bf.t/.7),0);if(bf?.type==='ok'){const sq=Math.sin(Math.min(1,bf.t/.5)*Math.PI)*.08;c.translate(r.x+r.w/2,r.y+r.h);c.scale(1+sq,1-sq);c.translate(-(r.x+r.w/2),-(r.y+r.h));}
+  ellipse(c,r.x+r.w/2,r.y+r.h+4,r.w*.48,8,'#00000022');if(bf?.type==='ok'){c.globalAlpha=.7*(1-bf.t/.7);rr(c,r.x-8,r.y-8,r.w+16,r.h+16,18,'#7fd88a');c.globalAlpha=1;}if(bf?.type==='no'){c.globalAlpha=.7*(1-bf.t/.7);rr(c,r.x-8,r.y-8,r.w+16,r.h+16,18,'#ff7a66');c.globalAlpha=1;}
+  if(hint){c.globalAlpha=.5+.4*Math.sin(g.hint.t*8);rr(c,r.x-7,r.y-7,r.w+14,r.h+14,16,'#ffd34d');c.globalAlpha=1;}
+  if(hot)rr(c,r.x-5,r.y-5,r.w+10,r.h+10,14,'#ffffff88');
+  rr(c,r.x,r.y+16,r.w,r.h-16,12,b.color);rr(c,r.x+8,r.y+22,r.w-16,6,3,'#ffffff22');
+  c.save();c.translate(r.x+8,r.y+16-open*10);c.rotate(-open*.12);rr(c,-8,-16,r.w,20,8,b.lid);rr(c,r.w/2-38,-10,60,7,3,'#00000040');c.restore();
+  ellipse(c,r.x+52,r.y+74,40,40,'#ffffffd9');recycleIcon(c,b.art,r.x+52,r.y+74,62);
+  fitTextLeft(c,b.name,r.x+102,r.y+74,40,r.w-112,'#ffffff');fitTextLeft(c,b.sub,r.x+102,r.y+108,25,r.w-112,'#ffffffe6','700');
+  if(hint){const by=Math.sin(g.hint.t*7)*6;rr(c,r.x+r.w-112,r.y-22+by,100,40,20,'#25352fee');text(c,'ici ! ▼',r.x+r.w-62,r.y+6+by,24,'#ffd34d','800');}c.restore();});
+ for(const f of g.fx){const i=RECYCLE_BINS.findIndex(b=>b.id===f.bin),r=recycleBinRect(i),k=f.t/f.life,cx=r.x+52,cy=r.y+40;c.globalAlpha=1-k;
+  if(f.type==='stars')for(let s=0;s<8;s++){const a=s*Math.PI/4;text(c,'✦',cx+Math.cos(a)*(10+k*60),cy+Math.sin(a)*(10+k*40)-k*20,18,'#ffd34d','800');}
+  else{const z=1+.3*Math.sin(Math.min(1,k*3)*Math.PI);c.strokeStyle='#e0614a';c.lineWidth=10;c.lineCap='round';c.beginPath();c.moveTo(cx-24*z,cy+10-24*z+24);c.lineTo(cx+24*z,cy+10+24*z+24);c.moveTo(cx+24*z,cy+10-24*z+24);c.lineTo(cx-24*z,cy+10+24*z+24);c.stroke();}}
+ c.globalAlpha=1;
+ if(item&&g.state!=='over'){const p=recycleItemPos(g),sc=p.scale||1;if(!g.drag&&!g.anim){rr(c,RECYCLE_HOME.x-250,RECYCLE_HOME.y-96,500,212,20,'#fffdf2ee');}
+  if(sc<=.02){}else{ellipse(c,p.x,p.y+58*sc,42*sc,9*sc,'#00000025');}c.save();c.translate(p.x,p.y);c.rotate(g.drag?Math.sin(g.time*12)*.06:(p.spin||0)+(g.anim?.type==='back'?Math.sin(g.anim.t*50)*.25:0));c.scale(sc,sc);recycleIcon(c,item.art,0,0,138);c.restore();
+  if(!g.drag&&!g.anim){fitText(c,item.name,RECYCLE_HOME.x,RECYCLE_HOME.y+94,38,470,'#2f4a3c');if(g.index===0&&!g.hint){const y=RECYCLE_HOME.y+138+Math.sin(g.time*4)*3;rr(c,RECYCLE_HOME.x-220,y-26,440,36,18,'#25352fdd');text(c,'↓ glisse-moi dans la bonne poubelle',RECYCLE_HOME.x,y,22,'#fff6e0','800');}}}
+ for(const p of g.parts){c.globalAlpha=Math.max(0,1-p.t/1.2);c.save();c.translate(p.x,p.y);c.rotate(p.t*9);rr(c,-4,-6,8,12,2,p.color);c.restore();}c.globalAlpha=1;
+ if(g.banner){const bn=g.banner,ok=bn.type==='ok',life=ok?RECYCLE_OK_WAIT:RECYCLE_NO_WAIT,pop=Math.min(1,bn.t/.22),fade=Math.min(1,(life-bn.t)/.3),sc=.6+.4*pop+.06*Math.sin(Math.min(1,bn.t/.4)*Math.PI);
+  c.save();c.globalAlpha=Math.max(0,fade);c.translate(380,172);c.scale(sc,sc);c.translate(-380,-172);
+  rr(c,26,66,708,214,24,ok?'#2f8a4e':'#c0483a');rr(c,26,66,708,214,24,null,'#ffffff55');ellipse(c,124,172,66,66,'#ffffff');
+  c.lineCap='round';c.lineJoin='round';c.lineWidth=16;c.strokeStyle=ok?'#2f8a4e':'#c0483a';c.beginPath();if(ok){const k=Math.min(1,bn.t/.35);c.moveTo(94,172);c.lineTo(94+22*Math.min(1,k*2),172+24*Math.min(1,k*2));if(k>.5)c.lineTo(116+40*(k-.5)*2,196-60*(k-.5)*2);}else{c.moveTo(100,148);c.lineTo(148,196);c.moveTo(148,148);c.lineTo(100,196);}c.stroke();
+  ellipse(c,176,226,34,34,'#ffffff');recycleIcon(c,bn.art,176,226,52);
+  fitTextLeft(c,bn.title,214,124,40,500,'#ffffff');
+  c.font='700 25px Segoe UI,Arial';const words=bn.why.split(' '),lines=[];let line='';for(const w of words){const t=line?line+' '+w:w;if(c.measureText(t).width>496&&line){lines.push(line);line=w;}else line=t;}lines.push(line);
+  lines.slice(0,4).forEach((l,i)=>{c.fillStyle='#ffffffee';c.textAlign='left';c.fillText(l,214,164+i*30);});c.textAlign='center';
+  if(ok&&bn.t>.6)text(c,'touche pour continuer',380,270,15,'#ffffffaa','700');c.restore();}
+ if(g.flash>0){c.fillStyle=`rgba(224,97,74,${g.flash*.6})`;c.fillRect(0,0,760,H);}
+ if(g.state==='over'){rr(c,130,80,500,170,20,'#fffdf2ee');text(c,g.won?'Super tri !':'Encore un essai ?',380,150,40,'#2f5a45','800');text(c,g.score+' / '+g.items.length+' du premier coup',380,205,26,'#4f5d4f','700');
+  if(g.won)for(let i=0;i<60;i++){const x=(i*97+g.time*55*(1+i%3))%760,y=(i*53+g.time*110*(1+i%2))%H;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}}
+ c.restore();}
+function recycleGame(){
+ discover('recycle');let g=createRecycleGame(level());activeActivity={kind:'recycle',get game(){return g;}};let frame=0,last=null,closed=false,shown='';
+ modal(activityHeader('Le tri des déchets','Le point de collecte · à Genève')+`<canvas id="recycleCanvas" class="ping-canvas" style="aspect-ratio:760/880" width="760" height="880" role="img" aria-label="Un déchet à trier et sept poubelles de tri"></canvas><p id="recycleFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Trier :</b> fais glisser le déchet sur la bonne poubelle, ou touche directement la poubelle. Si tu te trompes, la bonne poubelle s’allume et tu apprends pourquoi. Attention aux pièges !</p><div class="actions"><button id="recycleAgain" class="secondary">Nouvelle partie</button><button id="activityClose" class="secondary">Retour</button></div>`,
+  ()=>{closed=true;cancelAnimationFrame(frame);});
+ const cv=$('#recycleCanvas'),c=cv.getContext('2d');
+ const pos=e=>{const r=cv.getBoundingClientRect(),k=760/(r.width||760);return {x:(e.clientX-r.left)*k,y:(e.clientY-r.top)*k};};
+ const binAt=p=>{const i=RECYCLE_BINS.findIndex((b,j)=>{const r=recycleBinRect(j);return p.x>=r.x-8&&p.x<=r.x+r.w+8&&p.y>=r.y-10&&p.y<=r.y+r.h+8;});return i<0?null:RECYCLE_BINS[i].id;};
+ const sync=()=>{const key=g.state+g.index+g.message;if(key===shown)return;shown=key;$('#recycleFeedback').textContent=g.message;$('#recycleFeedback').className='feedback'+(g.state==='over'&&g.won?' success':'');if(g.state==='over'&&g.won&&!g.awarded){g.awarded=true;award('recycle');}};
+ cv.onpointerdown=e=>{e.preventDefault?.();if(g.banner?.type==='ok'&&g.banner.t>.4){recycleNext(g);return;}if(g.state!=='play'||g.anim)return;if(g.banner?.type==='no')g.banner=null;const p=pos(e),bin=binAt(p);if(bin){recycleDrop(g,bin);recycleSound(g.anim?.type==='in'?'ok':'no');sync();return;}
+  if(Math.hypot(p.x-RECYCLE_HOME.x,p.y-RECYCLE_HOME.y)<110){cv.setPointerCapture?.(e.pointerId);g.drag={id:e.pointerId,pos:p,over:null};}};
+ cv.onpointermove=e=>{if(!g.drag||e.pointerId!==g.drag.id)return;const p=pos(e);g.drag.pos=p;g.drag.over=binAt(p);};
+ cv.onpointerup=cv.onpointercancel=e=>{if(!g.drag)return;const over=e.type==='pointercancel'?null:binAt(g.drag.pos);if(over){recycleDrop(g,over);recycleSound(g.anim?.type==='in'?'ok':'no');}else{g.anim={type:'back',t:0,from:g.drag.pos};g.drag=null;}sync();};
+ $('#recycleAgain').onclick=()=>{g=createRecycleGame(level());shown='';sync();};bindActivityClose();
+ const animate=now=>{if(closed)return;const dt=last===null?0:Math.min(.05,(now-last)/1000);last=now;const before=g.state;recycleStep(g,dt);if(before!=='over'&&g.state==='over')recycleSound(g.won?'win':'no');drawRecycle(c,g);sync();frame=requestAnimationFrame(animate);};
+ sync();drawRecycle(c,g);frame=requestAnimationFrame(animate);}
+function recycleSound(type){if(!sound)return;try{parkAudio=parkAudio||new(window.AudioContext||window.webkitAudioContext)();const a=parkAudio,t=a.currentTime;const notes={ok:[[660,.08],[880,.12]],no:[[260,.16]],win:[[523,.12],[659,.12],[784,.12],[1046,.25]]}[type]||[];
+ notes.forEach(([f,d],i)=>{const o=a.createOscillator(),gn=a.createGain();o.type='sine';o.frequency.value=f;o.connect(gn);gn.connect(a.destination);const s0=t+i*.09;gn.gain.setValueAtTime(.0001,s0);gn.gain.exponentialRampToValueAtTime(.11,s0+.005);gn.gain.exponentialRampToValueAtTime(.0001,s0+d);o.start(s0);o.stop(s0+d+.02);});}catch{}}
 
 const decorColors=['#8eaa88','#8bafc2','#c997ab','#d5b66f','#c28f6c','#b29ac8'];
 const decorTypes={bed:['Lit','🛏️'],desk:['Bureau','✏️'],shelf:['Bibliothèque','📚'],wardrobe:['Armoire','👕'],toybox:['Coffre à jouets','🧺'],teddy:['Peluche','🧸'],ball:['Ballon','⚽'],rug:['Tapis','🟠'],plant:['Plante','🪴']};
