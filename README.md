@@ -43,7 +43,7 @@ npm test
 npm run bundle
 ```
 
-Les 52 contrôles utilisent un DOM simulé et une véritable implémentation Canvas. Ils ne remplacent pas une vérification des sons, des animations et du rendu dans chaque navigateur. Le fichier autonome est généré dans **outputs/Le-Bocage.html**.
+Les 58 contrôles utilisent un DOM simulé et une véritable implémentation Canvas. Ils ne remplacent pas une vérification des sons, des animations et du rendu dans chaque navigateur. Le fichier autonome est généré dans **outputs/Le-Bocage.html**.
 
 ## Publication
 
@@ -65,6 +65,7 @@ Une branche supprimée perd sa version de test. Réglage nécessaire une fois : 
 - Ping-pong avec Lina, près de la table de la cour de l’école : glissez le doigt ou la souris (ou ← → / Q D) pour placer la raquette sous la balle ; le bord de la raquette vise sur le côté, bouger en frappant tape plus fort. Premier à 7 points ; Lina s’adapte à l’âge. Une étoile à la première victoire.
 - Tri des déchets, au point de collecte à côté de l’école (devant les conteneurs, entre la voie privée et l’école) : faites glisser chaque déchet dans la bonne poubelle, ou touchez la poubelle. Sept poubelles selon les règles genevoises : verre, PET (bouteilles de boisson seulement), papier et carton, alu et fer-blanc, déchets de cuisine (P’tite poubelle verte), textiles et ordures ménagères. En cas d’erreur, la bonne poubelle s’allume et une explication s’affiche. Les plus grands ont plus de pièges (brique de lait, boîte à pizza grasse, assiette cassée…). 80 % de déchets bien triés du premier coup rapportent une étoile.
 - Tirs au but avec Sami, qui attend avec son ballon sur la pelouse en bas du quartier (au sud du chemin des Pampres, à côté de l’allée du garage) : posez le doigt sur le ballon, glissez vers le but et lâchez. La direction vise, la longueur du geste règle la force (trop fort, la balle passe au-dessus). Sami plonge en devinant un côté, plus ou moins bien selon l’âge : visez les coins. 3 buts sur 5 tirs rapportent une étoile.
+- Défi des paniers, dans la salle de sport : posez le doigt sur la scène, glissez vers le haut et vers le panier, puis lâchez. La direction vise, la longueur du geste règle la force ; des pointillés montrent le début de la trajectoire (plus longs pour les 7–8 ans). La balle rebondit sur le cercle, la planche et le parquet, et une astuce explique chaque raté (trop court, trop long, trop bas, trop fort). Après chaque panier, on recule d’un pas : tout près, à mi-distance, puis de loin. Un panier sans toucher le cercle est un « panier propre ». Trois paniers rapportent une étoile ; essais illimités.
 - Chez soi : approchez-vous de « Décorer ta chambre ». Ajoutez des meubles et jouets, choisissez leur couleur et placez-les sur les cases libres ; les couloirs restent dégagés. La décoration se sauvegarde automatiquement.
 - Moustache vit chez soi : approchez-vous du chat pour servir des croquettes ou remplir sa gamelle d’eau. Les gamelles et la décoration sont incluses dans l’export/import.
 - Zoom borné entre la vue globale et la vue proche centrée sur le personnage.

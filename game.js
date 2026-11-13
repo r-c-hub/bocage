@@ -754,11 +754,110 @@ function makeRevisionChallenge(subject,topic){
 function revisionQuiz(){quiz(fresh('revision-'+currentRevision.subject+'-'+currentRevision.topic,()=>{const q=makeRevisionChallenge(currentRevision.subject,currentRevision.topic);return {...q,signature:q.question+'|'+q.options[q.answer]};}));}
 
 function footballAvatar(a,label,side){const look={...a,eyes:a.eyes||(a===profile?profile.eyes:'#443e31'),pants:a.pants||'#536d7a'};return `<svg class="football-player player-${side}" viewBox="0 0 110 150" role="img" aria-label="${esc(label)}"><g transform="translate(55 136) scale(1.25)">${avatarSVG(look,'talk')}</g><text x="55" y="149" text-anchor="middle" font-size="9" fill="#526d51">${esc(label)}</text></svg>`;}
-function basketballGame(){discover('basket');let raf=0,phase=0,count=0,busy=false,finished=false;const start=performance.now(),period=[2400,1900,1500][level()];activeActivity={kind:'basket',get count(){return count;}};
- modal(activityHeader('Trois paniers pour l’équipe','Salle de sport · basket')+`<p class="modal-description">Lance quand le curseur orange entre dans la zone verte. Fais trois paniers ; tu peux réessayer sans limite.</p><div class="basket-game">${footballAvatar(profile,profile.name,'left')}<svg class="basket-hoop" viewBox="0 0 90 130" aria-label="Panier"><path d="M55 30v95" stroke="#809180" stroke-width="7"/><rect x="15" y="6" width="65" height="44" rx="3" fill="#f5f0d9" stroke="#92aa8a" stroke-width="4"/><rect x="31" y="20" width="30" height="23" fill="none" stroke="#be8a64" stroke-width="2"/><ellipse cx="44" cy="51" rx="26" ry="6" fill="none" stroke="#c48250" stroke-width="4"/><path d="M19 53l10 24h30l10-24M31 54l5 23M44 54v23M57 54l-5 23" fill="none" stroke="#f6f5e6" stroke-width="2"/></svg><span id="basketBall" class="basket-ball">🏀</span><div class="timing-track"><div class="timing-target"></div><div id="basketCursor" class="timing-cursor"></div></div></div><p id="basketFeedback" class="feedback" role="status">0 panier sur 3</p><div class="actions"><button id="basketShoot" class="primary">Lancer !</button><button id="activityClose" class="secondary">Retour à la salle</button></div>`,()=>cancelAnimationFrame(raf));
- const frame=now=>{phase=((now-start)/period)%2;const pos=phase<1?phase:2-phase;$('#basketCursor').style.left=`${pos*100}%`;raf=requestAnimationFrame(frame);};raf=requestAnimationFrame(frame);
- $('#basketShoot').onclick=()=>{if(busy||finished)return;const pos=phase<1?phase:2-phase,hit=pos>=.4&&pos<=.6;busy=true;$('#basketBall').animate([{left:'17%',top:'60%',transform:'rotate(0)'},{left:'55%',top:'5%',transform:'rotate(180deg)'},{left:hit?'84%':'72%',top:hit?'31%':'76%',transform:'rotate(360deg)'}],{duration:650,easing:'ease-in-out'}).finished.then(()=>{busy=false;}).catch(()=>{busy=false;});if(hit){count++;$('#basketFeedback').textContent=`Panier ! ${count} sur 3`;if(count===3){finished=true;cancelAnimationFrame(raf);award('basket');$('#basketFeedback').textContent='✓ Trois paniers ! Bravo pour ta précision.';$('#basketShoot').disabled=true;}}else $('#basketFeedback').textContent='Presque ! Lance quand le curseur est dans le vert.';};bindActivityClose();
-}
+// Basket seen from the side: swipe towards the hoop, the dotted arc shows the start of the flight.
+// Each basket moves you one step back: close, middle distance, then from far away.
+const HOOP={G:980,R:13,rimY:230,rimF:560,rimB:618,board:626,boardTop:118,boardBot:254,floor:462,spots:[[360,290,220],[340,250,170],[330,230,130]],preview:[.75,.48,.3],k:5.2,max:930,goal:3,windup:.22,
+ names:['tout près du panier','à mi-distance','de loin']};
+function hoopSpotX(g){return HOOP.spots[g.level][Math.min(HOOP.goal-1,g.spot)];}
+function hoopRelease(g){return {x:hoopSpotX(g)+52,y:310};}
+function hoopReset(g){const r=hoopRelease(g);Object.assign(g.ball,{x:r.x,y:r.y,vx:0,vy:0});g.trail=[];g.touched=false;g.crossX=null;g.board=false;g.result=null;g.landed=false;g.flight=0;}
+function createHoopGame(lv=level()){const g={level:lv,spot:0,baskets:0,tries:0,swishes:0,state:'aim',aim:{vx:330,vy:-560},aiming:false,ball:{x:0,y:0,vx:0,vy:0,spin:0},trail:[],timer:0,throwT:0,net:0,rim:0,cheer:0,time:0,effects:[],events:[],
+ message:'Pose le doigt sur l’écran, glisse vers le panier, puis lâche.'};hoopReset(g);return g;}
+// The swipe gives the throw: its direction aims, its length sets the force.
+function hoopAim(g,dx,dy){let vx=dx*HOOP.k,vy=dy*HOOP.k;const s=Math.hypot(vx,vy);if(s>HOOP.max){vx*=HOOP.max/s;vy*=HOOP.max/s;}g.aim={vx,vy};return g.aim;}
+function hoopThrow(g){if(g.state!=='aim'||Math.hypot(g.aim.vx,g.aim.vy)<150||g.aim.vy>-40)return false;g.state='windup';g.throwT=0;g.tries++;g.events.push('throw');return true;}
+function hoopPath(g,frac=1){const r=hoopRelease(g),{vx,vy}=g.aim,pts=[];let T=1.6;for(let t=0;t<1.6;t+=.01){const y=r.y+vy*t+HOOP.G*t*t/2;if(vy+HOOP.G*t>0&&y>HOOP.rimY){T=t;break;}}
+ for(let i=1;i<=16;i++){const t=T*frac*i/16;pts.push({x:r.x+vx*t,y:r.y+vy*t+HOOP.G*t*t/2});}return pts;}
+function hoopBallPhysics(g,dt){const b=g.ball,R=HOOP.R;b.spin+=dt*b.vx/R;
+ for(let s=0;s<4;s++){const h=dt/4,py=b.y;b.vy+=HOOP.G*h;b.x+=b.vx*h;b.y+=b.vy*h;
+  for(const px of [HOOP.rimF,HOOP.rimB]){const dx=b.x-px,dy=b.y-HOOP.rimY,d=Math.hypot(dx,dy)||1;if(d<R+3){const nx=dx/d,ny=dy/d,dot=b.vx*nx+b.vy*ny;if(dot<0){b.vx-=1.55*dot*nx;b.vy-=1.55*dot*ny;if(dot<-80){g.rim=1;g.events.push('rim');}}b.x=px+nx*(R+3);b.y=HOOP.rimY+ny*(R+3);g.touched=true;}}
+  if(b.vx>0&&b.x+R>HOOP.board&&b.x<HOOP.board+14&&b.y>HOOP.boardTop-R*.6&&b.y<HOOP.boardBot+R*.6){b.x=HOOP.board-R;b.vx*=-.6;g.touched=true;if(g.crossX===null)g.board=true;if(Math.abs(b.vx)>60)g.events.push('board');}
+  if(!g.result&&py<HOOP.rimY&&b.y>=HOOP.rimY&&b.vy>0){if(b.x>HOOP.rimF+3&&b.x<HOOP.rimB-3)hoopScore(g);else if(g.crossX===null)g.crossX=b.x;}
+  if(g.result==='basket'&&b.y>HOOP.rimY&&b.y<HOOP.rimY+60){b.x+=((HOOP.rimF+HOOP.rimB)/2-b.x)*.08;b.vx*=.9;}
+  if(b.y+R>HOOP.floor){b.y=HOOP.floor-R;if(b.vy>90)g.events.push('bounce');b.vy=-Math.abs(b.vy)*.58;b.vx*=.82;g.landed=true;}
+  if(b.x<R){b.x=R;b.vx=Math.abs(b.vx)*.6;}if(b.x>760-R){b.x=760-R;b.vx=-Math.abs(b.vx)*.6;}}}
+function hoopScore(g){const swish=!g.touched;g.result='basket';g.baskets++;if(swish)g.swishes++;g.net=1;g.cheer=1.6;g.ball.vx*=.25;g.ball.vy=Math.min(g.ball.vy,260);g.timer=1.5;g.state='result';
+ g.events.push(swish?'swish':'basket');g.effects.push({type:swish?'swish':'basket',t:0});
+ const left=HOOP.goal-g.baskets;g.message=(swish?'Panier propre, sans toucher le cercle ! ':'Panier ! ')+(left?`Encore ${left} : recule d’un pas.`:'');
+ if(!left){g.state='over';g.won=true;g.cheer=4;g.message+=`Trois paniers, de plus en plus loin, en ${g.tries} lancer${g.tries>1?'s':''} ! Bravo pour ta précision.`;g.events.push('win');}}
+function hoopMiss(g){const x=g.crossX;g.result='miss';g.state='result';g.timer=1.3;g.events.push('miss');
+ const hint=g.board?'Trop fort : la balle tape la planche. Glisse un peu moins loin.':x===null?'Trop bas : lance plus haut, en arc.':x<HOOP.rimF?'Un peu court : glisse un peu plus loin.':x>HOOP.board?'Par-dessus la planche : moins fort !':'Trop long : glisse un peu moins loin.';
+ g.message=(g.touched&&!g.board?'Sur le cercle ! ':'Raté ! ')+hint;g.effects.push({type:'miss',label:g.board?'Trop fort !':x===null?'Trop bas':x<HOOP.rimF?'Court !':'Long !',t:0});}
+function hoopStep(g,dt){dt=Math.max(0,Math.min(dt,.05));g.time+=dt;g.net=Math.max(0,g.net-dt*1.4);g.rim=Math.max(0,g.rim-dt*3);g.cheer=Math.max(0,g.cheer-dt*.5);g.effects=g.effects.filter(e=>(e.t+=dt)<1.3);
+ if(g.state==='windup'){g.throwT+=dt;if(g.throwT>=HOOP.windup){const r=hoopRelease(g);Object.assign(g.ball,{x:r.x,y:r.y,vx:g.aim.vx,vy:g.aim.vy});g.state='flight';g.flight=0;}return g;}
+ if(g.state==='flight'||g.state==='result'||g.state==='over'){g.throwT+=dt;g.flight+=dt;hoopBallPhysics(g,dt);const b=g.ball;
+  if(g.state==='flight'){g.trail.push({x:b.x,y:b.y});if(g.trail.length>7)g.trail.shift();if(g.landed||g.flight>4)hoopMiss(g);}else if(g.trail.length)g.trail.shift();
+  if(g.state==='result'){g.timer-=dt;if(g.timer<=0){if(g.result==='basket')g.spot++;g.state='aim';hoopReset(g);if(g.baskets)g.message=`Panier n° ${g.baskets+1} sur ${HOOP.goal}, ${HOOP.names[g.spot]}.`;g.events.push('ready');}}}
+ return g;}
+function drawHoopNet(c,g,front){const cx=(HOOP.rimF+HOOP.rimB)/2,y=HOOP.rimY,sw=g.net>0?Math.sin(g.net*Math.PI*3)*g.net*6:0,len=56+(g.net>0?Math.sin(g.net*Math.PI)*12:0);
+ c.strokeStyle=front?'#fbfaf2':'#d9d6c8';c.lineWidth=front?2:1.5;for(let i=0;i<=6;i++){const k=i/6-.5,top=cx+k*58,bot=cx+k*30+sw,mid=(top+bot)/2+sw*.5;if((Math.abs(k)<.3)!==front&&i%3)continue;c.beginPath();c.moveTo(top,y+2);c.quadraticCurveTo(mid,y+len*.55,bot,y+len);c.stroke();}
+ for(let j=1;j<=3;j++){const t=j/3.4,w=29-t*14,yy=y+len*t;c.beginPath();c.ellipse(cx+sw*t,yy,w,3.5,0,front?0:Math.PI,front?Math.PI:Math.PI*2);c.stroke();}}
+function drawHoop(c,g,cheerers,me){
+ c.save();c.clearRect(0,0,760,560);
+ // Gym: painted wall, high windows, wall bars, then the wooden floor.
+ const wall=c.createLinearGradient(0,0,0,HOOP.floor);wall.addColorStop(0,'#eee5cf');wall.addColorStop(1,'#e1d6bb');c.fillStyle=wall;c.fillRect(0,0,760,HOOP.floor);
+ rr(c,0,330,760,132,0,'#8fb0b9');rr(c,0,326,760,6,0,'#6f929d');
+ for(let i=0;i<4;i++){rr(c,40+i*150,26,104,58,4,'#b9d6df','#c7b68f');c.fillStyle='#ffffff60';c.fillRect(48+i*150,32,30,46);c.strokeStyle='#c7b68f';c.lineWidth=3;c.beginPath();c.moveTo(92+i*150,26);c.lineTo(92+i*150,84);c.stroke();}
+ for(let i=0;i<7;i++){c.strokeStyle='#b58b5a';c.lineWidth=4;c.beginPath();c.moveTo(18+i*12,140);c.lineTo(18+i*12,330);c.stroke();}for(let j=0;j<10;j++){c.lineWidth=3;c.beginPath();c.moveTo(14,150+j*19);c.lineTo(94,150+j*19);c.stroke();}
+ // Scoreboard.
+ rr(c,330,104,150,70,10,'#2f3d39');text(c,'PANIERS',405,128,13,'#9fc6b4','800');text(c,`${g.baskets} / ${HOOP.goal}`,405,162,30,'#ffd34d','800');
+ // Friends on the bench, cheering after each basket.
+ rr(c,404,388,150,14,4,'#b48a5c');rr(c,412,402,8,58,2,'#94704a');rr(c,538,402,8,58,2,'#94704a');
+ cheerers.forEach((f,i)=>{const up=g.cheer>0?Math.abs(Math.sin(g.time*9+i))*12:0;parkAvatar(c,446+i*66,(g.cheer>0?352:380)-up,f,g.cheer>0?'hop-double':'swing',g.cheer>0?.9:.1,.78,i?-1:1);});
+ const fl=c.createLinearGradient(0,HOOP.floor,0,560);fl.addColorStop(0,'#d7a66a');fl.addColorStop(1,'#bb8650');c.fillStyle=fl;c.fillRect(0,HOOP.floor,760,98);
+ c.strokeStyle='#a9774480';c.lineWidth=1.5;for(let j=0;j<5;j++){const y=HOOP.floor+8+j*j*5;c.beginPath();c.moveTo(0,y);c.lineTo(760,y);c.stroke();}
+ // Shooting spots taped on the floor: the next one is highlighted.
+ HOOP.spots[g.level].forEach((x,i)=>{const on=i===Math.min(HOOP.goal-1,g.spot),done=i<g.spot;ellipse(c,x,HOOP.floor+18,26,7,done?'#5f9e6a':on?'#f2c94c':'#ffffff55');if(done)parkStroke(c,[[x-6,HOOP.floor+18],[x-1,HOOP.floor+22],[x+7,HOOP.floor+13]],'#ffffff',3);else text(c,String(i+1),x,HOOP.floor+23,13,'#5b4a2c','800');});
+ // Pole, arm and backboard (side view).
+ rr(c,690,140,16,HOOP.floor-140,3,'#62707a');rr(c,672,HOOP.floor-12,52,12,4,'#4d5960');rr(c,632,150,62,10,3,'#62707a');
+ rr(c,HOOP.board,HOOP.boardTop,12,HOOP.boardBot-HOOP.boardTop,3,'#f7f8f4','#9aa6aa');rr(c,HOOP.board+3,HOOP.rimY-46,6,48,1,'#d9623b');
+ const shake=g.rim>0?Math.sin(g.time*60)*g.rim*2:0;
+ c.save();c.translate(0,shake);c.strokeStyle='#c4562d';c.lineWidth=4;c.beginPath();c.ellipse((HOOP.rimF+HOOP.rimB)/2,HOOP.rimY,30,6,0,Math.PI,Math.PI*2);c.stroke();rr(c,HOOP.rimB,HOOP.rimY-3,HOOP.board-HOOP.rimB,6,2,'#c4562d');drawHoopNet(c,g,false);c.restore();
+ // The child throwing: knees bent while aiming, arm stretched when the ball leaves.
+ const sx=hoopSpotX(g),pel=HOOP.floor-57,ph=g.state==='aim'?.55+Math.sin(g.time*3)*.03:g.state==='windup'?.45+.55*Math.min(1,g.throwT/HOOP.windup):Math.max(.3,1-Math.max(0,g.throwT-HOOP.windup-.5)*1.4),dip=g.state==='windup'?Math.sin(Math.min(1,g.throwT/HOOP.windup)*Math.PI)*8:0;
+ ellipse(c,sx,HOOP.floor+2,30,7,'#6b4a2a40');parkAvatar(c,sx,pel+dip,me,'throw',ph,1.3,1);
+ const b=g.ball,held=g.state==='aim'||g.state==='windup',bx=held?sx+(28+12*ph)*1.3+4:b.x,by=held?pel+dip+(-18-55*ph)*1.3-6:b.y;
+ g.trail.forEach((t,i)=>{c.globalAlpha=(i+1)/g.trail.length*.22;ellipse(c,t.x,t.y,HOOP.R*.85,HOOP.R*.85,'#f08a3c');});c.globalAlpha=1;
+ ellipse(c,bx,HOOP.floor+3,HOOP.R*Math.max(.4,1-(HOOP.floor-by)/500),4,'#6b4a2a40');
+ {const r=HOOP.R,gr=c.createRadialGradient(bx-r*.35,by-r*.4,r*.2,bx,by,r);gr.addColorStop(0,'#f6a35b');gr.addColorStop(1,'#d36a26');c.beginPath();c.arc(bx,by,r,0,Math.PI*2);c.fillStyle=gr;c.fill();
+  c.save();c.translate(bx,by);c.rotate(b.spin);c.strokeStyle='#5a2d14';c.lineWidth=1.6;c.beginPath();c.moveTo(-r,0);c.lineTo(r,0);c.moveTo(0,-r);c.lineTo(0,r);c.stroke();c.beginPath();c.arc(-r*1.25,0,r*.85,-.9,.9);c.stroke();c.beginPath();c.arc(r*1.25,0,r*.85,Math.PI-.9,Math.PI+.9);c.stroke();c.restore();}
+ // Front of the rim and net, drawn over the ball so it really goes through.
+ c.save();c.translate(0,shake);drawHoopNet(c,g,true);c.strokeStyle='#e0703f';c.lineWidth=4;c.beginPath();c.ellipse((HOOP.rimF+HOOP.rimB)/2,HOOP.rimY,30,6,0,0,Math.PI);c.stroke();c.restore();
+ // Aim: dotted arc (longer for the youngest) and force bar; an inviting arrow before the first swipe.
+ if(g.state==='aim'&&g.aiming){const pts=hoopPath(g,HOOP.preview[g.level]),s=Math.hypot(g.aim.vx,g.aim.vy)/HOOP.max,weak=g.aim.vy>-40;c.fillStyle=weak?'#ffb3a1':'#fff7d6';
+  pts.forEach((p,i)=>{c.globalAlpha=.95-.6*i/pts.length;c.beginPath();c.arc(p.x,p.y,5-i*.15,0,Math.PI*2);c.fill();c.strokeStyle='#8a6a3a80';c.lineWidth=1;c.stroke();});c.globalAlpha=1;
+  rr(c,20,524,200,14,7,'#00000030');rr(c,20,524,Math.max(6,s*200),14,7,s>.9?'#e0614a':s>.7?'#f0c85a':'#8fd17a');text(c,'Force',120,516,13,'#fff8e6','700');}
+ else if(g.state==='aim'){const k=(Math.sin(g.time*4)+1)/2;c.globalAlpha=.55+.4*k;c.strokeStyle='#fff6c8';c.lineWidth=4;c.lineCap='round';c.beginPath();c.arc(bx,by,HOOP.R+8+k*5,0,Math.PI*2);c.stroke();
+  c.beginPath();c.moveTo(bx+24,by-24);c.quadraticCurveTo(bx+70,by-110,bx+120,by-96);c.stroke();c.beginPath();c.moveTo(bx+104,by-106);c.lineTo(bx+122,by-96);c.lineTo(bx+106,by-82);c.stroke();c.globalAlpha=1;}
+ // Effects.
+ const pill=(str,x,y,size,color)=>{c.font=`800 ${size}px Segoe UI,Arial`;const w=c.measureText(str).width+28;rr(c,x-w/2,y-size-8,w,size+18,(size+18)/2,'#25352fcc');text(c,str,x,y,size,color,'800');};
+ for(const e of g.effects){const k=e.t/1.3;c.globalAlpha=Math.min(1,(1-k)*2);const y=272-k*30;
+  if(e.type==='swish')pill('Panier propre !',420,y,32+Math.sin(Math.min(1,e.t*4)*Math.PI)*6,'#ffd34d');else if(e.type==='basket')pill('Panier !',420,y,36+Math.sin(Math.min(1,e.t*4)*Math.PI)*6,'#ffd34d');else pill(e.label,420,y,26,'#ffe1d6');}
+ c.globalAlpha=1;{const lab=g.state==='over'?'Défi réussi !':`Position ${Math.min(HOOP.goal,g.spot+1)} : ${HOOP.names[Math.min(HOOP.goal-1,g.spot)]}`;c.font='700 15px Segoe UI,Arial';const w=c.measureText(lab).width+28;rr(c,14,96,w,34,10,'#25352fdd');text(c,lab,14+w/2,119,15,'#f7f4e6','700');}
+ if(g.state==='over')for(let i=0;i<50;i++){const x=(i*97+g.time*55*(1+i%3))%760,y=(i*53+g.time*110*(1+i%2))%560;rr(c,x,y,6,10,1,['#e2b33c','#8eb7a4','#c8372d','#7898a8'][i%4]);}
+ c.restore();}
+function hoopSound(type){if(!sound)return;try{pingAudio=pingAudio||new(window.AudioContext||window.webkitAudioContext)();const a=pingAudio,t=a.currentTime;
+ const notes={throw:[[180,.06]],rim:[[880,.14]],board:[[170,.1]],bounce:[[110,.07]],swish:[[660,.08],[880,.08],[1175,.2]],basket:[[523,.12],[659,.12],[784,.2]],miss:[[260,.14]],win:[[523,.12],[659,.12],[784,.12],[1046,.25]]}[type]||[];
+ notes.forEach(([f,d],i)=>{const o=a.createOscillator(),gn=a.createGain();o.type=type==='rim'?'triangle':'sine';o.frequency.value=f;o.connect(gn);gn.connect(a.destination);const s=t+i*.11;gn.gain.setValueAtTime(.0001,s);gn.gain.exponentialRampToValueAtTime(.13,s+.005);gn.gain.exponentialRampToValueAtTime(.0001,s+d);o.start(s);o.stop(s+d+.02);});}catch{}}
+function basketballGame(){discover('basket');const cheerers=[outside.find(n=>n.id==='sami'),outside.find(n=>n.id==='lina')].filter(Boolean);let g=createHoopGame(level());activeActivity={kind:'basket',get count(){return g.baskets;},get game(){return g;}};
+ let frame=0,last=null,closed=false,drag=null,shown='';const look={...profile};
+ modal(activityHeader('Trois paniers pour l’équipe','Salle de sport · basket')+`<canvas id="hoopCanvas" class="ping-canvas hoop-canvas" width="760" height="560" role="img" aria-label="Terrain de basket vu de côté : ton personnage et le panier"></canvas><p id="basketFeedback" class="feedback" role="status" aria-live="polite"></p><p class="park-input-hint"><b>Lancer :</b> pose le doigt n’importe où sur la scène, glisse vers le haut et vers le panier, puis lâche. La direction vise, la longueur du geste règle la force ; les pointillés montrent le début du trajet. Après chaque panier, tu recules d’un pas. Essais illimités !<br><b>Clavier :</b> ← → pour viser, ↑ ↓ pour la force, Espace pour lancer.</p><div class="actions"><button id="basketAgain" class="secondary">Recommencer</button><button id="activityClose" class="secondary">Retour à la salle</button></div>`,
+  ()=>{closed=true;cancelAnimationFrame(frame);$('#modal').onkeydown=null;if(pingAudio){pingAudio.close().catch(()=>{});pingAudio=null;}});
+ const cv=$('#hoopCanvas'),c=cv.getContext('2d');
+ const pos=e=>{const r=cv.getBoundingClientRect(),k=760/(r.width||760);return {x:(e.clientX-r.left)*k,y:(e.clientY-r.top)*k};};
+ const sync=()=>{const key=g.state+g.baskets+g.message;if(key===shown)return;shown=key;$('#basketFeedback').textContent=g.message;$('#basketFeedback').className='feedback'+(g.state==='over'?' success':'');
+  if(g.won&&!g.awarded){g.awarded=true;award('basket');}};
+ cv.onpointerdown=e=>{e.preventDefault?.();if(g.state!=='aim')return;cv.setPointerCapture?.(e.pointerId);drag={start:pos(e),id:e.pointerId};g.aiming=true;hoopAim(g,0,0);};
+ cv.onpointermove=e=>{if(!drag||e.pointerId!==drag.id)return;const p=pos(e);hoopAim(g,p.x-drag.start.x,p.y-drag.start.y);};
+ cv.onpointerup=cv.onpointercancel=e=>{if(!drag)return;const ok=e.type!=='pointercancel'&&drag.id===e.pointerId;drag=null;g.aiming=false;if(ok)hoopThrow(g);sync();};
+ $('#modal').onkeydown=e=>{if(g.state!=='aim')return;const s=Math.hypot(g.aim.vx,g.aim.vy)||500;let ang=Math.atan2(-g.aim.vy,g.aim.vx),sp=s;
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();g.aiming=true;ang=pingClamp(ang+(e.key==='ArrowLeft'?.04:-.04),.2,1.45);}
+  else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();g.aiming=true;sp=pingClamp(s+(e.key==='ArrowUp'?18:-18),160,HOOP.max);}
+  else if(e.key===' '&&!e.repeat){e.preventDefault();g.aiming=false;hoopThrow(g);sync();return;}else return;g.aim={vx:Math.cos(ang)*sp,vy:-Math.sin(ang)*sp};};
+ $('#basketAgain').onclick=()=>{g=createHoopGame(level());shown='';sync();};bindActivityClose();
+ const animate=now=>{if(closed)return;if(document.hidden){last=null;frame=requestAnimationFrame(animate);return;}const dt=last===null?0:Math.min(.05,(now-last)/1000);last=now;
+  hoopStep(g,dt);g.events.splice(0).forEach(hoopSound);drawHoop(c,g,cheerers,look);sync();frame=requestAnimationFrame(animate);};
+ sync();drawHoop(c,g,cheerers,look);frame=requestAnimationFrame(animate);}
 function movementGame(){discover('movements');const moves=[['jump','Saute !','Sauter'],['crouch','Accroupis-toi !','S’accroupir'],['arms','Lève les bras !','Lever les bras']];const sequence=[];for(let i=0;i<4+level();i++){let n=randomInt(0,2);if(sequence.at(-1)===n)n=(n+1)%3;sequence.push(n);}const state={kind:'movements',sequence,progress:0,busy:false};activeActivity=state;
  modal(activityHeader('Le circuit des mouvements','Salle de sport · comprendre et bouger')+`<p class="modal-description">Lis la consigne, puis choisis le bon mouvement pour animer ton personnage.</p><div class="movement-stage"><svg viewBox="0 0 400 190"><ellipse cx="200" cy="163" rx="100" ry="15" fill="#bed0ac"/><g transform="translate(200 162) scale(1.55)"><g id="movementActor">${avatarSVG(profile)}</g></g></svg></div><div id="movementPrompt" class="speech"></div><div class="actions">${moves.map(([id,q,label])=>`<button class="primary" data-move="${id}">${label}</button>`).join('')}</div><p id="movementFeedback" class="feedback" role="status"></p>`+activityReturn('Retour à la salle'));
  const prompt=()=>{$('#movementPrompt').textContent=state.progress<sequence.length?moves[sequence[state.progress]][1]:'✓ Circuit terminé !';};
